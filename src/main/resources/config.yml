@@ -26,6 +26,29 @@ guild-levels:
       exp-multiplier: 1.5
       keep-inventory: true
       home-limit: 3
+guild-buffs:
+  strength:
+    name: "Strength Buff"
+    effect: INCREASE_DAMAGE
+    level: 1
+    cost: 1000
+    duration: 3600
+    permission: "guild.buff.strength"
+  speed:
+    name: "Speed Buff"
+    effect: SPEED
+    level: 2
+    cost: 2000
+    duration: 3600
+    permission: "guild.buff.speed"
+  haste:
+    name: "Haste Buff"
+    effect: FAST_DIGGING
+    level: 1
+    cost: 1500
+    duration: 3600
+    permission: "guild.buff.haste"
+
 exp-sources:
   blocks:
     enabled: true

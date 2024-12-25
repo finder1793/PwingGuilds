@@ -2,6 +2,7 @@ package com.pwing.guilds.gui;
 
 import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.guild.Guild;
+import com.pwing.guilds.buffs.GuildBuff;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -9,7 +10,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.Arrays;
+import java.util.*;
 
 public class GuildManagementGUI {
     private final PwingGuilds plugin;
@@ -67,6 +68,34 @@ public class GuildManagementGUI {
                 
                 inv.setItem(slot, chunkItem);
             }
+        }
+        
+        player.openInventory(inv);
+    }
+
+    public void openBuffsMenu(Player player, Guild guild) {
+        Inventory inv = Bukkit.createInventory(null, 27, "Guild Buffs");
+        
+        Map<String, GuildBuff> buffs = plugin.getBuffManager().getAvailableBuffs();
+        int slot = 10;
+        
+        for (Map.Entry<String, GuildBuff> entry : buffs.entrySet()) {
+            GuildBuff buff = entry.getValue();
+            
+            List<String> lore = new ArrayList<>();
+            lore.add("§7Level: §e" + buff.getLevel());
+            lore.add("§7Cost: §e" + buff.getCost());
+            lore.add("§7Duration: §e" + buff.getDuration() + "s");
+            lore.add("");
+            lore.add("§eClick to purchase!");
+
+            ItemStack buffItem = createItem(
+                Material.POTION,
+                "§6" + buff.getName(),
+                lore.toArray(new String[0])
+            );
+            
+            inv.setItem(slot++, buffItem);
         }
         
         player.openInventory(inv);

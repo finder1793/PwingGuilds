@@ -1,11 +1,17 @@
 package com.pwing.guilds.gui;
 
 import com.pwing.guilds.PwingGuilds;
+import com.pwing.guilds.guild.ChunkLocation;
+import com.pwing.guilds.buffs.GuildBuff;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import com.pwing.guilds.guild.ChunkLocation;
+import org.bukkit.potion.PotionEffect;
+
+import java.util.UUID;
 
 public class GuildGUIListener implements Listener {
     private final PwingGuilds plugin;
@@ -19,12 +25,14 @@ public class GuildGUIListener implements Listener {
         if (!(event.getWhoClicked() instanceof Player player)) return;
         
         String title = event.getView().getTitle();
-        if (!title.equals("Guild Management") && !title.equals("Guild Claims Map")) return;
+        if (!title.equals("Guild Management") && !title.equals("Guild Claims Map") && !title.equals("Guild Buffs")) return;
         
         event.setCancelled(true);
         
         if (title.equals("Guild Claims Map")) {
             handleClaimsMapClick(event, player);
+        } else if (title.equals("Guild Buffs")) {
+            handleBuffsMenuClick(event, player);
         } else {
             handleMainMenuClick(event, player);
         }
@@ -50,8 +58,39 @@ public class GuildGUIListener implements Listener {
                 }
             }
             
-            // Refresh the GUI
             new GuildManagementGUI(plugin).openClaimsMap(player, guild);
+        });
+    }
+
+    private void handleBuffsMenuClick(InventoryClickEvent event, Player player) {
+        if (event.getCurrentItem() == null) return;
+        
+        plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresent(guild -> {
+            String buffName = ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
+            GuildBuff buff = plugin.getBuffManager().getAvailableBuffs().values().stream()
+                    .filter(b -> b.getName().equals(buffName))
+                    .findFirst()
+                    .orElse(null);
+                    
+            if (buff != null) {
+                if (!player.hasPermission(buff.getPermission())) {
+                    player.sendMessage("§cYou don't have permission to purchase this buff!");
+                    return;
+                }
+                
+                for (UUID member : guild.getMembers()) {
+                    Player guildMember = Bukkit.getPlayer(member);
+                    if (guildMember != null && guildMember.isOnline()) {
+                        guildMember.addPotionEffect(new PotionEffect(
+                            buff.getEffectType(),
+                            buff.getDuration() * 20,
+                            buff.getLevel() - 1
+                        ));
+                    }
+                }
+                
+                player.sendMessage("§aSuccessfully purchased " + buff.getName() + " for your guild!");
+            }
         });
     }
 
@@ -62,8 +101,8 @@ public class GuildGUIListener implements Listener {
             case 11 -> player.sendMessage("§eMember management coming soon!");
             case 13 -> plugin.getGuildManager().getPlayerGuild(player.getUniqueId())
                     .ifPresent(guild -> new GuildManagementGUI(plugin).openClaimsMap(player, guild));
-            case 15 -> player.sendMessage("§eGuild settings coming soon!");
+            case 15 -> plugin.getGuildManager().getPlayerGuild(player.getUniqueId())
+                    .ifPresent(guild -> new GuildManagementGUI(plugin).openBuffsMenu(player, guild));
         }
     }
 }
-
