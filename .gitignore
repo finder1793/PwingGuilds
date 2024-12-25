@@ -1,0 +1,35 @@
+# Gradle
+.gradle/
+build/
+gradle-app.setting
+!gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.settings/
+.project
+.classpath
+.vscode/
+
+# Minecraft Development
+target/
+bin/
+dist/
+manifest.mf
+nbbuild/
+nbproject/
+
+# Compiled files
+*.class
+out/
+
+# Logs
+*.log
+logs/
+
+# OS specific
+.DS_Store
+Thumbs.db

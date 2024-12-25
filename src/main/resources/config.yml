@@ -1,0 +1,61 @@
+guild-levels:
+  1:
+    max-claims: 5
+    exp-required: 0
+    perks:
+      member-limit: 5
+      teleport-cooldown: 300
+      exp-multiplier: 1.0
+      keep-inventory: false
+      home-limit: 1
+  2:
+    max-claims: 10
+    exp-required: 1000
+    perks:
+      member-limit: 8
+      teleport-cooldown: 240
+      exp-multiplier: 1.2
+      keep-inventory: false
+      home-limit: 2
+  3:
+    max-claims: 15
+    exp-required: 2500
+    perks:
+      member-limit: 10
+      teleport-cooldown: 180
+      exp-multiplier: 1.5
+      keep-inventory: true
+      home-limit: 3
+exp-sources:
+  blocks:
+    enabled: true
+    values:
+      DIAMOND_ORE: 10
+      ANCIENT_DEBRIS: 20
+      DEFAULT: 1
+  
+  vanilla-mobs:
+    enabled: true
+    values:
+      ENDER_DRAGON: 1000
+      WITHER: 500
+      DEFAULT: 5
+  
+  mythicmobs:
+    enabled: true
+    mobs:
+      sewerslime: 50  # Direct mob ID mapping
+    multipliers:
+      Legendary: 100
+      Elite: 50
+      Boss: 25
+      DEFAULT: 10
+
+storage:
+  type: YAML  # or SQL
+  mysql:
+    host: localhost
+    port: 3306
+    database: guilds
+    username: root
+    password: password

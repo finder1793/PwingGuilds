@@ -1,0 +1,12 @@
+name: PwingGuilds
+version: '${version}'
+main: com.pwing.guilds.PwingGuilds
+api-version: '1.19'
+authors: [finder17]
+description: A guild plugin for Spigot
+
+commands:
+  guild:
+    description: Main guild command
+    usage: /guild <create|claim>
+    aliases: [g]
