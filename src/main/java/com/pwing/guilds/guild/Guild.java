@@ -5,12 +5,15 @@ import com.pwing.guilds.perks.GuildPerks;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.Chunk;
+
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Guild {
     private final PwingGuilds plugin;
     private final String name;
     private UUID owner;
+    private UUID leader;
     private final Set<UUID> members;
     private final Set<UUID> invites;
     private final Set<ChunkLocation> claimedChunks;
@@ -71,19 +74,39 @@ public class Guild {
         return claimedChunks.remove(chunk);
     }
 
-    public String getName() { return name; }
-    public UUID getOwner() { return owner; }
-    public Set<UUID> getMembers() { return Collections.unmodifiableSet(members); }
-    public Set<ChunkLocation> getClaimedChunks() { return Collections.unmodifiableSet(claimedChunks); }
-    public int getLevel() { return level; }
-    public long getExp() { return exp; }
-    public GuildPerks getPerks() { return perks; }
+    public String getName() {
+        return name;
+    }
+
+    public UUID getLeader() {
+        return leader;
+    }
+
+    public Set<UUID> getMembers() {
+        return Collections.unmodifiableSet(members);
+    }
+
+    public Set<ChunkLocation> getClaimedChunks() {
+        return Collections.unmodifiableSet(claimedChunks);
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public long getExp() {
+        return exp;
+    }
+
+    public GuildPerks getPerks() {
+        return perks;
+    }
 
     public boolean addExp(long amount) {
         exp += amount * perks.getExpMultiplier();
         int nextLevel = level + 1;
         long requiredExp = plugin.getConfig().getLong("guild-levels." + nextLevel + ".exp-required");
-        
+
         if (exp >= requiredExp) {
             level = nextLevel;
             perks = new GuildPerks(plugin, level);
@@ -109,6 +132,7 @@ public class Guild {
             }
         }
     }
+
     public boolean addMember(UUID player) {
         return members.add(player);
     }
@@ -120,5 +144,68 @@ public class Guild {
         return false;
     }
 
-}
 
+    public boolean promotePlayer(UUID player) {
+        if (!members.contains(player)) {
+            return false;
+        }
+
+        // Set the player as an officer or promote to leader depending on current role
+        if (player.equals(leader)) {
+            return false; // Already highest rank
+        }
+
+        leader = player;
+        return true;
+    }
+
+    public UUID getOwner() {
+        return owner;
+    }
+
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public void setExp(long exp) {
+        this.exp = exp;
+    }
+
+
+    public Map<String, Object> serialize() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", name);
+        data.put("owner", owner.toString());
+        data.put("leader", leader.toString());
+        data.put("level", level);
+        data.put("exp", exp);
+        data.put("members", members.stream().map(UUID::toString).collect(Collectors.toList()));
+        data.put("claimed-chunks", claimedChunks.stream()
+                .map(chunk -> chunk.getWorld() + "," + chunk.getX() + "," + chunk.getZ())
+                .collect(Collectors.toList()));
+        return data;
+    }
+
+    public static Guild deserialize(PwingGuilds plugin, Map<String, Object> data) {
+        String name = (String) data.get("name");
+        UUID owner = UUID.fromString((String) data.get("owner"));
+        Guild guild = new Guild(plugin, name, owner);
+
+        guild.setLevel((Integer) data.get("level"));
+        guild.setExp((Long) data.get("exp"));
+
+        ((List<String>) data.get("members")).stream()
+                .map(UUID::fromString)
+                .forEach(guild::addMember);
+
+        ((List<String>) data.get("claimed-chunks")).stream()
+                .map(str -> {
+                    String[] parts = str.split(",");
+                    return new ChunkLocation(parts[0], Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
+                })
+                .forEach(guild::claimChunk);
+
+        return guild;
+    }
+}

@@ -1,25 +1,46 @@
 package com.pwing.guilds.guild;
 
 import com.pwing.guilds.PwingGuilds;
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import java.util.*;
+import java.util.Collection;
+import com.pwing.guilds.events.GuildCreateEvent;
+import com.pwing.guilds.storage.GuildStorage;
+import com.pwing.guilds.events.GuildDeleteEvent;
+
+
 
 public class GuildManager {
     private final PwingGuilds plugin;
-    private final Map<String, Guild> guilds = new HashMap<>();
+    private final Map<String, Guild> guilds;
     private final Map<UUID, Guild> playerGuilds = new HashMap<>();
     private final Map<ChunkLocation, Guild> claimedChunks = new HashMap<>();
+    private final GuildStorage storage;
 
-    public GuildManager(PwingGuilds plugin) {
+    public GuildManager(PwingGuilds plugin, GuildStorage storage) {
         this.plugin = plugin;
+        this.storage = storage;
+        this.guilds = new HashMap<>();
     }
 
     public boolean createGuild(String name, UUID owner) {
         if (guilds.containsKey(name)) {
             return false;
         }
-        guilds.put(name, new Guild(plugin, name, owner));
+        Guild guild = new Guild(plugin, name, owner);
+        guilds.put(name, guild);
+        Bukkit.getPluginManager().callEvent(new GuildCreateEvent(guild));
         return true;
+    }
+
+    public void deleteGuild(String name) {
+        Guild guild = guilds.get(name);
+        if (guild != null) {
+            Bukkit.getPluginManager().callEvent(new GuildDeleteEvent(guild));
+            guilds.remove(name);
+            storage.deleteGuild(name);
+        }
     }
 
     public boolean claimChunk(Guild guild, Chunk chunk) {
@@ -64,7 +85,7 @@ public class GuildManager {
 
     public boolean kickMember(String guildName, UUID kicker, UUID kicked) {
         Guild guild = guilds.get(guildName);
-        if (guild != null && guild.getOwner().equals(kicker)) {
+        if (guild != null && guild.getLeader().equals(kicker)) {
             if (guild.removeMember(kicked)) {
                 playerGuilds.remove(kicked);
                 return true;
@@ -80,5 +101,14 @@ public class GuildManager {
             return guild.unclaimChunk(location);
         }
         return false;
+    }
+
+    public Collection<Guild> getGuilds() {
+        return guilds.values();
+    }
+
+
+    public void addGuild(Guild guild) {
+        guilds.put(guild.getName(), guild);
     }
 }

@@ -7,14 +7,18 @@ import com.pwing.guilds.guild.ChunkLocation;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
+import org.bukkit.Bukkit;
+
 import java.sql.*;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class SQLGuildStorage implements GuildStorage {
     private final PwingGuilds plugin;
     private final HikariDataSource dataSource;
+    private final Map<String, Guild> guildCache = new HashMap<>();
+    private final Queue<Guild> saveQueue = new ConcurrentLinkedQueue<>();
+    private static final long SAVE_INTERVAL = 100L;
 
     public SQLGuildStorage(PwingGuilds plugin) {
         this.plugin = plugin;
@@ -30,6 +34,7 @@ public class SQLGuildStorage implements GuildStorage {
         
         this.dataSource = new HikariDataSource(config);
         initTables();
+        startAsyncSaveProcessor();
     }
 
     private void initTables() {
@@ -62,10 +67,25 @@ public class SQLGuildStorage implements GuildStorage {
         }
     }
 
-    @Override
-    public void saveGuild(Guild guild) {
-        try (Connection conn = dataSource.getConnection()) {
-            // Save guild data
+    public void startAsyncSaveProcessor() {
+        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+            Guild guild;
+            while ((guild = saveQueue.poll()) != null) {
+                try (Connection conn = dataSource.getConnection()) {
+                    saveGuildData(guild, conn);
+                    guildCache.put(guild.getName(), guild);
+                } catch (SQLException e) {
+                    plugin.getLogger().severe("Failed to save guild: " + guild.getName());
+                    saveQueue.offer(guild);
+                }
+            }
+        }, SAVE_INTERVAL, SAVE_INTERVAL);
+    }
+
+    private void saveGuildData(Guild guild, Connection conn) throws SQLException {
+        conn.setAutoCommit(false);
+        try {
+            // Save main guild data
             try (PreparedStatement ps = conn.prepareStatement(
                     "REPLACE INTO guilds (name, owner, level, exp) VALUES (?, ?, ?, ?)")) {
                 ps.setString(1, guild.getName());
@@ -98,13 +118,27 @@ public class SQLGuildStorage implements GuildStorage {
                 }
                 ps.executeBatch();
             }
+
+            conn.commit();
         } catch (SQLException e) {
-            e.printStackTrace();
+            conn.rollback();
+            throw e;
+        } finally {
+            conn.setAutoCommit(true);
         }
     }
 
     @Override
+    public void saveGuild(Guild guild) {
+        saveQueue.offer(guild);
+    }
+
+    @Override
     public Guild loadGuild(String name) {
+        if (guildCache.containsKey(name)) {
+            return guildCache.get(name);
+        }
+
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM guilds WHERE name = ?")) {
             
@@ -112,39 +146,41 @@ public class SQLGuildStorage implements GuildStorage {
             ResultSet rs = ps.executeQuery();
             
             if (rs.next()) {
-                UUID owner = UUID.fromString(rs.getString("owner"));
-                Guild guild = new Guild(plugin, name, owner);
-                
-                // Load members
-                try (PreparedStatement memberPs = conn.prepareStatement(
-                        "SELECT uuid FROM guild_members WHERE guild_name = ?")) {
-                    memberPs.setString(1, name);
-                    ResultSet memberRs = memberPs.executeQuery();
-                    while (memberRs.next()) {
-                        guild.addMember(UUID.fromString(memberRs.getString("uuid")));
-                    }
-                }
-
-                // Load chunks
-                try (PreparedStatement chunkPs = conn.prepareStatement(
-                        "SELECT world, x, z FROM guild_chunks WHERE guild_name = ?")) {
-                    chunkPs.setString(1, name);
-                    ResultSet chunkRs = chunkPs.executeQuery();
-                    while (chunkRs.next()) {
-                        ChunkLocation chunk = new ChunkLocation(
-                                chunkRs.getString("world"),
-                                chunkRs.getInt("x"),
-                                chunkRs.getInt("z"));
-                        guild.claimChunk(chunk);
-                    }
-                }
-
+                Guild guild = new Guild(plugin, name, UUID.fromString(rs.getString("owner")));
+                loadGuildData(guild, conn);
+                guildCache.put(name, guild);
                 return guild;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private void loadGuildData(Guild guild, Connection conn) throws SQLException {
+        // Load members
+        try (PreparedStatement ps = conn.prepareStatement(
+                "SELECT uuid FROM guild_members WHERE guild_name = ?")) {
+            ps.setString(1, guild.getName());
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                guild.addMember(UUID.fromString(rs.getString("uuid")));
+            }
+        }
+
+        // Load chunks
+        try (PreparedStatement ps = conn.prepareStatement(
+                "SELECT world, x, z FROM guild_chunks WHERE guild_name = ?")) {
+            ps.setString(1, guild.getName());
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                ChunkLocation chunk = new ChunkLocation(
+                        rs.getString("world"),
+                        rs.getInt("x"),
+                        rs.getInt("z"));
+                guild.claimChunk(chunk);
+            }
+        }
     }
 
     @Override
@@ -168,18 +204,28 @@ public class SQLGuildStorage implements GuildStorage {
 
     @Override
     public void deleteGuild(String name) {
+        guildCache.remove(name);
         try (Connection conn = dataSource.getConnection()) {
-            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guilds WHERE name = ?")) {
-                ps.setString(1, name);
-                ps.executeUpdate();
-            }
-            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guild_members WHERE guild_name = ?")) {
-                ps.setString(1, name);
-                ps.executeUpdate();
-            }
-            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guild_chunks WHERE guild_name = ?")) {
-                ps.setString(1, name);
-                ps.executeUpdate();
+            conn.setAutoCommit(false);
+            try {
+                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guilds WHERE name = ?")) {
+                    ps.setString(1, name);
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guild_members WHERE guild_name = ?")) {
+                    ps.setString(1, name);
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guild_chunks WHERE guild_name = ?")) {
+                    ps.setString(1, name);
+                    ps.executeUpdate();
+                }
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
             }
         } catch (SQLException e) {
             e.printStackTrace();

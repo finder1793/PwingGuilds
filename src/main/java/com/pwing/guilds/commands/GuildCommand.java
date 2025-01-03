@@ -2,6 +2,7 @@ package com.pwing.guilds.commands;
 
 import com.pwing.guilds.PwingGuilds;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -36,9 +37,23 @@ public class GuildCommand implements CommandExecutor {
                 }
                 if (plugin.getGuildManager().createGuild(args[1], player.getUniqueId())) {
                     player.sendMessage("§aGuild " + args[1] + " created successfully!");
+                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
                 } else {
                     player.sendMessage("§cA guild with that name already exists!");
+                    player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
                 }
+            }
+            case "delete" -> {
+                plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresent(guild -> {
+                    if (guild.getLeader().equals(player.getUniqueId())) {
+                        plugin.getGuildManager().deleteGuild(guild.getName());
+                        player.sendMessage("§aGuild deleted successfully!");
+                        player.playSound(player.getLocation(), Sound.ENTITY_IRON_GOLEM_DEATH, 1.0f, 1.0f);
+                    } else {
+                        player.sendMessage("§cOnly the guild leader can delete the guild!");
+                        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                    }
+                });
             }
             case "claim" -> {
                 plugin.getGuildManager().getPlayerGuild(player.getUniqueId())
@@ -46,11 +61,16 @@ public class GuildCommand implements CommandExecutor {
                         playerGuild -> {
                             if (plugin.getGuildManager().claimChunk(playerGuild, player.getLocation().getChunk())) {
                                 player.sendMessage("§aChunk claimed successfully!");
+                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f);
                             } else {
                                 player.sendMessage("§cFailed to claim chunk!");
+                                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
                             }
                         },
-                        () -> player.sendMessage("§cYou're not in a guild!")
+                        () -> {
+                            player.sendMessage("§cYou're not in a guild!");
+                            player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                        }
                     );
             }
             case "invite" -> {
@@ -69,9 +89,14 @@ public class GuildCommand implements CommandExecutor {
                                     if (plugin.getGuildManager().invitePlayer(guild.getName(), player.getUniqueId(), target.getUniqueId())) {
                                         player.sendMessage("§aInvited " + target.getName() + " to your guild!");
                                         target.sendMessage("§aYou've been invited to join " + guild.getName() + "! Use /guild accept " + guild.getName() + " to join.");
+                                        player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
+                                        target.playSound(target.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
                                     }
                                 },
-                                () -> player.sendMessage("§cYou're not in a guild!")
+                                () -> {
+                                    player.sendMessage("§cYou're not in a guild!");
+                                    player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                                }
                         );
             }
             case "accept" -> {
@@ -81,8 +106,10 @@ public class GuildCommand implements CommandExecutor {
                 }
                 if (plugin.getGuildManager().acceptInvite(args[1], player.getUniqueId())) {
                     player.sendMessage("§aYou've joined the guild!");
+                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
                 } else {
                     player.sendMessage("§cNo pending invite found!");
+                    player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
                 }
             }
             case "kick" -> {
@@ -101,55 +128,23 @@ public class GuildCommand implements CommandExecutor {
                                     if (plugin.getGuildManager().kickMember(guild.getName(), player.getUniqueId(), target.getUniqueId())) {
                                         player.sendMessage("§aKicked " + target.getName() + " from the guild!");
                                         target.sendMessage("§cYou've been kicked from " + guild.getName() + "!");
+                                        player.playSound(player.getLocation(), Sound.ENTITY_IRON_GOLEM_HURT, 1.0f, 1.0f);
+                                        target.playSound(target.getLocation(), Sound.ENTITY_IRON_GOLEM_HURT, 1.0f, 1.0f);
                                     } else {
                                         player.sendMessage("§cYou don't have permission to kick members!");
+                                        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
                                     }
                                 },
-                                () -> player.sendMessage("§cYou're not in a guild!")
+                                () -> {
+                                    player.sendMessage("§cYou're not in a guild!");
+                                    player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                                }
                         );
-            }
-            case "unclaim" -> {
-                plugin.getGuildManager().getPlayerGuild(player.getUniqueId())
-                        .ifPresentOrElse(
-                                guild -> {
-                                    if (plugin.getGuildManager().unclaimChunk(guild, player.getLocation().getChunk())) {
-                                        player.sendMessage("§aChunk unclaimed successfully!");
-                                    } else {
-                                        player.sendMessage("§cThis chunk isn't claimed by your guild!");
-                                    }
-                                },
-                                () -> player.sendMessage("§cYou're not in a guild!")
-                        );
-            }
-            
-            case "borders" -> {
-                plugin.getGuildManager().getGuildByChunk(player.getLocation().getChunk())
-                        .ifPresentOrElse(
-                                guild -> {
-                                    ChunkVisualizer.showChunkBorders(player, player.getLocation().getChunk());
-                                    player.sendMessage("§aShowing chunk borders!");
-                                },
-                                () -> player.sendMessage("§cNo guild claims in this chunk!")
-                        );
-            }
-            case "info" -> {
-                plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresentOrElse(
-                        guild -> {
-                            player.sendMessage("§6=== Guild Info ===");
-                            player.sendMessage("§eName: §7" + guild.getName());
-                            player.sendMessage("§eLevel: §7" + guild.getLevel());
-                            player.sendMessage("§eExp: §7" + guild.getExp());
-                            player.sendMessage("§eClaimed Chunks: §7" + guild.getClaimedChunks().size());
-                            int maxClaims = plugin.getConfig().getInt("guild-levels." + guild.getLevel() + ".max-claims");
-                            player.sendMessage("§eMax Claims: §7" + maxClaims);
-                        },
-                        () -> player.sendMessage("§cYou're not in a guild!")
-                );
             }
             case "gui", "menu" -> {
                 new GuildManagementGUI(plugin).openMainMenu(player);
+                player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0f, 1.0f);
             }
-
             default -> sendHelpMessage(player);
         }
         return true;
@@ -158,18 +153,12 @@ public class GuildCommand implements CommandExecutor {
     private void sendHelpMessage(Player player) {
         player.sendMessage("§6=== Guild Commands ===");
         player.sendMessage("§e/guild create <name> §7- Create a new guild");
+        player.sendMessage("§e/guild delete §7- Delete your guild");
         player.sendMessage("§e/guild claim §7- Claim the chunk you're standing in");
         player.sendMessage("§e/guild unclaim §7- Unclaim the chunk you're standing in");
         player.sendMessage("§e/guild invite <player> §7- Invite a player to your guild");
         player.sendMessage("§e/guild accept <guild> §7- Accept a guild invitation");
         player.sendMessage("§e/guild kick <player> §7- Kick a player from your guild");
-        player.sendMessage("§e/guild borders §7- Show the borders of the current chunk");
-        player.sendMessage("§e/guild info §7- Display information about your guild");
         player.sendMessage("§e/guild gui §7- Open the guild management interface");
-
     }
 }
-
-
-
-
