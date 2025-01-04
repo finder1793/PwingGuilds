@@ -3,32 +3,34 @@ package com.pwing.guilds.guild;
 import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.perks.GuildPerks;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.Chunk;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Guild {
+@SerializableAs("Guild")
+public class Guild implements ConfigurationSerializable {
     private final PwingGuilds plugin;
     private final String name;
-    private UUID owner;
+    private final UUID owner;
     private UUID leader;
-    private final Set<UUID> members;
-    private final Set<UUID> invites;
-    private final Set<ChunkLocation> claimedChunks;
+    private final Set<UUID> members = new HashSet<>();
+    private final Set<UUID> invites = new HashSet<>();
+    private final Set<ChunkLocation> claimedChunks = new HashSet<>();
+    private final Map<String, GuildHome> homes = new HashMap<>();
     private GuildPerks perks;
     private int level;
     private long exp;
-    private int bonusClaims = 0;
+    private int bonusClaims;
 
     public Guild(PwingGuilds plugin, String name, UUID owner) {
         this.plugin = plugin;
         this.name = name;
         this.owner = owner;
-        this.members = new HashSet<>();
-        this.invites = new HashSet<>();
-        this.claimedChunks = new HashSet<>();
         this.members.add(owner);
         this.level = 1;
         this.exp = 0;
@@ -44,14 +46,6 @@ public class Guild {
             return members.add(player);
         }
         return false;
-    }
-
-    public boolean addInvite(UUID player) {
-        return invites.add(player);
-    }
-
-    public boolean removeInvite(UUID player) {
-        return invites.remove(player);
     }
 
     public boolean hasInvite(UUID player) {
@@ -75,34 +69,6 @@ public class Guild {
         return claimedChunks.remove(chunk);
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public UUID getLeader() {
-        return leader;
-    }
-
-    public Set<UUID> getMembers() {
-        return Collections.unmodifiableSet(members);
-    }
-
-    public Set<ChunkLocation> getClaimedChunks() {
-        return Collections.unmodifiableSet(claimedChunks);
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    public long getExp() {
-        return exp;
-    }
-
-    public GuildPerks getPerks() {
-        return perks;
-    }
-
     public boolean addExp(long amount) {
         exp += amount * perks.getExpMultiplier();
         int nextLevel = level + 1;
@@ -120,14 +86,11 @@ public class Guild {
         this.bonusClaims += amount;
     }
 
-    public int getBonusClaims() {
-        return bonusClaims;
-    }
-
     public boolean canClaim() {
         int maxClaims = plugin.getConfig().getInt("guild-levels." + level + ".max-claims") + bonusClaims;
         return claimedChunks.size() < maxClaims;
     }
+
     public boolean canAddMember() {
         return members.size() < perks.getMemberLimit();
     }
@@ -152,47 +115,60 @@ public class Guild {
         return false;
     }
 
-
     public boolean promotePlayer(UUID player) {
-        if (!members.contains(player)) {
+        if (!members.contains(player) || player.equals(leader)) {
             return false;
         }
-
-        // Set the player as an officer or promote to leader depending on current role
-        if (player.equals(leader)) {
-            return false; // Already highest rank
-        }
-
         leader = player;
         return true;
     }
 
-    public UUID getOwner() {
-        return owner;
+    public boolean setHome(String name, Location location) {
+        if (homes.size() >= perks.getHomeLimit()) return false;
+        homes.put(name.toLowerCase(), new GuildHome(name, location));
+        return true;
     }
 
-
-    public void setLevel(int level) {
-        this.level = level;
+    public Optional<GuildHome> getHome(String name) {
+        return Optional.ofNullable(homes.get(name.toLowerCase()));
     }
 
-    public void setExp(long exp) {
-        this.exp = exp;
+    public boolean deleteHome(String name) {
+        return homes.remove(name.toLowerCase()) != null;
     }
 
-
+    @Override
     public Map<String, Object> serialize() {
         Map<String, Object> data = new HashMap<>();
         data.put("name", name);
         data.put("owner", owner.toString());
-        data.put("leader", leader.toString());
         data.put("level", level);
         data.put("exp", exp);
+        data.put("bonus-claims", bonusClaims);
         data.put("members", members.stream().map(UUID::toString).collect(Collectors.toList()));
         data.put("claimed-chunks", claimedChunks.stream()
-                .map(chunk -> chunk.getWorld() + "," + chunk.getX() + "," + chunk.getZ())
-                .collect(Collectors.toList()));
+            .map(chunk -> Map.of(
+                "world", chunk.getWorld(),
+                "x", chunk.getX(),
+                "z", chunk.getZ()
+            )).collect(Collectors.toList()));
+        data.put("homes", homes.entrySet().stream()
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                e -> serializeLocation(e.getValue().getLocation())
+            )));
         return data;
+    }
+
+    private Map<String, Object> serializeLocation(Location loc) {
+        return Map.of(
+            "world", loc.getWorld().getName(),
+            "x", loc.getX(),
+            "y", loc.getY(),
+            "z", loc.getZ(),
+            "yaw", loc.getYaw(),
+            "pitch", loc.getPitch()
+        );
     }
 
     public static Guild deserialize(PwingGuilds plugin, Map<String, Object> data) {
@@ -202,21 +178,58 @@ public class Guild {
 
         guild.setLevel((Integer) data.get("level"));
         guild.setExp((Long) data.get("exp"));
+        guild.addBonusClaims((Integer) data.getOrDefault("bonus-claims", 0));
 
-        ((List<String>) data.get("members")).stream()
-                .map(UUID::fromString)
-                .forEach(guild::addMember);
+        @SuppressWarnings("unchecked")
+        List<String> membersList = (List<String>) data.get("members");
+        membersList.stream()
+            .map(UUID::fromString)
+            .forEach(guild::addMember);
 
-        ((List<String>) data.get("claimed-chunks")).stream()
-                .map(str -> {
-                    String[] parts = str.split(",");
-                    return new ChunkLocation(parts[0], Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
-                })
-                .forEach(guild::claimChunk);
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> chunksList = (List<Map<String, Object>>) data.get("claimed-chunks");
+        chunksList.stream()
+            .map(chunkData -> new ChunkLocation(
+                (String) chunkData.get("world"),
+                (Integer) chunkData.get("x"),
+                (Integer) chunkData.get("z")))
+            .forEach(guild::claimChunk);
+
+        @SuppressWarnings("unchecked")
+        Map<String, Map<String, Object>> homes = (Map<String, Map<String, Object>>) data.get("homes");
+        if (homes != null) {
+            homes.forEach((homeName, locationData) -> {
+                Location loc = new Location(
+                    Bukkit.getWorld((String) locationData.get("world")),
+                    (Double) locationData.get("x"),
+                    (Double) locationData.get("y"),
+                    (Double) locationData.get("z"),
+                    ((Number) locationData.get("yaw")).floatValue(),
+                    ((Number) locationData.get("pitch")).floatValue()
+                );
+                guild.setHome(homeName, loc);
+            });
+        }
 
         return guild;
     }
+
+    // Getters
+    public String getName() { return name; }
+    public UUID getOwner() { return owner; }
+    public UUID getLeader() { return leader; }
+    public Set<UUID> getMembers() { return Collections.unmodifiableSet(members); }
+    public Set<ChunkLocation> getClaimedChunks() { return Collections.unmodifiableSet(claimedChunks); }
+    public int getLevel() { return level; }
+    public long getExp() { return exp; }
+    public GuildPerks getPerks() { return perks; }
+    public int getBonusClaims() { return bonusClaims; }
+    public Map<String, GuildHome> getHomes() { return Collections.unmodifiableMap(homes); }
+
+    // Setters
+    public void setLevel(int level) {
+        this.level = level;
+        this.perks = new GuildPerks(plugin, level);
+    }
+    public void setExp(long exp) { this.exp = exp; }
 }
-
-
-

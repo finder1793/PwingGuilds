@@ -3,8 +3,11 @@ package com.pwing.guilds.storage;
 import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.guild.Guild;
 import com.pwing.guilds.guild.ChunkLocation;
+import com.pwing.guilds.guild.GuildHome;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.io.IOException;
@@ -12,12 +15,13 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class YamlGuildStorage implements GuildStorage {
     private final PwingGuilds plugin;
     private final File guildsFolder;
     private final Map<String, Guild> guildCache = new HashMap<>();
-    private static final long AUTO_SAVE_INTERVAL = 6000L; // 5 minutes in ticks
+    private static final long AUTO_SAVE_INTERVAL = 6000L;
 
     public YamlGuildStorage(PwingGuilds plugin) {
         this.plugin = plugin;
@@ -40,32 +44,43 @@ public class YamlGuildStorage implements GuildStorage {
 
     @Override
     public void saveGuild(Guild guild) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            File guildFile = new File(guildsFolder, guild.getName() + ".yml");
-            YamlConfiguration config = new YamlConfiguration();
+        File guildFile = new File(guildsFolder, guild.getName() + ".yml");
+        YamlConfiguration config = new YamlConfiguration();
 
-            config.set("name", guild.getName());
-            config.set("owner", guild.getOwner().toString());
-            config.set("level", guild.getLevel());
-            config.set("exp", guild.getExp());
+        config.set("name", guild.getName());
+        config.set("owner", guild.getOwner().toString());
+        config.set("level", guild.getLevel());
+        config.set("exp", guild.getExp());
+        config.set("bonus-claims", guild.getBonusClaims());
 
-            config.set("members", guild.getMembers().stream()
-                    .map(UUID::toString)
-                    .toList());
+        config.set("members", guild.getMembers().stream()
+                .map(UUID::toString)
+                .toList());
 
-            config.set("claimed-chunks", guild.getClaimedChunks().stream()
-                    .map(chunk -> chunk.getWorld() + "," + chunk.getX() + "," + chunk.getZ())
-                    .toList());
+        config.set("claimed-chunks", guild.getClaimedChunks().stream()
+                .map(chunk -> chunk.getWorld() + "," + chunk.getX() + "," + chunk.getZ())
+                .toList());
 
-            try {
-                config.save(guildFile);
-                guildCache.put(guild.getName(), guild);
-                createBackup(guild.getName());
-            } catch (Exception e) {
-                plugin.getLogger().severe("Failed to save guild: " + guild.getName());
-                e.printStackTrace();
-            }
-        });
+        // Save homes
+        config.set("homes", guild.getHomes().entrySet().stream()
+                .collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    e -> e.getValue().getLocation().getWorld().getName() + "," +
+                        e.getValue().getLocation().getX() + "," +
+                        e.getValue().getLocation().getY() + "," +
+                        e.getValue().getLocation().getZ() + "," +
+                        e.getValue().getLocation().getYaw() + "," +
+                        e.getValue().getLocation().getPitch()
+                )));
+
+        try {
+            config.save(guildFile);
+            guildCache.put(guild.getName(), guild);
+            createBackup(guild.getName());
+        } catch (Exception e) {
+            plugin.getLogger().severe("Failed to save guild: " + guild.getName());
+            e.printStackTrace();
+        }
     }
 
     private void createBackup(String guildName) {
@@ -84,7 +99,6 @@ public class YamlGuildStorage implements GuildStorage {
             plugin.getLogger().warning("Failed to create backup for guild: " + guildName);
         }
     }
-
     @Override
     public Guild loadGuild(String name) {
         if (guildCache.containsKey(name)) {
@@ -100,6 +114,7 @@ public class YamlGuildStorage implements GuildStorage {
 
         guild.setLevel(config.getInt("level"));
         guild.setExp(config.getLong("exp"));
+        guild.addBonusClaims(config.getInt("bonus-claims", 0));
 
         config.getStringList("members").stream()
                 .map(UUID::fromString)
@@ -112,15 +127,30 @@ public class YamlGuildStorage implements GuildStorage {
                 })
                 .forEach(guild::claimChunk);
 
+        ConfigurationSection homes = config.getConfigurationSection("homes");
+        if (homes != null) {
+            homes.getKeys(false).forEach(homeName -> {
+                String[] locParts = homes.getString(homeName).split(",");
+                Location loc = new Location(
+                    Bukkit.getWorld(locParts[0]),
+                    Double.parseDouble(locParts[1]),
+                    Double.parseDouble(locParts[2]),
+                    Double.parseDouble(locParts[3]),
+                    Float.parseFloat(locParts[4]),
+                    Float.parseFloat(locParts[5])
+                );
+                guild.setHome(homeName, loc);
+            });
+        }
+
         guildCache.put(name, guild);
         return guild;
     }
-
     @Override
     public Set<Guild> loadAllGuilds() {
         Set<Guild> guilds = new HashSet<>();
         File[] files = guildsFolder.listFiles((dir, name) -> name.endsWith(".yml"));
-        
+
         if (files != null) {
             for (File file : files) {
                 String guildName = file.getName().replace(".yml", "");
@@ -130,10 +160,9 @@ public class YamlGuildStorage implements GuildStorage {
                 }
             }
         }
-        
+
         return guilds;
     }
-
     @Override
     public void deleteGuild(String name) {
         guildCache.remove(name);
@@ -143,7 +172,6 @@ public class YamlGuildStorage implements GuildStorage {
             guildFile.delete();
         }
     }
-
     public void cleanupOldBackups(int daysToKeep) {
         File backupFolder = new File(guildsFolder, "backups");
         if (!backupFolder.exists()) return;

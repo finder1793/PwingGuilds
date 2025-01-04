@@ -7,6 +7,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import com.pwing.guilds.guild.Guild;
+import com.pwing.guilds.guild.GuildHome;
 import com.pwing.guilds.visualization.ChunkVisualizer;
 import com.pwing.guilds.gui.GuildManagementGUI;
 
@@ -145,6 +147,55 @@ public class GuildCommand implements CommandExecutor {
                 new GuildManagementGUI(plugin).openMainMenu(player);
                 player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0f, 1.0f);
             }
+// Add new home commands
+            case "sethome" -> {
+                if (args.length < 2) {
+                    player.sendMessage("§cUsage: /guild sethome <name>");
+                    return true;
+                }
+                plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresent(guild -> {
+                    if (guild.setHome(args[1], player.getLocation())) {
+                        player.sendMessage("§aGuild home '" + args[1] + "' set!");
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f);
+                    } else {
+                        player.sendMessage("§cYou've reached your guild's home limit!");
+                        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                    }
+                });
+            }
+            case "home" -> {
+                if (args.length < 2) {
+                    player.sendMessage("§cUsage: /guild home <name>");
+                    return true;
+                }
+                plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresent(guild -> {
+                    guild.getHome(args[1]).ifPresentOrElse(
+                            home -> {
+                                player.teleport(home.getLocation());
+                                player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 1.0f);
+                            },
+                            () -> {
+                                player.sendMessage("§cHome '" + args[1] + "' not found!");
+                                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                            }
+                    );
+                });
+            }
+            case "delhome" -> {
+                if (args.length < 2) {
+                    player.sendMessage("§cUsage: /guild delhome <name>");
+                    return true;
+                }
+                plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresent(guild -> {
+                    if (guild.deleteHome(args[1])) {
+                        player.sendMessage("§aGuild home '" + args[1] + "' deleted!");
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
+                    } else {
+                        player.sendMessage("§cHome '" + args[1] + "' not found!");
+                        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                    }
+                });
+            }
             default -> sendHelpMessage(player);
         }
         return true;
@@ -160,5 +211,8 @@ public class GuildCommand implements CommandExecutor {
         player.sendMessage("§e/guild accept <guild> §7- Accept a guild invitation");
         player.sendMessage("§e/guild kick <player> §7- Kick a player from your guild");
         player.sendMessage("§e/guild gui §7- Open the guild management interface");
+        player.sendMessage("§e/guild sethome <name> §7- Set a guild home");
+        player.sendMessage("§e/guild home <name> §7- Teleport to a guild home");
+        player.sendMessage("§e/guild delhome <name> §7- Delete a guild home");
     }
 }
