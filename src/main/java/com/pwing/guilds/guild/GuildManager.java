@@ -23,6 +23,13 @@ public class GuildManager {
         this.storage = storage;
         this.guilds = new HashMap<>();
     }
+    public void initialize() {
+        Set<Guild> loadedGuilds = storage.loadAllGuilds();
+        loadedGuilds.forEach(guild -> {
+            guilds.put(guild.getName(), guild);
+            guild.getMembers().forEach(member -> playerGuilds.put(member, guild));
+        });
+    }
 
     public boolean createGuild(String name, UUID owner) {
         if (guilds.containsKey(name)) {
@@ -30,8 +37,16 @@ public class GuildManager {
         }
         Guild guild = new Guild(plugin, name, owner);
         guilds.put(name, guild);
+        playerGuilds.put(owner, guild);
+        storage.saveGuild(guild);
         Bukkit.getPluginManager().callEvent(new GuildCreateEvent(guild));
         return true;
+    }
+
+    public void addGuild(Guild guild) {
+        guilds.put(guild.getName(), guild);
+        guild.getMembers().forEach(member -> playerGuilds.put(member, guild));
+        storage.saveGuild(guild);
     }
 
     public void deleteGuild(String name) {
@@ -49,6 +64,7 @@ public class GuildManager {
             return false;
         }
         claimedChunks.put(location, guild);
+        storage.saveGuild(guild);
         return true;
     }
 
@@ -65,11 +81,14 @@ public class GuildManager {
     public Optional<Guild> getPlayerGuild(UUID player) {
         return Optional.ofNullable(playerGuilds.get(player));
     }
-
     public boolean invitePlayer(String guildName, UUID inviter, UUID invited) {
         Guild guild = guilds.get(guildName);
         if (guild != null && guild.isMember(inviter)) {
-            return guild.invite(invited);
+            boolean success = guild.invite(invited);
+            if (success) {
+                storage.saveGuild(guild);
+            }
+            return success;
         }
         return false;
     }
@@ -78,6 +97,7 @@ public class GuildManager {
         Guild guild = guilds.get(guildName);
         if (guild != null && guild.acceptInvite(player)) {
             playerGuilds.put(player, guild);
+            storage.saveGuild(guild);
             return true;
         }
         return false;
@@ -88,6 +108,7 @@ public class GuildManager {
         if (guild != null && guild.getLeader().equals(kicker)) {
             if (guild.removeMember(kicked)) {
                 playerGuilds.remove(kicked);
+                storage.saveGuild(guild);
                 return true;
             }
         }
@@ -98,7 +119,11 @@ public class GuildManager {
         ChunkLocation location = new ChunkLocation(chunk);
         if (claimedChunks.get(location) == guild) {
             claimedChunks.remove(location);
-            return guild.unclaimChunk(location);
+            boolean success = guild.unclaimChunk(location);
+            if (success) {
+                storage.saveGuild(guild);
+            }
+            return success;
         }
         return false;
     }
@@ -106,13 +131,6 @@ public class GuildManager {
     public Collection<Guild> getGuilds() {
         return guilds.values();
     }
-
-
-    public void addGuild(Guild guild) {
-        guilds.put(guild.getName(), guild);
-    }
-
-
     public Optional<Guild> getGuild(String name) {
         return guilds.values().stream()
                 .filter(guild -> guild.getName().equalsIgnoreCase(name))

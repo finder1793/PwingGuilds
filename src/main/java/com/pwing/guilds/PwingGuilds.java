@@ -14,6 +14,8 @@ import com.pwing.guilds.commands.GuildCommand;
 import com.pwing.guilds.commands.GuildAdminCommand;
 import com.pwing.guilds.config.ConfigValidator;
 import com.pwing.guilds.buffs.GuildBuffManager;
+import com.pwing.guilds.storage.GuildBackupManager;
+import com.pwing.guilds.storage.GuildBackupListener;
 import com.pwing.guilds.rewards.RewardManager;
 import com.pwing.guilds.config.ConfigUpdater;
 import net.milkbowl.vault.economy.Economy;
@@ -29,7 +31,6 @@ public class PwingGuilds extends JavaPlugin {
     private RewardManager rewardManager;
     private Economy economy;
     private GuildEventManager eventManager;
-
     @Override
     public void onEnable() {
         saveDefaultConfig();
@@ -56,6 +57,11 @@ public class PwingGuilds extends JavaPlugin {
         this.expManager = new GuildExpManager(this);
         this.buffManager = new GuildBuffManager(this);
 
+        // Register auto-save listeners
+        GuildBackupManager backupManager = new GuildBackupManager(this);
+        getServer().getPluginManager().registerEvents(new GuildBackupListener(this, backupManager), this);
+
+        // Register other listeners
         getServer().getPluginManager().registerEvents(new GuildProtectionListener(this), this);
         getServer().getPluginManager().registerEvents(new GuildExpListener(this), this);
         getServer().getPluginManager().registerEvents(new GuildChatListener(this), this);

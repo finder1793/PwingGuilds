@@ -83,7 +83,7 @@ public class SQLGuildStorage implements GuildStorage {
         }
     }
 
-    public void startAsyncSaveProcessor() {
+    private void startAsyncSaveProcessor() {
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
             Guild guild;
             while ((guild = saveQueue.poll()) != null) {
@@ -95,7 +95,7 @@ public class SQLGuildStorage implements GuildStorage {
                     saveQueue.offer(guild);
                 }
             }
-        }, SAVE_INTERVAL, SAVE_INTERVAL);
+        }, 6000L, 6000L); // Every 5 minutes
     }
 
     private void saveGuildData(Guild guild, Connection conn) throws SQLException {
