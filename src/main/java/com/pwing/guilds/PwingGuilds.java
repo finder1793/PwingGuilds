@@ -8,14 +8,14 @@ import com.pwing.guilds.listeners.GuildProtectionListener;
 import  com.pwing.guilds.storage.GuildStorage;
 import com.pwing.guilds.storage.YamlGuildStorage;
 import com.pwing.guilds.storage.SQLGuildStorage;
-import com.pwing.guilds.storage.GuildBackupManager;
+import com.pwing.guilds.events.custom.GuildEventManager;
 import com.pwing.guilds.placeholders.GuildPlaceholders;
 import com.pwing.guilds.commands.GuildCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.Bukkit;
 import com.pwing.guilds.buffs.GuildBuffManager;
 import com.pwing.guilds.rewards.RewardManager;
-import com.pwing.guilds.events.custom.GuildEventManager;
+import com.pwing.guilds.config.ConfigUpdater;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
@@ -29,8 +29,9 @@ public class PwingGuilds extends JavaPlugin {
     private GuildEventManager eventManager;
     @Override
     public void onEnable() {
-        setupEconomy();
         saveDefaultConfig();
+        new ConfigUpdater(this).update();
+        setupEconomy();
         // Initialize storage based on config
         if (getConfig().getString("storage.type").equalsIgnoreCase("mysql")) {
             this.storage = new SQLGuildStorage(this);
