@@ -1,3 +1,4 @@
+# Core Guild Settings
 guild-levels:
   1:
     max-claims: 5
@@ -26,29 +27,25 @@ guild-levels:
       exp-multiplier: 1.5
       keep-inventory: true
       home-limit: 3
-guild-buffs:
-  strength:
-    name: "Strength Buff"
-    effect: INCREASE_DAMAGE
-    level: 1
-    cost: 1000
-    duration: 3600
-    permission: "guild.buff.strength"
-  speed:
-    name: "Speed Buff"
-    effect: SPEED
-    level: 2
-    cost: 2000
-    duration: 3600
-    permission: "guild.buff.speed"
-  haste:
-    name: "Haste Buff"
-    effect: FAST_DIGGING
-    level: 1
-    cost: 1500
-    duration: 3600
-    permission: "guild.buff.haste"
 
+# Territory Protection
+guild-claims:
+  protection:
+    block-break: true
+    block-place: true
+    interact: true
+    containers: true
+    entity-damage: true
+    redstone: true
+    pistons: true
+    explosions: true
+  flags:
+    allow-allies: false
+    mob-spawning: true
+    pvp: false
+    fire-spread: false
+
+# Experience System
 exp-sources:
   blocks:
     enabled: true
@@ -56,32 +53,23 @@ exp-sources:
       DIAMOND_ORE: 10
       ANCIENT_DEBRIS: 20
       DEFAULT: 1
-  
   vanilla-mobs:
     enabled: true
     values:
       ENDER_DRAGON: 1000
       WITHER: 500
       DEFAULT: 5
-  
   mythicmobs:
     enabled: true
     mobs:
-      sewerslime: 50  # Direct mob ID mapping
+      sewerslime: 50
     multipliers:
       Legendary: 100
       Elite: 50
       Boss: 25
       DEFAULT: 10
 
-storage:
-  type: YAML  # or SQL
-  mysql:
-    host: localhost
-    port: 3306
-    database: guilds
-    username: root
-    password: password
+# Guild Events
 events:
   territory-control:
     rewards:
@@ -94,7 +82,6 @@ events:
         - "mythic:CommonKey"
       third-place:
         - "money 5000"
-
   pvp-tournament:
     rewards:
       first-place:
@@ -107,7 +94,6 @@ events:
       third-place:
         - "money 8000"
         - "mythic:WarriorKey"
-
   resource-race:
     rewards:
       first-place:
@@ -120,9 +106,8 @@ events:
       third-place:
         - "money 10000"
         - "command give %player% diamond 32"
-
   boss-raid:
-    boss-type: "mythic:GuildBoss" # Use format "mythic:MobName" for MythicMobs or vanilla entity type
+    boss-type: "mythic:GuildBoss"
     spawn-location:
       world: "world"
       x: 0
@@ -139,30 +124,26 @@ events:
         - "mythic:CommonKey"
         - "money 2500"
 
-
-
+# Event Schedule
 event-schedule:
   territory-control:
     time: "12:00"
     days: [MONDAY, WEDNESDAY, FRIDAY]
-    duration: 60 # minutes
+    duration: 60
     min-players: 10
-    announce-before: [30, 15, 5] # minutes
-
+    announce-before: [30, 15, 5]
   pvp-tournament:
     time: "18:00"
     days: [TUESDAY, THURSDAY]
     duration: 45
     min-players: 8
     announce-before: [30, 15, 5]
-
   resource-race:
     time: "15:00"
     days: [SATURDAY]
     duration: 30
     min-players: 6
     announce-before: [15, 5]
-
   boss-raid:
     time: "20:00"
     days: [SUNDAY]
@@ -170,13 +151,24 @@ event-schedule:
     min-players: 12
     announce-before: [60, 30, 15, 5]
 
+# Storage Settings
+storage:
+  type: YAML
+  mysql:
+    host: localhost
+    port: 3306
+    database: guilds
+    username: root
+    password: password
+
+# Backup Settings
 backup:
   enabled: true
-  interval: 60 # minutes
-  compression-level: 9 # 1-9, higher = better compression but slower
+  interval: 60
+  compression-level: 9
   retention:
     days: 7
-    keep-minimum: 5 # minimum backups to keep regardless of age
+    keep-minimum: 5
   auto-backup:
     on-guild-create: true
     on-guild-delete: true

@@ -13,6 +13,7 @@ import com.pwing.guilds.placeholders.GuildPlaceholders;
 import com.pwing.guilds.commands.GuildCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.Bukkit;
+import com.pwing.guilds.config.ConfigValidator;
 import com.pwing.guilds.buffs.GuildBuffManager;
 import com.pwing.guilds.rewards.RewardManager;
 import com.pwing.guilds.config.ConfigUpdater;
@@ -31,6 +32,14 @@ public class PwingGuilds extends JavaPlugin {
     public void onEnable() {
         saveDefaultConfig();
         new ConfigUpdater(this).update();
+
+        ConfigValidator validator = new ConfigValidator(this);
+        if (!validator.validate()) {
+            getLogger().severe("Configuration validation failed! Please fix the errors above.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         setupEconomy();
         // Initialize storage based on config
         if (getConfig().getString("storage.type").equalsIgnoreCase("mysql")) {
