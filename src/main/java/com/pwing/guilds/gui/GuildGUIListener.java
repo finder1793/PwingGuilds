@@ -4,7 +4,6 @@ import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.guild.ChunkLocation;
 import com.pwing.guilds.buffs.GuildBuff;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -13,26 +12,17 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.potion.PotionEffect;
-import java.util.Arrays;
+
 import java.util.UUID;
 
-public class GuildGUIListener implements Listener {
+public final class GuildGUIListener implements Listener {
     private final PwingGuilds plugin;
 
     public GuildGUIListener(PwingGuilds plugin) {
         this.plugin = plugin;
-    }
-
-    private ItemStack createItem(Material material, String name, String... lore) {
-        ItemStack item = new ItemStack(material);
-        ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(name);
-        meta.setLore(Arrays.asList(lore));
-        item.setItemMeta(meta);
-        return item;
     }
 
     @EventHandler
@@ -40,8 +30,11 @@ public class GuildGUIListener implements Listener {
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
         String title = event.getView().getTitle();
-        if (!title.equals("Guild Management") && !title.equals("Guild Claims Map") && !title.equals("Guild Buffs"))
+        if (!title.equals("Guild Management") &&
+            !title.equals("Guild Claims Map") &&
+            !title.equals("Guild Buffs")) {
             return;
+        }
 
         event.setCancelled(true);
 
@@ -58,11 +51,14 @@ public class GuildGUIListener implements Listener {
         if (event.getCurrentItem() == null) return;
 
         plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresent(guild -> {
-            String[] lore = event.getCurrentItem().getItemMeta().getLore().toArray(new String[0]);
-            int x = Integer.parseInt(lore[0].substring(4));
-            int z = Integer.parseInt(lore[1].substring(4));
+            var meta = event.getCurrentItem().getItemMeta();
+            var lore = meta.getLore();
+            if (lore == null || lore.size() < 2) return;
 
-            if (event.getCurrentItem().getType().name().contains("EMERALD")) {
+            int x = Integer.parseInt(lore.get(0).substring(4));
+            int z = Integer.parseInt(lore.get(1).substring(4));
+
+            if (event.getCurrentItem().getType() == Material.EMERALD_BLOCK) {
                 guild.unclaimChunk(new ChunkLocation(player.getWorld().getChunkAt(x, z)));
                 player.sendMessage("§aChunk unclaimed!");
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f);
@@ -85,7 +81,8 @@ public class GuildGUIListener implements Listener {
         if (event.getCurrentItem() == null) return;
 
         plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresent(guild -> {
-            String buffName = ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
+            var meta = event.getCurrentItem().getItemMeta();
+            String buffName = meta.getDisplayName();
             GuildBuff buff = plugin.getBuffManager().getAvailableBuffs().values().stream()
                     .filter(b -> b.getName().equals(buffName))
                     .findFirst()
@@ -117,22 +114,26 @@ public class GuildGUIListener implements Listener {
 
     private void handleMainMenuClick(InventoryClickEvent event, Player player) {
         if (event.getCurrentItem() == null) return;
+
         switch (event.getSlot()) {
             case 11 -> {
-                // Member Management Menu
                 plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresent(guild -> {
                     Inventory memberInv = Bukkit.createInventory(null, 54, "Guild Members");
                     int slot = 0;
                     for (UUID memberId : guild.getMembers()) {
                         OfflinePlayer member = Bukkit.getOfflinePlayer(memberId);
-                        ItemStack head = createItem(Material.PLAYER_HEAD,
-                                "§e" + member.getName(),
-                                "§7Click to manage member",
-                                memberId.equals(guild.getLeader()) ? "§6Guild Leader" : "§7Guild Member");
+                        ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+                        SkullMeta skullMeta = (SkullMeta) head.getItemMeta();
+                        skullMeta.setOwningPlayer(member);
+                        skullMeta.setDisplayName("§e" + member.getName());
+                        head.setItemMeta(skullMeta);
                         memberInv.setItem(slot++, head);
                     }
 
-                    ItemStack back = createItem(Material.ARROW, "§cBack to Main Menu");
+                    ItemStack back = new ItemStack(Material.ARROW);
+                    var backMeta = back.getItemMeta();
+                    backMeta.setDisplayName("§cBack to Main Menu");
+                    back.setItemMeta(backMeta);
                     memberInv.setItem(49, back);
 
                     player.openInventory(memberInv);
@@ -144,35 +145,5 @@ public class GuildGUIListener implements Listener {
                     .ifPresent(guild -> new GuildManagementGUI(plugin).openBuffsMenu(player, guild));
             case 26 -> player.closeInventory();
         }
-    }
-
-    private void handleMemberActionClick(InventoryClickEvent event, Player player) {
-        if (event.getCurrentItem() == null) return;
-
-        String targetName = event.getView().getTitle().substring(7); // Remove "Manage " prefix
-        OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
-
-        plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresent(guild -> {
-            switch (event.getSlot()) {
-                case 11 -> {
-                    // Promote member
-                    if (guild.promotePlayer(target.getUniqueId())) {
-                        player.sendMessage("§aSuccessfully promoted " + targetName);
-                        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-                    }
-                }
-                case 15 -> {
-                    // Kick member
-                    if (guild.removeMember(target.getUniqueId())) {
-                        player.sendMessage("§aSuccessfully kicked " + targetName);
-                        if (target.isOnline()) {
-                            target.getPlayer().sendMessage("§cYou have been kicked from the guild!");
-                        }
-                        player.playSound(player.getLocation(), Sound.ENTITY_IRON_GOLEM_HURT, 1.0f, 1.0f);
-                    }
-                }
-            }
-            new GuildManagementGUI(plugin).openMemberManagement(player, guild);
-        });
     }
 }
