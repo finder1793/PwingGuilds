@@ -1,5 +1,5 @@
 name: PwingGuilds
-version: '${version}'
+version: '1.0.0'
 main: com.pwing.guilds.PwingGuilds
 api-version: '1.19'
 authors: [finder17]
@@ -9,4 +9,8 @@ commands:
   guild:
     description: Main guild command
     usage: /guild <create|claim>
+  guildadmin:
+    description: Administrative commands for guilds
+    permission: guilds.admin
+    aliases: [gadmin]
     aliases: [g]

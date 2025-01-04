@@ -40,7 +40,13 @@ public class RewardManager {
                 String command = reward.substring(8).replace("%player%", player.getName());
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
             }
-        }
+            case "claims" -> {
+                int amount = Integer.parseInt(parts[1]);
+                plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresent(guild -> {
+                    guild.addBonusClaims(amount);
+                    player.sendMessage("§aYour guild received " + amount + " bonus claims!");
+                });
+            }        }
     }
 
     public void giveEventRewards(GuildEvent event) {

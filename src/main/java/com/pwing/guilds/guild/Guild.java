@@ -20,6 +20,7 @@ public class Guild {
     private GuildPerks perks;
     private int level;
     private long exp;
+    private int bonusClaims = 0;
 
     public Guild(PwingGuilds plugin, String name, UUID owner) {
         this.plugin = plugin;
@@ -115,11 +116,18 @@ public class Guild {
         return false;
     }
 
-    public boolean canClaim() {
-        int maxClaims = plugin.getConfig().getInt("guild-levels." + level + ".max-claims");
-        return claimedChunks.size() < maxClaims;
+    public void addBonusClaims(int amount) {
+        this.bonusClaims += amount;
     }
 
+    public int getBonusClaims() {
+        return bonusClaims;
+    }
+
+    public boolean canClaim() {
+        int maxClaims = plugin.getConfig().getInt("guild-levels." + level + ".max-claims") + bonusClaims;
+        return claimedChunks.size() < maxClaims;
+    }
     public boolean canAddMember() {
         return members.size() < perks.getMemberLimit();
     }
@@ -209,3 +217,6 @@ public class Guild {
         return guild;
     }
 }
+
+
+

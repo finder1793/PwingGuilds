@@ -111,4 +111,11 @@ public class GuildManager {
     public void addGuild(Guild guild) {
         guilds.put(guild.getName(), guild);
     }
+
+
+    public Optional<Guild> getGuild(String name) {
+        return guilds.values().stream()
+                .filter(guild -> guild.getName().equalsIgnoreCase(name))
+                .findFirst();
+    }
 }

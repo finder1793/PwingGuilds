@@ -110,6 +110,16 @@ public class ConfigValidator {
                 for (String command : rewardCommands) {
                     if (!command.contains(" ")) {
                         errors.add("Invalid reward command format in " + event + " " + place + ": " + command);
+                        continue;
+                    }
+
+                    String[] parts = command.split(" ", 2);
+                    if (parts[0].equals("claims")) {
+                        try {
+                            Integer.parseInt(parts[1]);
+                        } catch (NumberFormatException e) {
+                            errors.add("Invalid claim amount in " + event + " " + place + ": " + parts[1]);
+                        }
                     }
                 }
             }

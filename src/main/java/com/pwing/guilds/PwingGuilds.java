@@ -13,6 +13,7 @@ import com.pwing.guilds.placeholders.GuildPlaceholders;
 import com.pwing.guilds.commands.GuildCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.Bukkit;
+import com.pwing.guilds.commands.GuildAdminCommand;
 import com.pwing.guilds.config.ConfigValidator;
 import com.pwing.guilds.buffs.GuildBuffManager;
 import com.pwing.guilds.rewards.RewardManager;
@@ -58,7 +59,10 @@ public class PwingGuilds extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new GuildProtectionListener(this), this);
         getServer().getPluginManager().registerEvents(new GuildExpListener(this), this);
         getServer().getPluginManager().registerEvents(new GuildChatListener(this), this);
+
+        // Register commands
         getCommand("guild").setExecutor(new GuildCommand(this));
+        getCommand("guildadmin").setExecutor(new GuildAdminCommand(this));
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new GuildPlaceholders(this).register();
