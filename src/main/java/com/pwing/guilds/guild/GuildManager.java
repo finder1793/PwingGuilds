@@ -6,6 +6,8 @@ import org.bukkit.Chunk;
 import java.util.*;
 import java.util.Collection;
 import com.pwing.guilds.events.GuildCreateEvent;
+import com.pwing.guilds.events.GuildClaimChunkEvent;
+import com.pwing.guilds.events.GuildMemberLeaveEvent;
 import com.pwing.guilds.storage.GuildStorage;
 import com.pwing.guilds.events.GuildDeleteEvent;
 
@@ -57,16 +59,23 @@ public class GuildManager {
             storage.deleteGuild(name);
         }
     }
-
     public boolean claimChunk(Guild guild, Chunk chunk) {
         ChunkLocation location = new ChunkLocation(chunk);
         if (claimedChunks.containsKey(location)) {
             return false;
         }
+        
+        GuildClaimChunkEvent event = new GuildClaimChunkEvent(guild, location);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return false;
+        }
+        
         claimedChunks.put(location, guild);
         storage.saveGuild(guild);
         return true;
     }
+    
 
     public boolean canInteract(UUID player, Chunk chunk) {
         ChunkLocation location = new ChunkLocation(chunk);
@@ -106,7 +115,7 @@ public class GuildManager {
     public boolean kickMember(String guildName, UUID kicker, UUID kicked) {
         Guild guild = guilds.get(guildName);
         if (guild != null && guild.getLeader().equals(kicker)) {
-            if (guild.removeMember(kicked)) {
+            if (guild.removeMember(kicked, GuildMemberLeaveEvent.LeaveReason.KICKED)) {
                 playerGuilds.remove(kicked);
                 storage.saveGuild(guild);
                 return true;
@@ -114,7 +123,6 @@ public class GuildManager {
         }
         return false;
     }
-
     public boolean unclaimChunk(Guild guild, Chunk chunk) {
         ChunkLocation location = new ChunkLocation(chunk);
         if (claimedChunks.get(location) == guild) {
@@ -135,5 +143,16 @@ public class GuildManager {
         return guilds.values().stream()
                 .filter(guild -> guild.getName().equalsIgnoreCase(name))
                 .findFirst();
+    }
+
+    public void updateGuildName(Guild guild, String newName) {
+        guilds.remove(guild.getName());
+        Guild newGuild = new Guild(plugin, newName, guild.getOwner());
+        // Copy over all guild data
+        newGuild.setLevel(guild.getLevel());
+        newGuild.setExp(guild.getExp());
+        guild.getMembers().forEach(newGuild::addMember);
+        guilds.put(newName, newGuild);
+        storage.saveGuild(newGuild);
     }
 }
