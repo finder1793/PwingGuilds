@@ -2,8 +2,6 @@ package com.pwing.guilds.events.custom;
 
 import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.events.custom.GuildEvent;
-import com.pwing.guilds.events.custom.GuildEventManager;
-import com.pwing.guilds.events.custom.TerritoryControlEvent;
 import com.pwing.guilds.guild.Guild;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -68,10 +66,21 @@ public class GuildEventManager {
     }
 
     public void startEvent(String eventName) {
-        GuildEvent event = scheduledEvents.get(eventName);
-        if (event != null && !activeEvents.containsKey(eventName)) {
-            event.start();
+        if (!plugin.getConfig().getBoolean("events." + eventName + ".enabled", false)) {
+            return;
+        }
+
+        GuildEvent event = switch (eventName.toLowerCase()) {
+            case "territory-control" -> new TerritoryControlEvent(plugin, eventName, 60);
+            case "pvp-tournament" -> new PvPTournamentEvent(plugin, eventName, 45);
+            case "resource-race" -> new ResourceRaceEvent(plugin, eventName, 30);
+            case "boss-raid" -> new BossRaidEvent(plugin, eventName, 90);
+            default -> null;
+        };
+
+        if (event != null) {
             activeEvents.put(eventName, event);
+            event.start();
             Bukkit.broadcastMessage("§6§lGuild Event: §e" + eventName + " §ahas started!");
 
             // Schedule event end

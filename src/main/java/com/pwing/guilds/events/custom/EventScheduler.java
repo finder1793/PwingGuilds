@@ -1,3 +1,5 @@
+package com.pwing.guilds.events.custom;
+
 import com.pwing.guilds.PwingGuilds;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -30,6 +32,10 @@ public class EventScheduler {
         ConfigurationSection scheduleSection = plugin.getConfig().getConfigurationSection("event-schedule");
         if (scheduleSection != null) {
             for (String eventName : scheduleSection.getKeys(false)) {
+                if (!plugin.getConfig().getBoolean("events." + eventName + ".enabled", false)) {
+                    continue;
+                }
+
                 String timeString = scheduleSection.getString(eventName + ".time");
                 List<Integer> announceTimings = scheduleSection.getIntegerList(eventName + ".announce-before");
                 List<String> dayStrings = scheduleSection.getStringList(eventName + ".days");

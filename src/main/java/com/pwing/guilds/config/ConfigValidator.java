@@ -127,4 +127,41 @@ public class ConfigValidator {
             }
         }
     }
+
+
+    private void validateEvents() {
+        ConfigurationSection events = plugin.getConfig().getConfigurationSection("events");
+        if (events == null) {
+            errors.add("Missing events section!");
+            return;
+        }
+
+        for (String eventName : events.getKeys(false)) {
+            if (!events.contains(eventName + ".enabled")) {
+                errors.add("Missing enabled flag for event: " + eventName);
+            }
+
+            // Only validate configuration if event is enabled
+            if (events.getBoolean(eventName + ".enabled", false)) {
+                validateEventConfig(eventName, events.getConfigurationSection(eventName));
+            }
+        }
+    }
+
+    private void validateEventConfig(String eventName, ConfigurationSection config) {
+        // Validate event-specific requirements
+        switch (eventName) {
+            case "boss-raid" -> {
+                if (!config.contains("boss-type")) {
+                    errors.add("Boss raid event enabled but missing boss-type!");
+                }
+            }
+            case "resource-race" -> {
+                if (!config.contains("rewards")) {
+                    errors.add("Resource race event enabled but missing rewards!");
+                }
+            }
+        }
+    }
 }
+

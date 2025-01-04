@@ -72,22 +72,21 @@ exp-sources:
 # Guild Events
 events:
   territory-control:
+    enabled: true
     rewards:
       first-place:
         - "money 15000"
         - "mythic:TerritoryKey"
-        - "command eco addbal %player% 1000"
       second-place:
         - "money 10000"
         - "mythic:CommonKey"
       third-place:
         - "money 5000"
   pvp-tournament:
+    enabled: true
     rewards:
       first-place:
         - "money 20000"
-        - "mythic:PvPChampionSword"
-        - "command broadcast &6%player% is the PvP Champion!"
       second-place:
         - "money 12000"
         - "mythic:GladiatorArmor"
@@ -95,11 +94,10 @@ events:
         - "money 8000"
         - "mythic:WarriorKey"
   resource-race:
+    enabled: true
     rewards:
       first-place:
         - "money 25000"
-        - "mythic:MinerPickaxe"
-        - "command give %player% diamond_block 64"
       second-place:
         - "money 15000"
         - "mythic:MinerKey"
@@ -107,6 +105,7 @@ events:
         - "money 10000"
         - "command give %player% diamond 32"
   boss-raid:
+    enabled: true
     boss-type: "mythic:GuildBoss"
     spawn-location:
       world: "world"
@@ -123,7 +122,6 @@ events:
       third-place:
         - "mythic:CommonKey"
         - "money 2500"
-
 # Event Schedule
 event-schedule:
   territory-control:
