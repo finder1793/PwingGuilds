@@ -196,6 +196,19 @@ public class GuildCommand implements CommandExecutor {
                     }
                 });
             }
+            case "buff" -> {
+                plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresentOrElse(
+                guild -> {
+                    new GuildManagementGUI(plugin).openBuffsMenu(player, guild);
+                    player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0f, 1.0f);
+                },
+                () -> {
+                    player.sendMessage("§cYou're not in a guild!");
+                    player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                }
+            );
+        }
+
             default -> sendHelpMessage(player);
         }
         return true;
@@ -214,5 +227,6 @@ public class GuildCommand implements CommandExecutor {
         player.sendMessage("§e/guild sethome <name> §7- Set a guild home");
         player.sendMessage("§e/guild home <name> §7- Teleport to a guild home");
         player.sendMessage("§e/guild delhome <name> §7- Delete a guild home");
+        player.sendMessage("§e/guild buff §7- opens Guild Buff Menu ");
     }
 }
