@@ -1,7 +1,8 @@
 package com.pwing.guilds.config;
 
-import com.pwing.guilds.PwingGuilds;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import com.pwing.guilds.PwingGuilds;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class ConfigValidator {
         validateExpSources();
         validateRewards();
         validateLocations();
-
+        validateBuffs();
         if (!errors.isEmpty()) {
             plugin.getLogger().severe("=== Configuration Errors ===");
             errors.forEach(error -> plugin.getLogger().severe(error));
@@ -173,5 +174,30 @@ public class ConfigValidator {
             }
         }
     }
-}
 
+    private void validateBuffs() {
+        ConfigurationSection buffs = plugin.getConfig().getConfigurationSection("guild-buffs");
+        if (buffs == null) return;
+
+        for (String buffKey : buffs.getKeys(false)) {
+            ConfigurationSection buff = buffs.getConfigurationSection(buffKey);
+            if (buff == null) continue;
+
+        // Validate material
+            String materialName = buff.getString("material");
+            if (materialName != null) {
+                try {
+                    Material.valueOf(materialName.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    errors.add("Invalid material for buff " + buffKey + ": " + materialName);
+                }
+            }
+
+            // Validate slot
+            int slot = buff.getInt("slot", -1);
+            if (slot < 0) {
+                errors.add("Invalid slot number for buff " + buffKey + ": " + slot);
+            }
+        }
+    }
+}

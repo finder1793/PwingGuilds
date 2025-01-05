@@ -99,7 +99,7 @@ public final class GuildGUIListener implements Listener {
                     Player guildMember = Bukkit.getPlayer(member);
                     if (guildMember != null && guildMember.isOnline()) {
                         guildMember.addPotionEffect(new PotionEffect(
-                                buff.getEffectType(),
+                                buff.getPotionEffect(),
                                 buff.getDuration() * 20,
                                 buff.getLevel() - 1
                         ));
