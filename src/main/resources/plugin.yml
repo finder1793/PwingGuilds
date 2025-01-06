@@ -5,12 +5,32 @@ api-version: '1.19'
 authors: [finder17]
 description: A guild plugin for Spigot
 
+softdepend: [Vault, PlaceholderAPI, MythicMobs]
+
 commands:
   guild:
     description: Main guild command
-    usage: /guild <create|claim>
+    aliases: [g]
+    usage: |
+      /guild create <name> - Create a new guild
+      /guild delete - Delete your guild
+      /guild claim - Claim current chunk
+      /guild unclaim - Unclaim current chunk
+      /guild invite <player> - Invite a player
+      /guild accept <guild> - Accept an invite
+      /guild kick <player> - Kick a player
+      /guild gui - Open guild management
+      /guild sethome <name> - Set a guild home
+      /guild home <name> - Teleport to guild home
+      /guild delhome <name> - Delete a guild home
+      /guild buff - Open buff menu
+  
   guildadmin:
     description: Administrative commands for guilds
     permission: guilds.admin
     aliases: [gadmin]
-    aliases: [g]
+    usage: |
+      /guildadmin addclaims <guild> <amount> - Add bonus claims
+      /guildadmin setlevel <guild> <level> - Set guild level
+      /guildadmin delete <guild> - Delete a guild
+      /guildadmin info <guild> - View detailed guild info      /guildadmin restore <file> - Restore from backup

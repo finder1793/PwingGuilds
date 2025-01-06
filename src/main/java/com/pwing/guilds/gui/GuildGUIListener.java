@@ -5,6 +5,7 @@ import com.pwing.guilds.guild.ChunkLocation;
 import com.pwing.guilds.buffs.GuildBuff;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -78,11 +79,12 @@ public final class GuildGUIListener implements Listener {
     }
 
     private void handleBuffsMenuClick(InventoryClickEvent event, Player player) {
-        if (event.getCurrentItem() == null) return;
+        event.setCancelled(true);
+        ItemStack clicked = event.getCurrentItem();
+        if (clicked == null) return;
 
         plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresent(guild -> {
-            var meta = event.getCurrentItem().getItemMeta();
-            String buffName = meta.getDisplayName();
+            String buffName = ChatColor.stripColor(clicked.getItemMeta().getDisplayName());
             GuildBuff buff = plugin.getBuffManager().getAvailableBuffs().values().stream()
                     .filter(b -> b.getName().equals(buffName))
                     .findFirst()
@@ -90,24 +92,19 @@ public final class GuildGUIListener implements Listener {
 
             if (buff != null) {
                 if (!player.hasPermission(buff.getPermission())) {
-                    player.sendMessage("§cYou don't have permission to purchase this buff!");
-                    player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                    player.sendMessage("§cYou don't have permission to activate this buff!");
                     return;
                 }
 
-                for (UUID member : guild.getMembers()) {
-                    Player guildMember = Bukkit.getPlayer(member);
-                    if (guildMember != null && guildMember.isOnline()) {
-                        guildMember.addPotionEffect(new PotionEffect(
-                                buff.getEffectType(),
-                                buff.getDuration() * 20,
-                                buff.getLevel() - 1
-                        ));
-                        guildMember.playSound(guildMember.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-                    }
+                if (plugin.getEconomy().getBalance(player) < buff.getCost()) {
+                    player.sendMessage("§cYou cannot afford this buff!");
+                    return;
                 }
 
-                player.sendMessage("§aSuccessfully purchased " + buff.getName() + " for your guild!");
+                plugin.getEconomy().withdrawPlayer(player, buff.getCost());
+                buff.applyToMember(player);
+                player.sendMessage("§aActivated " + buff.getName() + " buff!");
+                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
             }
         });
     }

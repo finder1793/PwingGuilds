@@ -2,12 +2,16 @@ package com.pwing.guilds.guild;
 
 import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.perks.GuildPerks;
+import com.pwing.guilds.storage.GuildStorage;
+import com.pwing.guilds.events.*;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.Chunk;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
+
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,7 +38,7 @@ public class Guild implements ConfigurationSerializable {
         this.members.add(owner);
         this.level = 1;
         this.exp = 0;
-        this.perks = new GuildPerks(plugin, level);
+        this.perks = new GuildPerks(plugin, this, level);
     }
 
     public boolean invite(UUID player) {
@@ -60,28 +64,42 @@ public class Guild implements ConfigurationSerializable {
         return claimedChunks.contains(new ChunkLocation(chunk));
     }
 
-    public boolean removeMember(UUID player) {
-        if (player.equals(owner)) return false;
-        return members.remove(player);
-    }
 
     public boolean unclaimChunk(ChunkLocation chunk) {
         return claimedChunks.remove(chunk);
     }
-
     public boolean addExp(long amount) {
-        exp += amount * perks.getExpMultiplier();
+        // Fire exp gain event first
+        GuildExpGainEvent expEvent = new GuildExpGainEvent(this, amount);
+        Bukkit.getPluginManager().callEvent(expEvent);
+        
+        if (expEvent.isCancelled()) {
+            return false;
+        }
+        
+        long oldExp = exp;
+        int oldLevel = level;
+        
+        exp += expEvent.getAmount() * perks.getExpMultiplier();
+        
         int nextLevel = level + 1;
         long requiredExp = plugin.getConfig().getLong("guild-levels." + nextLevel + ".exp-required");
-
+        
         if (exp >= requiredExp) {
-            level = nextLevel;
-            perks = new GuildPerks(plugin, level);
-            return true;
+            GuildLevelUpEvent levelEvent = new GuildLevelUpEvent(this, oldLevel, nextLevel);
+            Bukkit.getPluginManager().callEvent(levelEvent);
+            
+            if (!levelEvent.isCancelled()) {
+                level = nextLevel;
+                perks = new GuildPerks(plugin, this, level);
+                return true;
+            } else {
+                exp = oldExp;
+            }
         }
+        
         return false;
     }
-
     public void addBonusClaims(int amount) {
         this.bonusClaims += amount;
     }
@@ -104,9 +122,6 @@ public class Guild implements ConfigurationSerializable {
         }
     }
 
-    public boolean addMember(UUID player) {
-        return members.add(player);
-    }
 
     public boolean claimChunk(ChunkLocation chunk) {
         if (canClaim()) {
@@ -122,11 +137,15 @@ public class Guild implements ConfigurationSerializable {
         leader = player;
         return true;
     }
-
     public boolean setHome(String name, Location location) {
-        if (homes.size() >= perks.getHomeLimit()) return false;
-        homes.put(name.toLowerCase(), new GuildHome(name, location));
-        return true;
+        GuildHomeCreateEvent event = new GuildHomeCreateEvent(this, name, location);
+        Bukkit.getPluginManager().callEvent(event);
+        
+        if (!event.isCancelled()) {
+            homes.put(name, new GuildHome(name, location));
+            return true;
+        }
+        return false;
     }
 
     public Optional<GuildHome> getHome(String name) {
@@ -137,6 +156,34 @@ public class Guild implements ConfigurationSerializable {
         return homes.remove(name.toLowerCase()) != null;
     }
 
+    public boolean addMember(UUID player) {
+        GuildMemberJoinEvent event = new GuildMemberJoinEvent(this, player);
+        Bukkit.getPluginManager().callEvent(event);
+        
+        if (!event.isCancelled()) {
+            members.add(player);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeMember(UUID player, GuildMemberLeaveEvent.LeaveReason reason) {
+        if (members.remove(player)) {
+            Bukkit.getPluginManager().callEvent(new GuildMemberLeaveEvent(this, player, reason));
+            return true;
+        }
+        return false;
+    }
+    public boolean setName(String newName) {
+        GuildRenameEvent event = new GuildRenameEvent(this, this.name, newName);
+        Bukkit.getPluginManager().callEvent(event);
+        
+        if (!event.isCancelled()) {
+            plugin.getGuildManager().updateGuildName(this, event.getNewName());
+            return true;
+        }
+        return false;
+    }
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> data = new HashMap<>();
@@ -225,11 +272,10 @@ public class Guild implements ConfigurationSerializable {
     public GuildPerks getPerks() { return perks; }
     public int getBonusClaims() { return bonusClaims; }
     public Map<String, GuildHome> getHomes() { return Collections.unmodifiableMap(homes); }
-
     // Setters
     public void setLevel(int level) {
         this.level = level;
-        this.perks = new GuildPerks(plugin, level);
+        this.perks = new GuildPerks(plugin, this, level);
     }
     public void setExp(long exp) { this.exp = exp; }
 }

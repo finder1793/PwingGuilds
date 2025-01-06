@@ -75,28 +75,27 @@ public class GuildManagementGUI {
     }
 
     public void openBuffsMenu(Player player, Guild guild) {
-        Inventory inv = Bukkit.createInventory(null, 27, "Guild Buffs");
+        Inventory inv = Bukkit.createInventory(null, 54, "Guild Buffs");
 
         Map<String, GuildBuff> buffs = plugin.getBuffManager().getAvailableBuffs();
-        int slot = 10;
-
         for (Map.Entry<String, GuildBuff> entry : buffs.entrySet()) {
             GuildBuff buff = entry.getValue();
-
+            
+            ItemStack buffItem = new ItemStack(buff.getMaterial());
+            ItemMeta meta = buffItem.getItemMeta();
+            meta.setDisplayName("§6" + buff.getName());
+            
             List<String> lore = new ArrayList<>();
             lore.add("§7Level: §e" + buff.getLevel());
             lore.add("§7Cost: §e" + buff.getCost());
             lore.add("§7Duration: §e" + buff.getDuration() + "s");
             lore.add("");
-            lore.add("§eClick to purchase!");
-
-            ItemStack buffItem = createItem(
-                    Material.POTION,
-                    "§6" + buff.getName(),
-                    lore.toArray(new String[0])
-            );
-
-            inv.setItem(slot++, buffItem);
+            lore.add("§eClick to activate!");
+            
+            meta.setLore(lore);
+            buffItem.setItemMeta(meta);
+            
+            inv.setItem(buff.getSlot(), buffItem);
         }
 
         player.openInventory(inv);

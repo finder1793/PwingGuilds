@@ -41,36 +41,33 @@ public class YamlGuildStorage implements GuildStorage {
             plugin.getLogger().info("Auto-save complete!");
         }, AUTO_SAVE_INTERVAL, AUTO_SAVE_INTERVAL);
     }
-
     @Override
     public void saveGuild(Guild guild) {
         File guildFile = new File(guildsFolder, guild.getName() + ".yml");
         YamlConfiguration config = new YamlConfiguration();
 
+        // Core guild data
         config.set("name", guild.getName());
         config.set("owner", guild.getOwner().toString());
         config.set("level", guild.getLevel());
         config.set("exp", guild.getExp());
         config.set("bonus-claims", guild.getBonusClaims());
 
+        // Members
         config.set("members", guild.getMembers().stream()
                 .map(UUID::toString)
                 .toList());
 
+        // Claimed chunks
         config.set("claimed-chunks", guild.getClaimedChunks().stream()
                 .map(chunk -> chunk.getWorld() + "," + chunk.getX() + "," + chunk.getZ())
                 .toList());
 
-        // Save homes
+        // Guild homes
         config.set("homes", guild.getHomes().entrySet().stream()
                 .collect(Collectors.toMap(
                     Map.Entry::getKey,
-                    e -> e.getValue().getLocation().getWorld().getName() + "," +
-                        e.getValue().getLocation().getX() + "," +
-                        e.getValue().getLocation().getY() + "," +
-                        e.getValue().getLocation().getZ() + "," +
-                        e.getValue().getLocation().getYaw() + "," +
-                        e.getValue().getLocation().getPitch()
+                    e -> serializeLocation(e.getValue().getLocation())
                 )));
 
         try {
@@ -82,7 +79,6 @@ public class YamlGuildStorage implements GuildStorage {
             e.printStackTrace();
         }
     }
-
     private void createBackup(String guildName) {
         File guildFile = new File(guildsFolder, guildName + ".yml");
         File backupFolder = new File(guildsFolder, "backups");
@@ -186,5 +182,14 @@ public class YamlGuildStorage implements GuildStorage {
                 }
             }
         }
+    }
+
+    private String serializeLocation(Location location) {
+        return location.getWorld().getName() + "," +
+            location.getX() + "," +
+           location.getY() + "," +
+           location.getZ() + "," +
+           location.getYaw() + "," +
+           location.getPitch();
     }
 }

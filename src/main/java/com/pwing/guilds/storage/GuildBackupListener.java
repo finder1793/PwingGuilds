@@ -1,4 +1,4 @@
-package com.pwing.guilds.listeners;
+package com.pwing.guilds.storage;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
