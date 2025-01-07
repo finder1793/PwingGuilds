@@ -4,6 +4,7 @@ import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.perks.GuildPerks;
 import com.pwing.guilds.storage.GuildStorage;
 import com.pwing.guilds.events.*;
+import com.pwing.guilds.alliance.Alliance;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -68,27 +69,28 @@ public class Guild implements ConfigurationSerializable {
     public boolean unclaimChunk(ChunkLocation chunk) {
         return claimedChunks.remove(chunk);
     }
+
     public boolean addExp(long amount) {
         // Fire exp gain event first
         GuildExpGainEvent expEvent = new GuildExpGainEvent(this, amount);
         Bukkit.getPluginManager().callEvent(expEvent);
-        
+
         if (expEvent.isCancelled()) {
             return false;
         }
-        
+
         long oldExp = exp;
         int oldLevel = level;
-        
+
         exp += expEvent.getAmount() * perks.getExpMultiplier();
-        
+
         int nextLevel = level + 1;
         long requiredExp = plugin.getConfig().getLong("guild-levels." + nextLevel + ".exp-required");
-        
+
         if (exp >= requiredExp) {
             GuildLevelUpEvent levelEvent = new GuildLevelUpEvent(this, oldLevel, nextLevel);
             Bukkit.getPluginManager().callEvent(levelEvent);
-            
+
             if (!levelEvent.isCancelled()) {
                 level = nextLevel;
                 perks = new GuildPerks(plugin, this, level);
@@ -97,9 +99,10 @@ public class Guild implements ConfigurationSerializable {
                 exp = oldExp;
             }
         }
-        
+
         return false;
     }
+
     public void addBonusClaims(int amount) {
         this.bonusClaims += amount;
     }
@@ -137,10 +140,11 @@ public class Guild implements ConfigurationSerializable {
         leader = player;
         return true;
     }
+
     public boolean setHome(String name, Location location) {
         GuildHomeCreateEvent event = new GuildHomeCreateEvent(this, name, location);
         Bukkit.getPluginManager().callEvent(event);
-        
+
         if (!event.isCancelled()) {
             homes.put(name, new GuildHome(name, location));
             return true;
@@ -159,7 +163,7 @@ public class Guild implements ConfigurationSerializable {
     public boolean addMember(UUID player) {
         GuildMemberJoinEvent event = new GuildMemberJoinEvent(this, player);
         Bukkit.getPluginManager().callEvent(event);
-        
+
         if (!event.isCancelled()) {
             members.add(player);
             return true;
@@ -174,16 +178,18 @@ public class Guild implements ConfigurationSerializable {
         }
         return false;
     }
+
     public boolean setName(String newName) {
         GuildRenameEvent event = new GuildRenameEvent(this, this.name, newName);
         Bukkit.getPluginManager().callEvent(event);
-        
+
         if (!event.isCancelled()) {
             plugin.getGuildManager().updateGuildName(this, event.getNewName());
             return true;
         }
         return false;
     }
+
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> data = new HashMap<>();
@@ -194,27 +200,27 @@ public class Guild implements ConfigurationSerializable {
         data.put("bonus-claims", bonusClaims);
         data.put("members", members.stream().map(UUID::toString).collect(Collectors.toList()));
         data.put("claimed-chunks", claimedChunks.stream()
-            .map(chunk -> Map.of(
-                "world", chunk.getWorld(),
-                "x", chunk.getX(),
-                "z", chunk.getZ()
-            )).collect(Collectors.toList()));
+                .map(chunk -> Map.of(
+                        "world", chunk.getWorld(),
+                        "x", chunk.getX(),
+                        "z", chunk.getZ()
+                )).collect(Collectors.toList()));
         data.put("homes", homes.entrySet().stream()
-            .collect(Collectors.toMap(
-                Map.Entry::getKey,
-                e -> serializeLocation(e.getValue().getLocation())
-            )));
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> serializeLocation(e.getValue().getLocation())
+                )));
         return data;
     }
 
     private Map<String, Object> serializeLocation(Location loc) {
         return Map.of(
-            "world", loc.getWorld().getName(),
-            "x", loc.getX(),
-            "y", loc.getY(),
-            "z", loc.getZ(),
-            "yaw", loc.getYaw(),
-            "pitch", loc.getPitch()
+                "world", loc.getWorld().getName(),
+                "x", loc.getX(),
+                "y", loc.getY(),
+                "z", loc.getZ(),
+                "yaw", loc.getYaw(),
+                "pitch", loc.getPitch()
         );
     }
 
@@ -230,29 +236,29 @@ public class Guild implements ConfigurationSerializable {
         @SuppressWarnings("unchecked")
         List<String> membersList = (List<String>) data.get("members");
         membersList.stream()
-            .map(UUID::fromString)
-            .forEach(guild::addMember);
+                .map(UUID::fromString)
+                .forEach(guild::addMember);
 
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> chunksList = (List<Map<String, Object>>) data.get("claimed-chunks");
         chunksList.stream()
-            .map(chunkData -> new ChunkLocation(
-                (String) chunkData.get("world"),
-                (Integer) chunkData.get("x"),
-                (Integer) chunkData.get("z")))
-            .forEach(guild::claimChunk);
+                .map(chunkData -> new ChunkLocation(
+                        (String) chunkData.get("world"),
+                        (Integer) chunkData.get("x"),
+                        (Integer) chunkData.get("z")))
+                .forEach(guild::claimChunk);
 
         @SuppressWarnings("unchecked")
         Map<String, Map<String, Object>> homes = (Map<String, Map<String, Object>>) data.get("homes");
         if (homes != null) {
             homes.forEach((homeName, locationData) -> {
                 Location loc = new Location(
-                    Bukkit.getWorld((String) locationData.get("world")),
-                    (Double) locationData.get("x"),
-                    (Double) locationData.get("y"),
-                    (Double) locationData.get("z"),
-                    ((Number) locationData.get("yaw")).floatValue(),
-                    ((Number) locationData.get("pitch")).floatValue()
+                        Bukkit.getWorld((String) locationData.get("world")),
+                        (Double) locationData.get("x"),
+                        (Double) locationData.get("y"),
+                        (Double) locationData.get("z"),
+                        ((Number) locationData.get("yaw")).floatValue(),
+                        ((Number) locationData.get("pitch")).floatValue()
                 );
                 guild.setHome(homeName, loc);
             });
@@ -262,20 +268,63 @@ public class Guild implements ConfigurationSerializable {
     }
 
     // Getters
-    public String getName() { return name; }
-    public UUID getOwner() { return owner; }
-    public UUID getLeader() { return leader; }
-    public Set<UUID> getMembers() { return Collections.unmodifiableSet(members); }
-    public Set<ChunkLocation> getClaimedChunks() { return Collections.unmodifiableSet(claimedChunks); }
-    public int getLevel() { return level; }
-    public long getExp() { return exp; }
-    public GuildPerks getPerks() { return perks; }
-    public int getBonusClaims() { return bonusClaims; }
-    public Map<String, GuildHome> getHomes() { return Collections.unmodifiableMap(homes); }
+    public String getName() {
+        return name;
+    }
+
+    public UUID getOwner() {
+        return owner;
+    }
+
+    public UUID getLeader() {
+        return leader;
+    }
+
+    public Set<UUID> getMembers() {
+        return Collections.unmodifiableSet(members);
+    }
+
+    public Set<ChunkLocation> getClaimedChunks() {
+        return Collections.unmodifiableSet(claimedChunks);
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public long getExp() {
+        return exp;
+    }
+
+    public GuildPerks getPerks() {
+        return perks;
+    }
+
+    public int getBonusClaims() {
+        return bonusClaims;
+    }
+
+    public Map<String, GuildHome> getHomes() {
+        return Collections.unmodifiableMap(homes);
+    }
+
     // Setters
     public void setLevel(int level) {
         this.level = level;
         this.perks = new GuildPerks(plugin, this, level);
     }
-    public void setExp(long exp) { this.exp = exp; }
+
+    public void setExp(long exp) {
+        this.exp = exp;
+    }
+
+    private Alliance alliance;
+
+    public Alliance getAlliance() {
+        return alliance;
+    }
+
+    public void setAlliance(Alliance alliance) {
+        this.alliance = alliance;
+    }
 }

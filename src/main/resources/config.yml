@@ -40,7 +40,9 @@ guild-buffs:
     cost: 1000
     duration: 3600
     permission: "guild.buff.strength"
-  
+    slot: 0
+    material: DIAMOND_SWORD
+
   defense:
     name: "Guardian's Shield"
     type: STAT
@@ -49,7 +51,9 @@ guild-buffs:
     cost: 1500
     duration: 3600
     permission: "guild.buff.defense"
-    
+    slot: 1
+    material: SHIELD
+
   speed:
     name: "Swift Movement"
     type: POTION
@@ -58,6 +62,8 @@ guild-buffs:
     cost: 800
     duration: 1800
     permission: "guild.buff.speed"
+    slot: 2
+    material: FEATHER
 
   critical:
     name: "Critical Master"
@@ -67,6 +73,8 @@ guild-buffs:
     level: 1
     cost: 2000
     duration: 3600
+    slot: 3
+    material: DIAMOND_AXE
 
   tank:
     name: "Tank's Blessing"
@@ -76,6 +84,8 @@ guild-buffs:
     level: 1
     cost: 1500
     duration: 1800
+    slot: 4
+    material: DIAMOND_CHESTPLATE
 
   lifesteal:
     name: "Vampiric Aura"
@@ -85,7 +95,8 @@ guild-buffs:
     level: 1
     cost: 2500
     duration: 1200
-    
+    slot: 5
+    material: REDSTONE
 # Territory Protection
 guild-claims:
   protection:
@@ -117,15 +128,16 @@ exp-sources:
       ENDER_DRAGON: 1000
       WITHER: 500
       DEFAULT: 5
-  mythicmobs:
-    enabled: true
-    mobs:
-      sewerslime: 50
-    multipliers:
-      Legendary: 100
-      Elite: 50
-      Boss: 25
-      DEFAULT: 10
+    mythicmobs:
+      enabled: true
+      values:
+        sewerslime: 50
+        # Add any other mythicmob types and their exp values here
+      multipliers:
+        Legendary: 100
+        Elite: 50
+        Boss: 25
+        DEFAULT: 10
 
 # Guild Events
 events:
