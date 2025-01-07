@@ -2,42 +2,53 @@ package com.pwing.guilds.alliance;
 
 import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.guild.Guild;
+import com.pwing.guilds.alliance.storage.AllianceStorage;
 import org.bukkit.Bukkit;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class AllianceManager {
-    private final Map<String, Alliance> alliances;
     private final PwingGuilds plugin;
+    private final Map<String, Alliance> alliances = new HashMap<>();
+    private final AllianceStorage storage;
 
-    public AllianceManager(PwingGuilds plugin) {
+    public AllianceManager(PwingGuilds plugin, AllianceStorage storage) {
         this.plugin = plugin;
-        this.alliances = new HashMap<>();
+        this.storage = storage;
     }
 
-    public Alliance createAlliance(String name, Guild founder) {
+    public void initialize() {
+        Set<Alliance> loadedAlliances = storage.loadAllAlliances();
+        loadedAlliances.forEach(alliance -> alliances.put(alliance.getName(), alliance));
+    }
+
+    public boolean createAlliance(String name, Guild founder) {
         if (alliances.containsKey(name)) {
-            return null;
+            return false;
         }
 
         Alliance alliance = new Alliance(name);
         alliance.addMember(founder);
         alliance.setRole(founder.getOwner(), AllianceRole.LEADER);
+
         alliances.put(name, alliance);
-
-        return alliance;
-    }
-
-    public void disbandAlliance(Alliance alliance) {
-        alliances.remove(alliance.getName());
+        founder.setAlliance(alliance);
+        storage.saveAlliance(alliance);
+        return true;
     }
 
     public Optional<Alliance> getAlliance(String name) {
         return Optional.ofNullable(alliances.get(name));
     }
 
-    public Map<String, Alliance> getAlliances() {
-        return new HashMap<>(alliances);
+    public void deleteAlliance(String name) {
+        Alliance alliance = alliances.remove(name);
+        if (alliance != null) {
+            alliance.getMembers().forEach(guild -> guild.setAlliance(null));
+            storage.deleteAlliance(name);
+        }
+    }
+
+    public Collection<Alliance> getAlliances() {
+        return Collections.unmodifiableCollection(alliances.values());
     }
 }

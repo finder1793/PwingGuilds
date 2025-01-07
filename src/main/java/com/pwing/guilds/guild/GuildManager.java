@@ -6,13 +6,11 @@ import org.bukkit.Chunk;
 import java.util.*;
 import java.util.Collection;
 import com.pwing.guilds.events.GuildCreateEvent;
-import com.pwing.guilds.integration.WorldGuardHook;
 import com.pwing.guilds.events.GuildClaimChunkEvent;
 import com.pwing.guilds.events.GuildMemberLeaveEvent;
 import com.pwing.guilds.storage.GuildStorage;
 import com.pwing.guilds.events.GuildDeleteEvent;
-
-
+import com.pwing.guilds.integration.WorldGuardHook;
 
 public class GuildManager {
     private final PwingGuilds plugin;
@@ -28,18 +26,27 @@ public class GuildManager {
         this.guilds = new HashMap<>();
         this.worldGuardHook = worldGuardHook;
     }
+
     public void initialize() {
         Set<Guild> loadedGuilds = storage.loadAllGuilds();
         loadedGuilds.forEach(guild -> {
             guilds.put(guild.getName(), guild);
             guild.getMembers().forEach(member -> playerGuilds.put(member, guild));
+
+            // Add chunk persistence
+            guild.getClaimedChunks().forEach(chunk -> claimedChunks.put(chunk, guild));
         });
     }
 
     public boolean createGuild(String name, UUID owner) {
+        if (playerGuilds.containsKey(owner)) {
+            return false;
+        }
+
         if (guilds.containsKey(name)) {
             return false;
         }
+
         Guild guild = new Guild(plugin, name, owner);
         guilds.put(name, guild);
         playerGuilds.put(owner, guild);
@@ -62,6 +69,7 @@ public class GuildManager {
             storage.deleteGuild(name);
         }
     }
+
     public boolean claimChunk(Guild guild, Chunk chunk) {
         if (!worldGuardHook.canClaim(chunk)) {
             return false;
@@ -71,18 +79,17 @@ public class GuildManager {
         if (claimedChunks.containsKey(location)) {
             return false;
         }
-        
+
         GuildClaimChunkEvent event = new GuildClaimChunkEvent(guild, location);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             return false;
         }
-        
+
         claimedChunks.put(location, guild);
         storage.saveGuild(guild);
         return true;
     }
-    
 
     public boolean canInteract(UUID player, Chunk chunk) {
         ChunkLocation location = new ChunkLocation(chunk);
@@ -97,6 +104,7 @@ public class GuildManager {
     public Optional<Guild> getPlayerGuild(UUID player) {
         return Optional.ofNullable(playerGuilds.get(player));
     }
+
     public boolean invitePlayer(String guildName, UUID inviter, UUID invited) {
         Guild guild = guilds.get(guildName);
         if (guild != null && guild.isMember(inviter)) {
@@ -130,6 +138,7 @@ public class GuildManager {
         }
         return false;
     }
+
     public boolean unclaimChunk(Guild guild, Chunk chunk) {
         ChunkLocation location = new ChunkLocation(chunk);
         if (claimedChunks.get(location) == guild) {
@@ -146,6 +155,7 @@ public class GuildManager {
     public Collection<Guild> getGuilds() {
         return guilds.values();
     }
+
     public Optional<Guild> getGuild(String name) {
         return guilds.values().stream()
                 .filter(guild -> guild.getName().equalsIgnoreCase(name))
@@ -155,7 +165,6 @@ public class GuildManager {
     public void updateGuildName(Guild guild, String newName) {
         guilds.remove(guild.getName());
         Guild newGuild = new Guild(plugin, newName, guild.getOwner());
-        // Copy over all guild data
         newGuild.setLevel(guild.getLevel());
         newGuild.setExp(guild.getExp());
         guild.getMembers().forEach(newGuild::addMember);

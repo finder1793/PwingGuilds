@@ -7,6 +7,7 @@ import com.pwing.guilds.listeners.GuildChatListener;
 import com.pwing.guilds.listeners.GuildProtectionListener;
 import com.pwing.guilds.storage.GuildStorage;
 import com.pwing.guilds.storage.YamlGuildStorage;
+import com.pwing.guilds.alliance.AllianceManager;
 import com.pwing.guilds.storage.SQLGuildStorage;
 import com.pwing.guilds.events.custom.GuildEventManager;
 import com.pwing.guilds.placeholders.GuildPlaceholders;
@@ -23,7 +24,6 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.Bukkit;
-
 public class PwingGuilds extends JavaPlugin {
     private GuildStorage storage;
     private GuildManager guildManager;
@@ -33,6 +33,12 @@ public class PwingGuilds extends JavaPlugin {
     private Economy economy;
     private GuildEventManager eventManager;
     private WorldGuardHook worldGuardHook;
+    private AllianceManager allianceManager;
+
+    // Add getter
+    public AllianceManager getAllianceManager() {
+        return allianceManager;
+    }
     @Override
     public void onEnable() {
         saveDefaultConfig();
