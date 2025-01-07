@@ -25,12 +25,14 @@ public class ConfigValidator {
         validateRewards();
         validateLocations();
         validateBuffs();
+
         if (!errors.isEmpty()) {
-            plugin.getLogger().severe("=== Configuration Errors ===");
-            errors.forEach(error -> plugin.getLogger().severe(error));
-            return false;
+            plugin.getLogger().warning("=== Configuration Warnings ===");
+            errors.forEach(error -> plugin.getLogger().warning(error));
+            plugin.getLogger().warning("Some features may not work as expected. Please review the warnings above.");
         }
-        return true;
+
+        return true; // Always return true to allow plugin to continue loading
     }
 
     private void validateGuildLevels() {
