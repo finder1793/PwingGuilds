@@ -16,6 +16,7 @@ repositories {
     maven("https://repo.rapture.pw/repository/maven-releases/")//aswm repo
     maven("https://jitpack.io")
     maven("https://repo.papermc.io/repository/maven-public/")
+    maven("https://maven.enginehub.org/repo/")
 }
 dependencies {
     compileOnly("org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT")
@@ -27,8 +28,9 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7")
     compileOnly("net.kyori:adventure-api:4.14.0")
     compileOnly("net.kyori:adventure-text-minimessage:4.14.0")
+    compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.7")
+    compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.2.15")
 }
-
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))

@@ -18,6 +18,7 @@ import com.pwing.guilds.storage.GuildBackupManager;
 import com.pwing.guilds.storage.GuildBackupListener;
 import com.pwing.guilds.rewards.RewardManager;
 import com.pwing.guilds.config.ConfigUpdater;
+import com.pwing.guilds.integration.WorldGuardHook;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -31,6 +32,7 @@ public class PwingGuilds extends JavaPlugin {
     private RewardManager rewardManager;
     private Economy economy;
     private GuildEventManager eventManager;
+    private WorldGuardHook worldGuardHook;
     @Override
     public void onEnable() {
         saveDefaultConfig();
@@ -51,7 +53,8 @@ public class PwingGuilds extends JavaPlugin {
             this.storage = new YamlGuildStorage(this);
         }
 
-        this.guildManager = new GuildManager(this, storage);
+        this.worldGuardHook = new WorldGuardHook(this);
+        this.guildManager = new GuildManager(this, storage, worldGuardHook);
         this.rewardManager = new RewardManager(this);
         this.eventManager = new GuildEventManager(this);
         this.expManager = new GuildExpManager(this);

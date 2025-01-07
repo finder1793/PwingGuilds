@@ -6,6 +6,7 @@ import org.bukkit.Chunk;
 import java.util.*;
 import java.util.Collection;
 import com.pwing.guilds.events.GuildCreateEvent;
+import com.pwing.guilds.integration.WorldGuardHook;
 import com.pwing.guilds.events.GuildClaimChunkEvent;
 import com.pwing.guilds.events.GuildMemberLeaveEvent;
 import com.pwing.guilds.storage.GuildStorage;
@@ -19,11 +20,13 @@ public class GuildManager {
     private final Map<UUID, Guild> playerGuilds = new HashMap<>();
     private final Map<ChunkLocation, Guild> claimedChunks = new HashMap<>();
     private final GuildStorage storage;
+    private final WorldGuardHook worldGuardHook;
 
-    public GuildManager(PwingGuilds plugin, GuildStorage storage) {
+    public GuildManager(PwingGuilds plugin, GuildStorage storage, WorldGuardHook worldGuardHook) {
         this.plugin = plugin;
         this.storage = storage;
         this.guilds = new HashMap<>();
+        this.worldGuardHook = worldGuardHook;
     }
     public void initialize() {
         Set<Guild> loadedGuilds = storage.loadAllGuilds();
@@ -60,6 +63,10 @@ public class GuildManager {
         }
     }
     public boolean claimChunk(Guild guild, Chunk chunk) {
+        if (!worldGuardHook.canClaim(chunk)) {
+            return false;
+        }
+
         ChunkLocation location = new ChunkLocation(chunk);
         if (claimedChunks.containsKey(location)) {
             return false;

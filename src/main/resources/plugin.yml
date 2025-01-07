@@ -5,7 +5,7 @@ api-version: '1.19'
 authors: [finder17]
 description: A guild plugin for Spigot
 
-softdepend: [Vault, PlaceholderAPI, MythicMobs]
+softdepend: [Vault, PlaceholderAPI, MythicMobs, WorldGuard]
 
 commands:
   guild:
