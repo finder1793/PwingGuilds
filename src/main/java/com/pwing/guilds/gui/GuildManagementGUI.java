@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.OfflinePlayer;
@@ -21,7 +22,14 @@ public class GuildManagementGUI {
     }
 
     public void openMainMenu(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 27, "Guild Management");
+        Optional<Guild> playerGuild = plugin.getGuildManager().getPlayerGuild(player.getUniqueId());
+        if (playerGuild.isEmpty()) {
+            player.sendMessage("§cYou are not in a guild!");
+            return;
+        }
+
+        GuildInventoryHolder holder = new GuildInventoryHolder(playerGuild.get());
+        Inventory inv = Bukkit.createInventory(holder, 27, "Guild Management");
 
         // Members Management
         ItemStack members = createItem(Material.PLAYER_HEAD, "§6Members", "§7Click to manage guild members");
@@ -80,21 +88,21 @@ public class GuildManagementGUI {
         Map<String, GuildBuff> buffs = plugin.getBuffManager().getAvailableBuffs();
         for (Map.Entry<String, GuildBuff> entry : buffs.entrySet()) {
             GuildBuff buff = entry.getValue();
-            
+
             ItemStack buffItem = new ItemStack(buff.getMaterial());
             ItemMeta meta = buffItem.getItemMeta();
             meta.setDisplayName("§6" + buff.getName());
-            
+
             List<String> lore = new ArrayList<>();
             lore.add("§7Level: §e" + buff.getLevel());
             lore.add("§7Cost: §e" + buff.getCost());
             lore.add("§7Duration: §e" + buff.getDuration() + "s");
             lore.add("");
             lore.add("§eClick to activate!");
-            
+
             meta.setLore(lore);
             buffItem.setItemMeta(meta);
-            
+
             inv.setItem(buff.getSlot(), buffItem);
         }
 
@@ -118,8 +126,8 @@ public class GuildManagementGUI {
         ItemMeta infoMeta = info.getItemMeta();
         infoMeta.setDisplayName("§6Guild Information");
         infoMeta.setLore(Arrays.asList(
-            "§7Members: §f" + guild.getMembers().size() + "/" + guild.getPerks().getMemberLimit(),
-            "§7Leader: §f" + Bukkit.getOfflinePlayer(guild.getLeader()).getName()
+                "§7Members: §f" + guild.getMembers().size() + "/" + guild.getPerks().getMemberLimit(),
+                "§7Leader: §f" + Bukkit.getOfflinePlayer(guild.getLeader()).getName()
         ));
         info.setItemMeta(infoMeta);
         inv.setItem(4, info);
@@ -132,9 +140,9 @@ public class GuildManagementGUI {
             SkullMeta skullMeta = (SkullMeta) memberHead.getItemMeta();
             skullMeta.setDisplayName("§e" + member.getName());
             skullMeta.setLore(Arrays.asList(
-                "§7Click to manage this member",
-                memberId.equals(guild.getLeader()) ? "§6Guild Leader" : "§7Guild Member",
-                "§7Last Seen: §f" + (member.isOnline() ? "Online" : "Offline")
+                    "§7Click to manage this member",
+                    memberId.equals(guild.getLeader()) ? "§6Guild Leader" : "§7Guild Member",
+                    "§7Last Seen: §f" + (member.isOnline() ? "Online" : "Offline")
             ));
             memberHead.setItemMeta(skullMeta);
             inv.setItem(slot++, memberHead);
@@ -149,6 +157,22 @@ public class GuildManagementGUI {
 
         player.openInventory(inv);
     }
+
+
+    public class GuildInventoryHolder implements InventoryHolder {
+        private final Guild guild;
+
+        public GuildInventoryHolder(Guild guild) {
+            this.guild = guild;
+        }
+
+        @Override
+        public Inventory getInventory() {
+            return null;
+        }
+
+        public Guild getGuild() {
+            return guild;
+        }
+    }
 }
-
-

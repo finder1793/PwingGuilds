@@ -8,9 +8,11 @@ import org.bukkit.Material;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -25,26 +27,24 @@ public final class GuildGUIListener implements Listener {
     public GuildGUIListener(PwingGuilds plugin) {
         this.plugin = plugin;
     }
-
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) return;
-
         String title = event.getView().getTitle();
-        if (!title.equals("Guild Management") &&
-            !title.equals("Guild Claims Map") &&
-            !title.equals("Guild Buffs")) {
-            return;
+
+        // Protect all guild-related GUIs
+        if (title.contains("Guild")) {
+            event.setCancelled(true);
+
+            // Block shift clicks and other inventory interactions
+            event.setResult(Event.Result.DENY);
         }
+    }
 
-        event.setCancelled(true);
-
-        if (title.equals("Guild Claims Map")) {
-            handleClaimsMapClick(event, player);
-        } else if (title.equals("Guild Buffs")) {
-            handleBuffsMenuClick(event, player);
-        } else {
-            handleMainMenuClick(event, player);
+    @EventHandler
+    public void onInventoryDrag(InventoryDragEvent event) {
+        String title = event.getView().getTitle();
+        if (title.contains("Guild")) {
+            event.setCancelled(true);
         }
     }
 
