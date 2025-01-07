@@ -60,8 +60,11 @@ public class YamlGuildStorage implements GuildStorage {
 
         // Claimed chunks
         config.set("claimed-chunks", guild.getClaimedChunks().stream()
-                .map(chunk -> chunk.getWorld() + "," + chunk.getX() + "," + chunk.getZ())
-                .toList());
+            .map(chunk -> Map.of(
+                "world", chunk.getWorld(),
+                "x", chunk.getX(),
+                "z", chunk.getZ()
+            )).collect(Collectors.toList()));
 
         // Guild homes
         config.set("homes", guild.getHomes().entrySet().stream()
@@ -116,12 +119,19 @@ public class YamlGuildStorage implements GuildStorage {
                 .map(UUID::fromString)
                 .forEach(guild::addMember);
 
-        config.getStringList("claimed-chunks").stream()
-                .map(str -> {
-                    String[] parts = str.split(",");
-                    return new ChunkLocation(parts[0], Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
-                })
-                .forEach(guild::claimChunk);
+        // Update claimed chunks deserialization
+        @SuppressWarnings("unchecked")
+        List<Map<?, ?>> chunksList = (List<Map<?, ?>>) config.getList("claimed-chunks");
+        if (chunksList != null) {
+            chunksList.forEach(chunkData -> {
+                ChunkLocation chunk = new ChunkLocation(
+                    (String) chunkData.get("world"),
+                    (Integer) chunkData.get("x"),
+                    (Integer) chunkData.get("z")
+                );
+                guild.claimChunk(chunk);
+            });
+        }
 
         ConfigurationSection homes = config.getConfigurationSection("homes");
         if (homes != null) {

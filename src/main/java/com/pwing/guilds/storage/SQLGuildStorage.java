@@ -297,16 +297,17 @@ public class SQLGuildStorage implements GuildStorage {
             }
         }
 
-        // Load chunks
+        // Load chunks with proper column mapping
         try (PreparedStatement ps = conn.prepareStatement(
                 "SELECT world, x, z FROM guild_chunks WHERE guild_name = ?")) {
             ps.setString(1, guild.getName());
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 ChunkLocation chunk = new ChunkLocation(
-                        rs.getString("world"),
-                        rs.getInt("x"),
-                        rs.getInt("z"));
+                    rs.getString("world"),
+                    rs.getInt("x"),
+                    rs.getInt("z")
+                );
                 guild.claimChunk(chunk);
             }
         }
