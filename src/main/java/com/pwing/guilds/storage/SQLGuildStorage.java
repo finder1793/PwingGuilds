@@ -7,16 +7,22 @@ import com.pwing.guilds.guild.GuildManager;
 import com.pwing.guilds.guild.GuildHome;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.io.BukkitObjectInputStream;
+import org.bukkit.util.io.BukkitObjectOutputStream;
+import org.bukkit.configuration.file.YamlConfiguration;
 
-
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.sql.*;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 public class SQLGuildStorage implements GuildStorage {
     private final PwingGuilds plugin;
@@ -24,10 +30,11 @@ public class SQLGuildStorage implements GuildStorage {
     private final Map<String, Guild> guildCache = new HashMap<>();
     private final Queue<Guild> saveQueue = new ConcurrentLinkedQueue<>();
     private static final long SAVE_INTERVAL = 100L;
+    private final GuildManager guildManager;
 
     public SQLGuildStorage(PwingGuilds plugin) {
         this.plugin = plugin;
-
+        this.guildManager = plugin.getGuildManager();
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:mysql://" +
                 plugin.getConfig().getString("storage.mysql.host") + ":" +
@@ -40,6 +47,11 @@ public class SQLGuildStorage implements GuildStorage {
         this.dataSource = new HikariDataSource(config);
         initTables();
         startAsyncSaveProcessor();
+    }
+
+    @Override
+    public GuildManager getGuildManager() {
+        return guildManager;
     }
 
     private void initTables() {
@@ -80,10 +92,16 @@ public class SQLGuildStorage implements GuildStorage {
                     "PRIMARY KEY (guild_name, home_name)" +
                     ")");
 
+            stmt.execute("CREATE TABLE IF NOT EXISTS guild_storage (" +
+                    "guild_name VARCHAR(32) PRIMARY KEY," +
+                    "contents MEDIUMBLOB" +
+                    ")");
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+
     public void processRemainingQueue() {
         try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
@@ -113,6 +131,7 @@ public class SQLGuildStorage implements GuildStorage {
             }
         }, SAVE_INTERVAL, SAVE_INTERVAL);
     }
+
     private void saveGuildData(Guild guild, Connection conn) throws SQLException {
         conn.setAutoCommit(false);
         try {
@@ -151,7 +170,8 @@ public class SQLGuildStorage implements GuildStorage {
                 }
                 ps.executeBatch();
             }
-            // Save chunks
+
+            // Save chunks with sorting
             try (PreparedStatement ps = conn.prepareStatement(
                     "INSERT INTO guild_chunks (guild_name, world, x, z) VALUES (?, ?, ?, ?)")) {
                 List<ChunkLocation> sortedChunks = guild.getClaimedChunks().stream()
@@ -173,10 +193,10 @@ public class SQLGuildStorage implements GuildStorage {
                 }
                 ps.executeBatch();
             }
+
             // Save homes
             try (PreparedStatement ps = conn.prepareStatement(
-                    "INSERT INTO guild_homes (guild_name, home_name, world, x, y, z, yaw, pitch) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+                    "INSERT INTO guild_homes (guild_name, home_name, world, x, y, z, yaw, pitch) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
                 for (Map.Entry<String, GuildHome> entry : guild.getHomes().entrySet()) {
                     Location loc = entry.getValue().getLocation();
                     ps.setString(1, guild.getName());
@@ -203,87 +223,7 @@ public class SQLGuildStorage implements GuildStorage {
 
     @Override
     public void saveGuild(Guild guild) {
-        try (Connection conn = dataSource.getConnection()) {
-            conn.setAutoCommit(false);
-            try {
-                // Save main guild data
-                try (PreparedStatement ps = conn.prepareStatement(
-                        "REPLACE INTO guilds (name, owner, level, exp, bonus_claims) VALUES (?, ?, ?, ?, ?)")) {
-                    ps.setString(1, guild.getName());
-                    ps.setString(2, guild.getOwner().toString());
-                    ps.setInt(3, guild.getLevel());
-                    ps.setLong(4, guild.getExp());
-                    ps.setInt(5, guild.getBonusClaims());
-                    ps.executeUpdate();
-                }
-
-                // Clear existing data
-                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guild_members WHERE guild_name = ?")) {
-                    ps.setString(1, guild.getName());
-                    ps.executeUpdate();
-                }
-                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guild_chunks WHERE guild_name = ?")) {
-                    ps.setString(1, guild.getName());
-                    ps.executeUpdate();
-                }
-                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guild_homes WHERE guild_name = ?")) {
-                    ps.setString(1, guild.getName());
-                    ps.executeUpdate();
-                }
-
-                // Save members
-                try (PreparedStatement ps = conn.prepareStatement(
-                        "INSERT INTO guild_members (guild_name, uuid) VALUES (?, ?)")) {
-                    for (UUID member : guild.getMembers()) {
-                        ps.setString(1, guild.getName());
-                        ps.setString(2, member.toString());
-                        ps.addBatch();
-                    }
-                    ps.executeBatch();
-                }
-
-                // Save chunks
-                try (PreparedStatement ps = conn.prepareStatement(
-                        "INSERT INTO guild_chunks (guild_name, world, x, z) VALUES (?, ?, ?, ?)")) {
-                    for (ChunkLocation chunk : guild.getClaimedChunks()) {
-                        ps.setString(1, guild.getName());
-                        ps.setString(2, chunk.getWorld());
-                        ps.setInt(3, chunk.getX());
-                        ps.setInt(4, chunk.getZ());
-                        ps.addBatch();
-                    }
-                    ps.executeBatch();
-                }
-
-                // Save homes
-                try (PreparedStatement ps = conn.prepareStatement(
-                        "INSERT INTO guild_homes (guild_name, home_name, world, x, y, z, yaw, pitch) " +
-                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
-                    for (Map.Entry<String, GuildHome> entry : guild.getHomes().entrySet()) {
-                        Location loc = entry.getValue().getLocation();
-                        ps.setString(1, guild.getName());
-                        ps.setString(2, entry.getKey());
-                        ps.setString(3, loc.getWorld().getName());
-                        ps.setDouble(4, loc.getX());
-                        ps.setDouble(5, loc.getY());
-                        ps.setDouble(6, loc.getZ());
-                        ps.setFloat(7, loc.getYaw());
-                        ps.setFloat(8, loc.getPitch());
-                        ps.addBatch();
-                    }
-                    ps.executeBatch();
-                }
-
-                conn.commit();
-            } catch (SQLException e) {
-                conn.rollback();
-                throw e;
-            } finally {
-                conn.setAutoCommit(true);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        saveQueue.offer(guild);
     }
 
     @Override
@@ -311,9 +251,8 @@ public class SQLGuildStorage implements GuildStorage {
     }
 
     private void loadGuildData(Guild guild, Connection conn) throws SQLException {
-        // Load members with explicit handling
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT uuid FROM guild_members WHERE guild_name = ?")) {
+        // Load members
+        try (PreparedStatement ps = conn.prepareStatement("SELECT uuid FROM guild_members WHERE guild_name = ?")) {
             ps.setString(1, guild.getName());
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -324,8 +263,7 @@ public class SQLGuildStorage implements GuildStorage {
         }
 
         // Load chunks
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT world, x, z FROM guild_chunks WHERE guild_name = ?")) {
+        try (PreparedStatement ps = conn.prepareStatement("SELECT world, x, z FROM guild_chunks WHERE guild_name = ?")) {
             ps.setString(1, guild.getName());
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -335,6 +273,23 @@ public class SQLGuildStorage implements GuildStorage {
                         rs.getInt("z")
                 );
                 guild.claimChunk(chunk);
+            }
+        }
+
+        // Load homes
+        try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM guild_homes WHERE guild_name = ?")) {
+            ps.setString(1, guild.getName());
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Location loc = new Location(
+                        Bukkit.getWorld(rs.getString("world")),
+                        rs.getDouble("x"),
+                        rs.getDouble("y"),
+                        rs.getDouble("z"),
+                        rs.getFloat("yaw"),
+                        rs.getFloat("pitch")
+                );
+                guild.setHome(rs.getString("home_name"), loc);
             }
         }
     }
@@ -364,30 +319,13 @@ public class SQLGuildStorage implements GuildStorage {
         try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
             try {
-                // Delete guild homes
-                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guild_homes WHERE guild_name = ?")) {
-                    ps.setString(1, name);
-                    ps.executeUpdate();
+                String[] tables = {"guild_homes", "guild_members", "guild_chunks", "guild_storage", "guilds"};
+                for (String table : tables) {
+                    try (PreparedStatement ps = conn.prepareStatement("DELETE FROM " + table + " WHERE guild_name = ?")) {
+                        ps.setString(1, name);
+                        ps.executeUpdate();
+                    }
                 }
-
-                // Delete guild members
-                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guild_members WHERE guild_name = ?")) {
-                    ps.setString(1, name);
-                    ps.executeUpdate();
-                }
-
-                // Delete guild chunks
-                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guild_chunks WHERE guild_name = ?")) {
-                    ps.setString(1, name);
-                    ps.executeUpdate();
-                }
-
-                // Delete guild main data
-                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guilds WHERE name = ?")) {
-                    ps.setString(1, name);
-                    ps.executeUpdate();
-                }
-
                 conn.commit();
             } catch (SQLException e) {
                 conn.rollback();
@@ -400,7 +338,60 @@ public class SQLGuildStorage implements GuildStorage {
         }
     }
 
+    @Override
+    public void saveStorageData(String guildName, ItemStack[] contents) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                 "REPLACE INTO guild_storage (guild_name, contents) VALUES (?, ?)")) {
+            ps.setString(1, guildName);
+            ps.setBytes(2, serializeItems(contents));
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Failed to save storage for guild: " + guildName);
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public ConfigurationSection getStorageData(String guildName) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                 "SELECT contents FROM guild_storage WHERE guild_name = ?")) {
+            ps.setString(1, guildName);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                YamlConfiguration config = new YamlConfiguration();
+                config.set("contents", deserializeItems(rs.getBytes("contents")));
+                return config;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private byte[] serializeItems(ItemStack[] items) {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+             BukkitObjectOutputStream dataOutput = new BukkitObjectOutputStream(outputStream)) {
+            dataOutput.writeObject(items);
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to serialize items", e);
+        }
+    }
+
+    private ItemStack[] deserializeItems(byte[] data) {
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
+             BukkitObjectInputStream dataInput = new BukkitObjectInputStream(inputStream)) {
+            return (ItemStack[]) dataInput.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("Failed to deserialize items", e);
+        }
+    }
+
     public HikariDataSource getDataSource() {
         return dataSource;
     }
 }
+
+

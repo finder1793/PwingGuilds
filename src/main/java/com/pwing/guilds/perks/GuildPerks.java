@@ -15,6 +15,7 @@ public class GuildPerks {
     private final PwingGuilds plugin;
     private final int level;
     private final Guild guild;
+    private final int storageRows;
 
     public GuildPerks(PwingGuilds plugin, Guild guild, int level) {
         this.plugin = plugin;
@@ -26,6 +27,7 @@ public class GuildPerks {
         this.expMultiplier = perks.getDouble("exp-multiplier", 1.0);
         this.keepInventory = perks.getBoolean("keep-inventory", false);
         this.homeLimit = perks.getInt("home-limit", 1);
+        this.storageRows = perks.getInt("storage-rows", 1); // Default 1 row (9 slots)
     }
 
     public boolean activatePerk(String perkName) {
@@ -40,6 +42,8 @@ public class GuildPerks {
                     return homeLimit > 1;
                 case "exp-boost":
                     return expMultiplier > 1.0;
+                case "guild-storage":
+                    return storageRows > 0;
                 default:
                     return false;
             }
@@ -52,4 +56,5 @@ public class GuildPerks {
     public double getExpMultiplier() { return expMultiplier; }
     public boolean hasKeepInventory() { return keepInventory; }
     public int getHomeLimit() { return homeLimit; }
+    public int getStorageRows() { return storageRows; }
 }

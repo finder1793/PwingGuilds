@@ -16,6 +16,7 @@ import com.pwing.guilds.commands.GuildCommand;
 import com.pwing.guilds.commands.GuildAdminCommand;
 import com.pwing.guilds.config.ConfigValidator;
 import com.pwing.guilds.buffs.GuildBuffManager;
+import com.pwing.guilds.storage.GuildStorageManager;
 import com.pwing.guilds.storage.GuildBackupManager;
 import com.pwing.guilds.storage.GuildBackupListener;
 import com.pwing.guilds.rewards.RewardManager;
@@ -38,7 +39,7 @@ public class PwingGuilds extends JavaPlugin {
     private WorldGuardHook worldGuardHook;
     private AllianceManager allianceManager;
     private AllianceStorage allianceStorage;
-
+    private GuildStorageManager storageManager;
     @Override
     public void onEnable() {
         saveDefaultConfig();
@@ -69,6 +70,7 @@ public class PwingGuilds extends JavaPlugin {
         this.expManager = new GuildExpManager(this);
         this.buffManager = new GuildBuffManager(this);
         this.allianceManager = new AllianceManager(this, allianceStorage);
+        this.storageManager = new GuildStorageManager(this);
 
         // Initialize managers
         this.guildManager.initialize();
@@ -142,6 +144,9 @@ public class PwingGuilds extends JavaPlugin {
     public AllianceStorage getAllianceStorage() {
         return allianceStorage;
     }
+    public GuildStorageManager getStorageManager() {
+    return storageManager;
+    }
     @Override
     public void onDisable() {
         getLogger().info("Starting final guild data save...");
@@ -161,3 +166,8 @@ public class PwingGuilds extends JavaPlugin {
         getLogger().info("Guild data save completed!");
     }
 }
+
+
+
+
+

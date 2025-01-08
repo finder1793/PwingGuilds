@@ -4,11 +4,14 @@ import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.guild.Guild;
 import com.pwing.guilds.guild.ChunkLocation;
 import com.pwing.guilds.guild.GuildHome;
+import com.pwing.guilds.guild.GuildManager;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.inventory.ItemStack;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,14 +25,21 @@ public class YamlGuildStorage implements GuildStorage {
     private final File guildsFolder;
     private final Map<String, Guild> guildCache = new HashMap<>();
     private static final long AUTO_SAVE_INTERVAL = 6000L;
+    private final GuildManager guildManager;
 
     public YamlGuildStorage(PwingGuilds plugin) {
         this.plugin = plugin;
+        this.guildManager = plugin.getGuildManager();
         this.guildsFolder = new File(plugin.getDataFolder(), "guilds");
         if (!guildsFolder.exists()) {
             guildsFolder.mkdirs();
         }
         startAutoSave();
+    }
+
+    @Override
+    public GuildManager getGuildManager() {
+        return guildManager;
     }
 
     private void startAutoSave() {
@@ -195,5 +205,26 @@ public class YamlGuildStorage implements GuildStorage {
            location.getZ() + "," +
            location.getYaw() + "," +
            location.getPitch();
+    }
+    @Override
+    public void saveStorageData(String guildName, ItemStack[] contents) {
+        File storageFile = new File(guildsFolder, guildName + "-storage.yml");
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("contents", contents);
+        try {
+            config.save(storageFile);
+        } catch (IOException e) {
+            plugin.getLogger().severe("Failed to save storage for guild: " + guildName);
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public ConfigurationSection getStorageData(String guildName) {
+        File storageFile = new File(guildsFolder, guildName + "-storage.yml");
+        if (storageFile.exists()) {
+            return YamlConfiguration.loadConfiguration(storageFile);
+        }
+        return null;
     }
 }

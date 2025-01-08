@@ -9,7 +9,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-
 public class GuildAdminCommand implements CommandExecutor {
     private final PwingGuilds plugin;
 
@@ -30,6 +29,24 @@ public class GuildAdminCommand implements CommandExecutor {
         }
 
         switch (args[0].toLowerCase()) {
+            case "storage" -> {
+                if (args.length < 2) {
+                    sender.sendMessage("§cUsage: /guildadmin storage <guild>");
+                    return true;
+                }
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage("§cOnly players can view guild storage!");
+                    return true;
+                }
+                String guildName = args[1];
+                plugin.getGuildManager().getGuild(guildName).ifPresentOrElse(
+                    guild -> {
+                        plugin.getStorageManager().openStorage(player, guild);
+                        sender.sendMessage("§aOpening storage for guild: " + guildName);
+                    },
+                    () -> sender.sendMessage("§cGuild not found!")
+                );
+            }
             case "addclaims" -> {
                 if (args.length < 3) {
                     sender.sendMessage("§cUsage: /guildadmin addclaims <guild> <amount>");
@@ -96,5 +113,6 @@ public class GuildAdminCommand implements CommandExecutor {
         sender.sendMessage("§e/guildadmin setlevel <guild> <level> §7- Set guild level");
         sender.sendMessage("§e/guildadmin delete <guild> §7- Delete a guild");
         sender.sendMessage("§e/guildadmin info <guild> §7- View detailed guild info");
+        sender.sendMessage("§e/guildadmin storage <guild> §7- View guild storage");
     }
 }

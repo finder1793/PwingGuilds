@@ -7,6 +7,7 @@ import com.pwing.guilds.alliance.AllianceManager;
 import com.pwing.guilds.events.*;
 import com.pwing.guilds.alliance.Alliance;
 
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -321,4 +322,9 @@ public class Guild implements ConfigurationSerializable {
     }
     public void setExp(long exp) { this.exp = exp; }
     public void setAlliance(Alliance alliance) { this.alliance = alliance; }
+
+
+    public ItemStack[] getStorageContents() {
+        return plugin.getStorageManager().getGuildStorage(this.name);
+    }
 }

@@ -63,11 +63,26 @@ public class GuildCommand implements CommandExecutor {
                         playerGuild -> {
                             if (plugin.getGuildManager().claimChunk(playerGuild, player.getLocation().getChunk())) {
                                 player.sendMessage("§aChunk claimed successfully!");
+                                ChunkVisualizer.showChunkBorders(player, player.getLocation().getChunk());
                                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f);
                             } else {
                                 player.sendMessage("§cFailed to claim chunk!");
                                 player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
                             }
+                        },
+                        () -> {
+                            player.sendMessage("§cYou're not in a guild!");
+                            player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                        }
+                    );
+            }
+            case "visualize", "show" -> {
+                plugin.getGuildManager().getPlayerGuild(player.getUniqueId())
+                    .ifPresentOrElse(
+                        guild -> {
+                            ChunkVisualizer.showChunkBorders(player, player.getLocation().getChunk());
+                            player.sendMessage("§aShowing chunk borders!");
+                            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f);
                         },
                         () -> {
                             player.sendMessage("§cYou're not in a guild!");
@@ -147,7 +162,23 @@ public class GuildCommand implements CommandExecutor {
                 new GuildManagementGUI(plugin).openMainMenu(player);
                 player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0f, 1.0f);
             }
-// Add new home commands
+            case "storage", "chest" -> {
+                plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresentOrElse(
+                    guild -> {
+                        if (guild.getPerks().activatePerk("guild-storage")) {
+                            plugin.getStorageManager().openStorage(player, guild);
+                            player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0f, 1.0f);
+                        } else {
+                            player.sendMessage("§cYour guild doesn't have storage access yet!");
+                            player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                        }
+                    },
+                    () -> {
+                        player.sendMessage("§cYou're not in a guild!");
+                        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                    }
+                );
+            }
             case "sethome" -> {
                 if (args.length < 2) {
                     player.sendMessage("§cUsage: /guild sethome <name>");
@@ -198,17 +229,16 @@ public class GuildCommand implements CommandExecutor {
             }
             case "buff" -> {
                 plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresentOrElse(
-                guild -> {
-                    new GuildManagementGUI(plugin).openBuffsMenu(player, guild);
-                    player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0f, 1.0f);
-                },
-                () -> {
-                    player.sendMessage("§cYou're not in a guild!");
-                    player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
-                }
-            );
-        }
-
+                    guild -> {
+                        new GuildManagementGUI(plugin).openBuffsMenu(player, guild);
+                        player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0f, 1.0f);
+                    },
+                    () -> {
+                        player.sendMessage("§cYou're not in a guild!");
+                        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                    }
+                );
+            }
             default -> sendHelpMessage(player);
         }
         return true;
@@ -220,6 +250,7 @@ public class GuildCommand implements CommandExecutor {
         player.sendMessage("§e/guild delete §7- Delete your guild");
         player.sendMessage("§e/guild claim §7- Claim the chunk you're standing in");
         player.sendMessage("§e/guild unclaim §7- Unclaim the chunk you're standing in");
+        player.sendMessage("§e/guild visualize §7- Show chunk borders");
         player.sendMessage("§e/guild invite <player> §7- Invite a player to your guild");
         player.sendMessage("§e/guild accept <guild> §7- Accept a guild invitation");
         player.sendMessage("§e/guild kick <player> §7- Kick a player from your guild");
@@ -227,6 +258,7 @@ public class GuildCommand implements CommandExecutor {
         player.sendMessage("§e/guild sethome <name> §7- Set a guild home");
         player.sendMessage("§e/guild home <name> §7- Teleport to a guild home");
         player.sendMessage("§e/guild delhome <name> §7- Delete a guild home");
-        player.sendMessage("§e/guild buff §7- opens Guild Buff Menu ");
+        player.sendMessage("§e/guild storage §7- Open guild storage chest");
+        player.sendMessage("§e/guild buff §7- Opens Guild Buff Menu");
     }
 }
