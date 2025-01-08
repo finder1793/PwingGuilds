@@ -66,10 +66,24 @@ public class Guild implements ConfigurationSerializable {
         return claimedChunks.contains(new ChunkLocation(chunk));
     }
 
-    public boolean unclaimChunk(ChunkLocation chunk) {
-        return claimedChunks.remove(chunk);
+    public boolean claimChunk(ChunkLocation chunk) {
+        if (canClaim()) {
+            boolean claimed = claimedChunks.add(chunk);
+            if (claimed) {
+                plugin.getGuildManager().getStorage().saveGuild(this);
+            }
+            return claimed;
+        }
+        return false;
     }
 
+    public boolean unclaimChunk(ChunkLocation chunk) {
+        boolean unclaimed = claimedChunks.remove(chunk);
+        if (unclaimed) {
+            plugin.getGuildManager().getStorage().saveGuild(this);
+        }
+        return unclaimed;
+    }
     public boolean addExp(long amount) {
         GuildExpGainEvent expEvent = new GuildExpGainEvent(this, amount);
         Bukkit.getPluginManager().callEvent(expEvent);
@@ -124,12 +138,6 @@ public class Guild implements ConfigurationSerializable {
         }
     }
 
-    public boolean claimChunk(ChunkLocation chunk) {
-        if (canClaim()) {
-            return claimedChunks.add(chunk);
-        }
-        return false;
-    }
 
     public boolean promotePlayer(UUID player) {
         if (!members.contains(player) || player.equals(leader)) {
@@ -157,14 +165,16 @@ public class Guild implements ConfigurationSerializable {
     public boolean deleteHome(String name) {
         return homes.remove(name.toLowerCase()) != null;
     }
-
     public boolean addMember(UUID player) {
         GuildMemberJoinEvent event = new GuildMemberJoinEvent(this, player);
         Bukkit.getPluginManager().callEvent(event);
 
         if (!event.isCancelled()) {
-            members.add(player);
-            return true;
+            boolean added = members.add(player);
+            if (added) {
+                plugin.getGuildManager().getStorage().saveGuild(this);
+            }
+            return added;
         }
         return false;
     }
@@ -172,10 +182,12 @@ public class Guild implements ConfigurationSerializable {
     public boolean removeMember(UUID player, GuildMemberLeaveEvent.LeaveReason reason) {
         if (members.remove(player)) {
             Bukkit.getPluginManager().callEvent(new GuildMemberLeaveEvent(this, player, reason));
+            plugin.getGuildManager().getStorage().saveGuild(this);
             return true;
         }
         return false;
     }
+    
 
     public boolean setName(String newName) {
         GuildRenameEvent event = new GuildRenameEvent(this, this.name, newName);
@@ -187,7 +199,6 @@ public class Guild implements ConfigurationSerializable {
         }
         return false;
     }
-
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> data = new HashMap<>();
@@ -199,6 +210,13 @@ public class Guild implements ConfigurationSerializable {
         data.put("members", members.stream().map(UUID::toString).collect(Collectors.toList()));
         data.put("invites", invites.stream().map(UUID::toString).collect(Collectors.toList()));
         data.put("claimed-chunks", claimedChunks.stream()
+                .sorted((c1, c2) -> {
+                    int worldCompare = c1.getWorld().compareTo(c2.getWorld());
+                    if (worldCompare != 0) return worldCompare;
+                    int xCompare = Integer.compare(c1.getX(), c2.getX());
+                    if (xCompare != 0) return xCompare;
+                    return Integer.compare(c1.getZ(), c2.getZ());
+                })
                 .map(chunk -> Map.of(
                         "world", chunk.getWorld(),
                         "x", chunk.getX(),

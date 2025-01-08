@@ -15,6 +15,7 @@ import org.bukkit.World;
 
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class SQLGuildStorage implements GuildStorage {
@@ -83,22 +84,35 @@ public class SQLGuildStorage implements GuildStorage {
             e.printStackTrace();
         }
     }
+    public void processRemainingQueue() {
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+            Guild guild;
+            while ((guild = saveQueue.poll()) != null) {
+                saveGuildData(guild, conn);
+            }
+            conn.commit();
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Failed to process remaining guild saves!");
+            e.printStackTrace();
+        }
+    }
 
     private void startAsyncSaveProcessor() {
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
-            Guild guild;
-            while ((guild = saveQueue.poll()) != null) {
-                try (Connection conn = dataSource.getConnection()) {
+            try (Connection conn = dataSource.getConnection()) {
+                conn.setAutoCommit(false);
+                Guild guild;
+                while ((guild = saveQueue.poll()) != null) {
                     saveGuildData(guild, conn);
-                    guildCache.put(guild.getName(), guild);
-                } catch (SQLException e) {
-                    plugin.getLogger().severe("Failed to save guild: " + guild.getName());
-                    saveQueue.offer(guild);
                 }
+                conn.commit();
+            } catch (SQLException e) {
+                plugin.getLogger().severe("Failed to process guild save queue!");
+                e.printStackTrace();
             }
-        }, 6000L, 6000L); // Every 5 minutes
+        }, SAVE_INTERVAL, SAVE_INTERVAL);
     }
-
     private void saveGuildData(Guild guild, Connection conn) throws SQLException {
         conn.setAutoCommit(false);
         try {
@@ -137,11 +151,20 @@ public class SQLGuildStorage implements GuildStorage {
                 }
                 ps.executeBatch();
             }
-
             // Save chunks
             try (PreparedStatement ps = conn.prepareStatement(
                     "INSERT INTO guild_chunks (guild_name, world, x, z) VALUES (?, ?, ?, ?)")) {
-                for (ChunkLocation chunk : guild.getClaimedChunks()) {
+                List<ChunkLocation> sortedChunks = guild.getClaimedChunks().stream()
+                    .sorted((c1, c2) -> {
+                        int worldCompare = c1.getWorld().compareTo(c2.getWorld());
+                        if (worldCompare != 0) return worldCompare;
+                        int xCompare = Integer.compare(c1.getX(), c2.getX());
+                        if (xCompare != 0) return xCompare;
+                        return Integer.compare(c1.getZ(), c2.getZ());
+                    })
+                    .collect(Collectors.toList());
+                    
+                for (ChunkLocation chunk : sortedChunks) {
                     ps.setString(1, guild.getName());
                     ps.setString(2, chunk.getWorld());
                     ps.setInt(3, chunk.getX());
@@ -150,7 +173,6 @@ public class SQLGuildStorage implements GuildStorage {
                 }
                 ps.executeBatch();
             }
-
             // Save homes
             try (PreparedStatement ps = conn.prepareStatement(
                     "INSERT INTO guild_homes (guild_name, home_name, world, x, y, z, yaw, pitch) " +

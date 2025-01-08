@@ -182,4 +182,7 @@ public class GuildManager {
         guilds.put(newName, newGuild);
         storage.saveGuild(newGuild);
     }
+    public GuildStorage getStorage() {
+        return storage;
+    }
 }

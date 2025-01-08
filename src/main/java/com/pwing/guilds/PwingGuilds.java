@@ -142,4 +142,22 @@ public class PwingGuilds extends JavaPlugin {
     public AllianceStorage getAllianceStorage() {
         return allianceStorage;
     }
+    @Override
+    public void onDisable() {
+        getLogger().info("Starting final guild data save...");
+        
+        // Force sync save for YAML storage
+        if (storage instanceof YamlGuildStorage) {
+            guildManager.getGuilds().forEach(guild -> storage.saveGuild(guild));
+        }
+        
+        // Process remaining queue and cleanup for SQL storage
+        if (storage instanceof SQLGuildStorage) {
+            SQLGuildStorage sqlStorage = (SQLGuildStorage) storage;
+            sqlStorage.processRemainingQueue();
+            sqlStorage.getDataSource().close();
+        }
+        
+        getLogger().info("Guild data save completed!");
+    }
 }

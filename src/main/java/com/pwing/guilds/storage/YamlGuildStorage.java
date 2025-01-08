@@ -35,8 +35,13 @@ public class YamlGuildStorage implements GuildStorage {
     private void startAutoSave() {
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
             plugin.getLogger().info("Starting auto-save of all guilds...");
-            for (Guild guild : guildCache.values()) {
-                saveGuild(guild);
+            for (Guild guild : new ArrayList<>(guildCache.values())) {
+                try {
+                    saveGuild(guild);
+                } catch (Exception e) {
+                    plugin.getLogger().severe("Failed to auto-save guild: " + guild.getName());
+                    e.printStackTrace();
+                }
             }
             plugin.getLogger().info("Auto-save complete!");
         }, AUTO_SAVE_INTERVAL, AUTO_SAVE_INTERVAL);
@@ -58,15 +63,22 @@ public class YamlGuildStorage implements GuildStorage {
                 .map(UUID::toString)
                 .toList());
 
-        // Claimed chunks
+        // Claimed chunks with sorting
         config.set("claimed-chunks", guild.getClaimedChunks().stream()
+            .sorted((c1, c2) -> {
+                int worldCompare = c1.getWorld().compareTo(c2.getWorld());
+                if (worldCompare != 0) return worldCompare;
+                int xCompare = Integer.compare(c1.getX(), c2.getX());
+                if (xCompare != 0) return xCompare;
+                return Integer.compare(c1.getZ(), c2.getZ());
+            })
             .map(chunk -> Map.of(
                 "world", chunk.getWorld(),
                 "x", chunk.getX(),
                 "z", chunk.getZ()
             )).collect(Collectors.toList()));
 
-        // Guild homes
+        // Homes
         config.set("homes", guild.getHomes().entrySet().stream()
                 .collect(Collectors.toMap(
                     Map.Entry::getKey,
