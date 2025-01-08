@@ -102,21 +102,20 @@ public class SQLAllianceStorage implements AllianceStorage {
 
         try (Connection conn = dataSource.getConnection()) {
             Alliance alliance = null;
-
-            try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM alliances WHERE name = ?")) {
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT * FROM alliances WHERE name = ?")) {
                 ps.setString(1, name);
                 ResultSet rs = ps.executeQuery();
 
                 if (rs.next()) {
                     alliance = new Alliance(name);
-                    alliance.setDescription(rs.getString("description"));
                     loadAllianceData(alliance, conn);
                     allianceCache.put(name, alliance);
                 }
             }
-
             return alliance;
         } catch (SQLException e) {
+            plugin.getLogger().severe("Failed to load alliance: " + name);
             e.printStackTrace();
             return null;
         }

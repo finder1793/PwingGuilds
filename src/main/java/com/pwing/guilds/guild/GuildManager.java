@@ -27,15 +27,18 @@ public class GuildManager {
         this.worldGuardHook = worldGuardHook;
     }
 
+    public Map<UUID, Guild> getPlayerGuilds() {
+        return playerGuilds;
+    }
+
     public void initialize() {
         Set<Guild> loadedGuilds = storage.loadAllGuilds();
         loadedGuilds.forEach(guild -> {
             guilds.put(guild.getName(), guild);
             guild.getMembers().forEach(member -> playerGuilds.put(member, guild));
-
-            // Add chunk persistence
             guild.getClaimedChunks().forEach(chunk -> claimedChunks.put(chunk, guild));
         });
+        plugin.getLogger().info("Loaded " + guilds.size() + " guilds with " + playerGuilds.size() + " members");
     }
 
     public boolean createGuild(String name, UUID owner) {
@@ -58,14 +61,16 @@ public class GuildManager {
     public void addGuild(Guild guild) {
         guilds.put(guild.getName(), guild);
         guild.getMembers().forEach(member -> playerGuilds.put(member, guild));
+        guild.getClaimedChunks().forEach(chunk -> claimedChunks.put(chunk, guild));
         storage.saveGuild(guild);
     }
 
     public void deleteGuild(String name) {
-        Guild guild = guilds.get(name);
+        Guild guild = guilds.remove(name);
         if (guild != null) {
             Bukkit.getPluginManager().callEvent(new GuildDeleteEvent(guild));
-            guilds.remove(name);
+            guild.getMembers().forEach(playerGuilds::remove);
+            guild.getClaimedChunks().forEach(claimedChunks::remove);
             storage.deleteGuild(name);
         }
     }
@@ -87,8 +92,22 @@ public class GuildManager {
         }
 
         claimedChunks.put(location, guild);
+        guild.claimChunk(location);
         storage.saveGuild(guild);
         return true;
+    }
+
+    public boolean unclaimChunk(Guild guild, Chunk chunk) {
+        ChunkLocation location = new ChunkLocation(chunk);
+        if (claimedChunks.get(location) == guild) {
+            claimedChunks.remove(location);
+            boolean success = guild.unclaimChunk(location);
+            if (success) {
+                storage.saveGuild(guild);
+            }
+            return success;
+        }
+        return false;
     }
 
     public boolean canInteract(UUID player, Chunk chunk) {
@@ -139,27 +158,12 @@ public class GuildManager {
         return false;
     }
 
-    public boolean unclaimChunk(Guild guild, Chunk chunk) {
-        ChunkLocation location = new ChunkLocation(chunk);
-        if (claimedChunks.get(location) == guild) {
-            claimedChunks.remove(location);
-            boolean success = guild.unclaimChunk(location);
-            if (success) {
-                storage.saveGuild(guild);
-            }
-            return success;
-        }
-        return false;
-    }
-
     public Collection<Guild> getGuilds() {
-        return guilds.values();
+        return Collections.unmodifiableCollection(guilds.values());
     }
 
     public Optional<Guild> getGuild(String name) {
-        return guilds.values().stream()
-                .filter(guild -> guild.getName().equalsIgnoreCase(name))
-                .findFirst();
+        return Optional.ofNullable(guilds.get(name));
     }
 
     public void updateGuildName(Guild guild, String newName) {
@@ -167,7 +171,14 @@ public class GuildManager {
         Guild newGuild = new Guild(plugin, newName, guild.getOwner());
         newGuild.setLevel(guild.getLevel());
         newGuild.setExp(guild.getExp());
-        guild.getMembers().forEach(newGuild::addMember);
+        guild.getMembers().forEach(member -> {
+            newGuild.addMember(member);
+            playerGuilds.put(member, newGuild);
+        });
+        guild.getClaimedChunks().forEach(chunk -> {
+            newGuild.claimChunk(chunk);
+            claimedChunks.put(chunk, newGuild);
+        });
         guilds.put(newName, newGuild);
         storage.saveGuild(newGuild);
     }

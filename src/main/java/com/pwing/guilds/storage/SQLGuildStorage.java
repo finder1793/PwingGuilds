@@ -26,23 +26,24 @@ public class SQLGuildStorage implements GuildStorage {
 
     public SQLGuildStorage(PwingGuilds plugin) {
         this.plugin = plugin;
-        
+
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:mysql://" + 
-            plugin.getConfig().getString("storage.mysql.host") + ":" +
-            plugin.getConfig().getInt("storage.mysql.port") + "/" +
-            plugin.getConfig().getString("storage.mysql.database"));
+        config.setJdbcUrl("jdbc:mysql://" +
+                plugin.getConfig().getString("storage.mysql.host") + ":" +
+                plugin.getConfig().getInt("storage.mysql.port") + "/" +
+                plugin.getConfig().getString("storage.mysql.database"));
         config.setUsername(plugin.getConfig().getString("storage.mysql.username"));
         config.setPassword(plugin.getConfig().getString("storage.mysql.password"));
         config.setMaximumPoolSize(10);
-        
+
         this.dataSource = new HikariDataSource(config);
         initTables();
         startAsyncSaveProcessor();
     }
+
     private void initTables() {
         try (Connection conn = dataSource.getConnection();
-              Statement stmt = conn.createStatement()) {
+             Statement stmt = conn.createStatement()) {
 
             stmt.execute("CREATE TABLE IF NOT EXISTS guilds (" +
                     "name VARCHAR(32) PRIMARY KEY," +
@@ -153,7 +154,7 @@ public class SQLGuildStorage implements GuildStorage {
             // Save homes
             try (PreparedStatement ps = conn.prepareStatement(
                     "INSERT INTO guild_homes (guild_name, home_name, world, x, y, z, yaw, pitch) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
                 for (Map.Entry<String, GuildHome> entry : guild.getHomes().entrySet()) {
                     Location loc = entry.getValue().getLocation();
                     ps.setString(1, guild.getName());
@@ -235,7 +236,7 @@ public class SQLGuildStorage implements GuildStorage {
                 // Save homes
                 try (PreparedStatement ps = conn.prepareStatement(
                         "INSERT INTO guild_homes (guild_name, home_name, world, x, y, z, yaw, pitch) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
                     for (Map.Entry<String, GuildHome> entry : guild.getHomes().entrySet()) {
                         Location loc = entry.getValue().getLocation();
                         ps.setString(1, guild.getName());
@@ -262,6 +263,7 @@ public class SQLGuildStorage implements GuildStorage {
             e.printStackTrace();
         }
     }
+
     @Override
     public Guild loadGuild(String name) {
         if (guildCache.containsKey(name)) {
@@ -270,10 +272,10 @@ public class SQLGuildStorage implements GuildStorage {
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM guilds WHERE name = ?")) {
-            
+
             ps.setString(1, name);
             ResultSet rs = ps.executeQuery();
-            
+
             if (rs.next()) {
                 Guild guild = new Guild(plugin, name, UUID.fromString(rs.getString("owner")));
                 loadGuildData(guild, conn);
@@ -287,26 +289,28 @@ public class SQLGuildStorage implements GuildStorage {
     }
 
     private void loadGuildData(Guild guild, Connection conn) throws SQLException {
-        // Load members
+        // Load members with explicit handling
         try (PreparedStatement ps = conn.prepareStatement(
                 "SELECT uuid FROM guild_members WHERE guild_name = ?")) {
             ps.setString(1, guild.getName());
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                guild.addMember(UUID.fromString(rs.getString("uuid")));
+                UUID memberId = UUID.fromString(rs.getString("uuid"));
+                guild.addMember(memberId);
+                plugin.getGuildManager().getPlayerGuilds().put(memberId, guild);
             }
         }
 
-        // Load chunks with proper column mapping
+        // Load chunks
         try (PreparedStatement ps = conn.prepareStatement(
                 "SELECT world, x, z FROM guild_chunks WHERE guild_name = ?")) {
             ps.setString(1, guild.getName());
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 ChunkLocation chunk = new ChunkLocation(
-                    rs.getString("world"),
-                    rs.getInt("x"),
-                    rs.getInt("z")
+                        rs.getString("world"),
+                        rs.getInt("x"),
+                        rs.getInt("z")
                 );
                 guild.claimChunk(chunk);
             }
@@ -319,7 +323,7 @@ public class SQLGuildStorage implements GuildStorage {
         try (Connection conn = dataSource.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery("SELECT name FROM guilds")) {
-            
+
             while (rs.next()) {
                 Guild guild = loadGuild(rs.getString("name"));
                 if (guild != null) {
@@ -331,6 +335,7 @@ public class SQLGuildStorage implements GuildStorage {
         }
         return guilds;
     }
+
     @Override
     public void deleteGuild(String name) {
         guildCache.remove(name);
@@ -371,5 +376,9 @@ public class SQLGuildStorage implements GuildStorage {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public HikariDataSource getDataSource() {
+        return dataSource;
     }
 }

@@ -30,24 +30,35 @@ public final class GuildGUIListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         String title = event.getView().getTitle();
-
-        // Protect all guild-related GUIs
         if (title.contains("Guild")) {
             event.setCancelled(true);
-
-            // Block shift clicks and other inventory interactions
             event.setResult(Event.Result.DENY);
+
+            if (event.getClickedInventory() == null) return;
+
+            if (event.getClickedInventory().equals(event.getView().getTopInventory())) {
+                handleGuildMenuClick(event);
+            }
         }
     }
 
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent event) {
-        String title = event.getView().getTitle();
-        if (title.contains("Guild")) {
+        if (event.getView().getTitle().contains("Guild")) {
             event.setCancelled(true);
         }
     }
 
+    private void handleGuildMenuClick(InventoryClickEvent event) {
+        Player player = (Player) event.getWhoClicked();
+        String title = event.getView().getTitle();
+
+        switch (title) {
+            case "Guild Claims Map" -> handleClaimsMapClick(event, player);
+            case "Guild Buffs" -> handleBuffsMenuClick(event, player);
+            case "Guild Management" -> handleMainMenuClick(event, player);
+        }
+    }
     private void handleClaimsMapClick(InventoryClickEvent event, Player player) {
         if (event.getCurrentItem() == null) return;
 

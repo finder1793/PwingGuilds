@@ -115,39 +115,21 @@ public class YamlGuildStorage implements GuildStorage {
         guild.setExp(config.getLong("exp"));
         guild.addBonusClaims(config.getInt("bonus-claims", 0));
 
-        config.getStringList("members").stream()
-                .map(UUID::fromString)
-                .forEach(guild::addMember);
-
-        // Update claimed chunks deserialization
-        @SuppressWarnings("unchecked")
-        List<Map<?, ?>> chunksList = (List<Map<?, ?>>) config.getList("claimed-chunks");
-        if (chunksList != null) {
-            chunksList.forEach(chunkData -> {
-                ChunkLocation chunk = new ChunkLocation(
-                    (String) chunkData.get("world"),
-                    (Integer) chunkData.get("x"),
-                    (Integer) chunkData.get("z")
-                );
-                guild.claimChunk(chunk);
-            });
+        // Load members with explicit handling
+        List<String> membersList = config.getStringList("members");
+        for (String memberUUID : membersList) {
+            UUID memberId = UUID.fromString(memberUUID);
+            guild.addMember(memberId);
+            plugin.getGuildManager().getPlayerGuilds().put(memberId, guild);
         }
 
-        ConfigurationSection homes = config.getConfigurationSection("homes");
-        if (homes != null) {
-            homes.getKeys(false).forEach(homeName -> {
-                String[] locParts = homes.getString(homeName).split(",");
-                Location loc = new Location(
-                    Bukkit.getWorld(locParts[0]),
-                    Double.parseDouble(locParts[1]),
-                    Double.parseDouble(locParts[2]),
-                    Double.parseDouble(locParts[3]),
-                    Float.parseFloat(locParts[4]),
-                    Float.parseFloat(locParts[5])
-                );
-                guild.setHome(homeName, loc);
-            });
-        }
+        // Load claimed chunks
+        config.getStringList("claimed-chunks").stream()
+            .map(str -> {
+                String[] parts = str.split(",");
+                return new ChunkLocation(parts[0], Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
+            })
+            .forEach(guild::claimChunk);
 
         guildCache.put(name, guild);
         return guild;

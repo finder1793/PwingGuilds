@@ -33,14 +33,19 @@ public class WorldGuardHook implements Listener {
         }
     }
 
-    public boolean canClaim(Chunk chunk) {
-        Location loc = chunk.getBlock(8, 0, 8).getLocation();
-        return WorldGuard.getInstance().getPlatform().getRegionContainer()
-                .createQuery()
-                .testState(
+        public boolean canClaim(Chunk chunk) {
+            Location loc = chunk.getBlock(8, 0, 8).getLocation();
+            try {
+                return WorldGuard.getInstance().getPlatform().getRegionContainer()
+                    .createQuery()
+                    .testState(
                         BukkitAdapter.adapt(loc),
-                        WorldGuardPlugin.inst().wrapPlayer(loc.getWorld().getPlayers().get(0)),
+                        WorldGuardPlugin.inst().wrapPlayer(chunk.getWorld().getPlayers().get(0)),
                         ALLOW_GUILD_CLAIMS
-                );
-    }
+                    );
+            } catch (Exception e) {
+                // If WorldGuard check fails, default to allowing claims
+                return true;
+            }
+        }
 }

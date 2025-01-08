@@ -2,12 +2,13 @@ package com.pwing.guilds;
 
 import com.pwing.guilds.guild.GuildManager;
 import com.pwing.guilds.exp.GuildExpManager;
-import com.pwing.guilds.listeners.GuildExpListener;
-import com.pwing.guilds.listeners.GuildChatListener;
-import com.pwing.guilds.listeners.GuildProtectionListener;
+import com.pwing.guilds.listeners.*;
 import com.pwing.guilds.storage.GuildStorage;
 import com.pwing.guilds.storage.YamlGuildStorage;
 import com.pwing.guilds.alliance.AllianceManager;
+import com.pwing.guilds.alliance.storage.AllianceStorage;
+import com.pwing.guilds.alliance.storage.YamlAllianceStorage;
+import com.pwing.guilds.alliance.storage.SQLAllianceStorage;
 import com.pwing.guilds.storage.SQLGuildStorage;
 import com.pwing.guilds.events.custom.GuildEventManager;
 import com.pwing.guilds.placeholders.GuildPlaceholders;
@@ -18,12 +19,14 @@ import com.pwing.guilds.buffs.GuildBuffManager;
 import com.pwing.guilds.storage.GuildBackupManager;
 import com.pwing.guilds.storage.GuildBackupListener;
 import com.pwing.guilds.rewards.RewardManager;
+import com.pwing.guilds.gui.GuildGUIListener;
 import com.pwing.guilds.config.ConfigUpdater;
 import com.pwing.guilds.integration.WorldGuardHook;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.Bukkit;
+
 public class PwingGuilds extends JavaPlugin {
     private GuildStorage storage;
     private GuildManager guildManager;
@@ -34,11 +37,8 @@ public class PwingGuilds extends JavaPlugin {
     private GuildEventManager eventManager;
     private WorldGuardHook worldGuardHook;
     private AllianceManager allianceManager;
+    private AllianceStorage allianceStorage;
 
-    // Add getter
-    public AllianceManager getAllianceManager() {
-        return allianceManager;
-    }
     @Override
     public void onEnable() {
         saveDefaultConfig();
@@ -53,10 +53,13 @@ public class PwingGuilds extends JavaPlugin {
 
         setupEconomy();
 
+        // Initialize appropriate storage type
         if (getConfig().getString("storage.type").equalsIgnoreCase("mysql")) {
             this.storage = new SQLGuildStorage(this);
+            this.allianceStorage = new SQLAllianceStorage(this, ((SQLGuildStorage) storage).getDataSource());
         } else {
             this.storage = new YamlGuildStorage(this);
+            this.allianceStorage = new YamlAllianceStorage(this);
         }
 
         this.worldGuardHook = new WorldGuardHook(this);
@@ -65,22 +68,34 @@ public class PwingGuilds extends JavaPlugin {
         this.eventManager = new GuildEventManager(this);
         this.expManager = new GuildExpManager(this);
         this.buffManager = new GuildBuffManager(this);
+        this.allianceManager = new AllianceManager(this, allianceStorage);
 
-        // Register auto-save listeners
+        // Initialize managers
+        this.guildManager.initialize();
+        this.allianceManager.initialize();
+
+        // Register backup system
         GuildBackupManager backupManager = new GuildBackupManager(this);
         getServer().getPluginManager().registerEvents(new GuildBackupListener(this, backupManager), this);
 
-        // Register other listeners
+        // Register all listeners
+        getServer().getPluginManager().registerEvents(new GuildPlayerListener(this), this);
         getServer().getPluginManager().registerEvents(new GuildProtectionListener(this), this);
         getServer().getPluginManager().registerEvents(new GuildExpListener(this), this);
         getServer().getPluginManager().registerEvents(new GuildChatListener(this), this);
+        getServer().getPluginManager().registerEvents(new GuildGUIListener(this), this);
+        getServer().getPluginManager().registerEvents(new AllianceListener(this), this);
 
+        // Register commands
         getCommand("guild").setExecutor(new GuildCommand(this));
         getCommand("guildadmin").setExecutor(new GuildAdminCommand(this));
 
+        // Setup PlaceholderAPI if available
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new GuildPlaceholders(this).register();
         }
+
+        getLogger().info("PwingGuilds has been enabled!");
     }
 
     private boolean setupEconomy() {
@@ -95,6 +110,7 @@ public class PwingGuilds extends JavaPlugin {
         return true;
     }
 
+    // Getters
     public GuildManager getGuildManager() {
         return guildManager;
     }
@@ -117,5 +133,13 @@ public class PwingGuilds extends JavaPlugin {
 
     public Economy getEconomy() {
         return economy;
+    }
+
+    public AllianceManager getAllianceManager() {
+        return allianceManager;
+    }
+
+    public AllianceStorage getAllianceStorage() {
+        return allianceStorage;
     }
 }

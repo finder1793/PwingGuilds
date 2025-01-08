@@ -47,35 +47,39 @@ public class GuildManagementGUI {
     }
 
     public void openClaimsMap(Player player, Guild guild) {
+        // Change inventory size to 54 (6 rows)
         Inventory inv = Bukkit.createInventory(null, 54, "Guild Claims Map");
 
         int centerX = player.getLocation().getChunk().getX();
         int centerZ = player.getLocation().getChunk().getZ();
 
-        for (int z = -4; z <= 4; z++) {
-            for (int x = -4; x <= 4; x++) {
-                int slot = (z + 4) * 9 + (x + 4);
-                int chunkX = centerX + x;
-                int chunkZ = centerZ + z;
+        // Adjust the loop to ensure we don't exceed inventory bounds
+        for (int z = -3; z <= 3; z++) {
+            for (int x = -3; x <= 3; x++) {
+                int slot = (z + 3) * 9 + (x + 3);
+                if (slot >= 0 && slot < 54) {  // Add bounds check
+                    int chunkX = centerX + x;
+                    int chunkZ = centerZ + z;
 
-                ItemStack chunkItem;
-                if (guild.isChunkClaimed(player.getWorld().getChunkAt(chunkX, chunkZ))) {
-                    chunkItem = createItem(Material.EMERALD_BLOCK,
-                            "§aClaimed Chunk",
-                            "§7X: " + chunkX,
-                            "§7Z: " + chunkZ,
-                            "",
-                            "§eClick to unclaim");
-                } else {
-                    chunkItem = createItem(Material.GRASS_BLOCK,
-                            "§7Unclaimed Chunk",
-                            "§7X: " + chunkX,
-                            "§7Z: " + chunkZ,
-                            "",
-                            "§eClick to claim");
+                    ItemStack chunkItem;
+                    if (guild.isChunkClaimed(player.getWorld().getChunkAt(chunkX, chunkZ))) {
+                        chunkItem = createItem(Material.EMERALD_BLOCK,
+                                "§aClaimed Chunk",
+                                "§7X: " + chunkX,
+                                "§7Z: " + chunkZ,
+                                "",
+                                "§eClick to unclaim");
+                    } else {
+                        chunkItem = createItem(Material.GRASS_BLOCK,
+                                "§7Unclaimed Chunk",
+                                "§7X: " + chunkX,
+                                "§7Z: " + chunkZ,
+                                "",
+                                "§eClick to claim");
+                    }
+
+                    inv.setItem(slot, chunkItem);
                 }
-
-                inv.setItem(slot, chunkItem);
             }
         }
 
