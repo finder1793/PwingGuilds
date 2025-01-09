@@ -42,10 +42,31 @@ public class ConfigValidator {
             return;
         }
 
+        String[] requiredPerks = {
+            "member-limit",
+            "teleport-cooldown",
+            "exp-multiplier",
+            "keep-inventory",
+            "home-limit",
+            "storage-rows",
+            "storage-access"
+        };
+
         int previousExp = 0;
         for (String key : levels.getKeys(false)) {
             int level = Integer.parseInt(key);
             int expRequired = levels.getInt(key + ".exp-required");
+
+            ConfigurationSection perks = levels.getConfigurationSection(key + ".perks");
+            if (perks == null) {
+                errors.add("Missing perks section for guild level " + key);
+            } else {
+                for (String perk : requiredPerks) {
+                    if (!perks.contains(perk)) {
+                        errors.add("Guild level " + key + " missing required perk: " + perk);
+                    }
+                }
+            }
 
             if (expRequired < previousExp) {
                 errors.add("Guild level " + level + " exp requirement is lower than previous level!");
@@ -67,7 +88,6 @@ public class ConfigValidator {
             }
         }
     }
-
 
     private void validateStorage() {
         ConfigurationSection storage = plugin.getConfig().getConfigurationSection("storage");
@@ -167,7 +187,6 @@ public class ConfigValidator {
         }
     }
 
-
     private void validateEvents() {
         ConfigurationSection events = plugin.getConfig().getConfigurationSection("events");
         if (events == null) {
@@ -180,7 +199,6 @@ public class ConfigValidator {
                 errors.add("Missing enabled flag for event: " + eventName);
             }
 
-            // Only validate configuration if event is enabled
             if (events.getBoolean(eventName + ".enabled", false)) {
                 validateEventConfig(eventName, events.getConfigurationSection(eventName));
             }
@@ -188,7 +206,6 @@ public class ConfigValidator {
     }
 
     private void validateEventConfig(String eventName, ConfigurationSection config) {
-        // Validate event-specific requirements
         switch (eventName) {
             case "boss-raid" -> {
                 if (!config.contains("boss-type")) {
@@ -211,7 +228,6 @@ public class ConfigValidator {
             ConfigurationSection buff = buffs.getConfigurationSection(buffKey);
             if (buff == null) continue;
 
-        // Validate material
             String materialName = buff.getString("material");
             if (materialName != null) {
                 try {
@@ -221,7 +237,6 @@ public class ConfigValidator {
                 }
             }
 
-            // Validate slot
             int slot = buff.getInt("slot", -1);
             if (slot < 0) {
                 errors.add("Invalid slot number for buff " + buffKey + ": " + slot);
