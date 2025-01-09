@@ -27,6 +27,7 @@ public final class GuildGUIListener implements Listener {
     public GuildGUIListener(PwingGuilds plugin) {
         this.plugin = plugin;
     }
+
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         String title = event.getView().getTitle();
@@ -37,6 +38,10 @@ public final class GuildGUIListener implements Listener {
             if (event.getClickedInventory() == null) return;
 
             if (event.getClickedInventory().equals(event.getView().getTopInventory())) {
+                if (title.equals("Guild Members") && event.getCurrentItem() != null && event.getSlot() == 49) {
+                    new GuildManagementGUI(plugin).openMainMenu((Player) event.getWhoClicked());
+                    return;
+                }
                 handleGuildMenuClick(event);
             }
         }
@@ -59,6 +64,7 @@ public final class GuildGUIListener implements Listener {
             case "Guild Management" -> handleMainMenuClick(event, player);
         }
     }
+
     private void handleClaimsMapClick(InventoryClickEvent event, Player player) {
         if (event.getCurrentItem() == null) return;
 
