@@ -29,19 +29,11 @@ public class AllianceManager {
         plugin.getLogger().info("Loaded " + alliances.size() + " alliances");
     }
 
-    public boolean createAlliance(String name, Guild founder) {
-        if (alliances.containsKey(name)) {
-            return false;
-        }
-
+    public Alliance createAlliance(String name, Guild owner) {
         Alliance alliance = new Alliance(name);
-        alliance.addMember(founder);
-        alliance.setRole(founder.getOwner(), AllianceRole.LEADER);
-
+        alliance.addMember(owner);
         alliances.put(name, alliance);
-        guildAllianceMap.put(founder.getName(), alliance);
-        storage.saveAlliance(alliance);
-        return true;
+        return alliance;
     }
 
     public Optional<Alliance> getAlliance(String name) {
@@ -109,6 +101,10 @@ public class AllianceManager {
 
     public void saveAlliance(Alliance alliance) {
         storage.saveAlliance(alliance);
+        alliances.put(alliance.getName(), alliance);
+    }
+    
+    public void addAlliance(Alliance alliance) {
         alliances.put(alliance.getName(), alliance);
     }
 }

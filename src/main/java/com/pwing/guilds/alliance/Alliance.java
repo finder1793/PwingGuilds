@@ -8,16 +8,17 @@ import java.util.stream.Collectors;
 
 public class Alliance implements ConfigurationSerializable {
     private final String name;
-    private final Set<Guild> members;
-    private final Map<UUID, AllianceRole> roles;
-    private final Set<String> tags;
+    private final Set<Guild> members = new HashSet<>();
+    private final String ownerGuild;
+    private Set<Guild> pendingInvites = new HashSet<>();
+    private Set<String> allies = new HashSet<>();
+    private final Map<UUID, AllianceRole> roles = new HashMap<>();
+    private final Set<String> tags = new HashSet<>();
     private String description;
 
     public Alliance(String name) {
         this.name = name;
-        this.members = new HashSet<>();
-        this.roles = new HashMap<>();
-        this.tags = new HashSet<>();
+        this.ownerGuild = name;
     }
 
     public boolean addMember(Guild guild) {
@@ -28,12 +29,22 @@ public class Alliance implements ConfigurationSerializable {
         return false;
     }
 
-    public boolean removeMember(Guild guild) {
-        if (members.remove(guild)) {
-            guild.setAlliance(null);
-            return true;
+    public boolean inviteGuild(Guild guild) {
+        if (members.contains(guild)) {
+            return false;
+        }
+        return pendingInvites.add(guild);
+    }
+
+    public boolean acceptInvite(Guild guild) {
+        if (pendingInvites.remove(guild)) {
+            return members.add(guild);
         }
         return false;
+    }
+
+    public boolean declineInvite(Guild guild) {
+        return pendingInvites.remove(guild);
     }
 
     public void setRole(UUID player, AllianceRole role) {
@@ -64,6 +75,18 @@ public class Alliance implements ConfigurationSerializable {
         return tags.contains(tag);
     }
 
+    public boolean addAlly(String allyName) {
+        return allies.add(allyName);
+    }
+
+    public boolean removeAlly(String allyName) {
+        return allies.remove(allyName);
+    }
+
+    public boolean isAlly(String allyName) {
+        return allies.contains(allyName);
+    }
+
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> data = new HashMap<>();
@@ -78,7 +101,60 @@ public class Alliance implements ConfigurationSerializable {
                 )));
         data.put("tags", new ArrayList<>(tags));
         data.put("description", description);
+        data.put("allies", new ArrayList<>(allies));
         return data;
+    }
+
+    // Getters
+    public String getName() {
+        return name;
+    }
+
+    public Set<Guild> getMembers() {
+        return Collections.unmodifiableSet(members);
+    }
+
+    public Map<UUID, AllianceRole> getRoles() {
+        return Collections.unmodifiableMap(roles);
+    }
+
+    public Set<String> getTags() {
+        return Collections.unmodifiableSet(tags);
+    }
+
+    public Set<String> getAllies() {
+        return Collections.unmodifiableSet(allies);
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getOwnerGuild() {
+        return ownerGuild;
+    }
+
+    public Set<Guild> getPendingInvites() {
+        return Collections.unmodifiableSet(pendingInvites);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, members, allies);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Alliance other = (Alliance) obj;
+        return Objects.equals(name, other.name) 
+               && Objects.equals(members, other.members)
+               && Objects.equals(allies, other.allies);
     }
 
     @SuppressWarnings("unchecked")
@@ -111,41 +187,12 @@ public class Alliance implements ConfigurationSerializable {
         return alliance;
     }
 
-    // Getters
-    public String getName() {
-        return name;
-    }
-
-    public Set<Guild> getMembers() {
-        return Collections.unmodifiableSet(members);
-    }
-
-    public Map<UUID, AllianceRole> getRoles() {
-        return Collections.unmodifiableMap(roles);
-    }
-
-    public Set<String> getTags() {
-        return Collections.unmodifiableSet(tags);
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Alliance)) return false;
-        Alliance other = (Alliance) o;
-        return name.equals(other.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return name.hashCode();
+    public boolean removeMember(Guild guild) {
+        if (members.remove(guild)) {
+            guild.setAlliance(null);
+            return true;
+        }
+        return false;
     }
 }
+

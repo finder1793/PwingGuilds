@@ -11,6 +11,7 @@ import com.pwing.guilds.events.GuildMemberLeaveEvent;
 import com.pwing.guilds.storage.GuildStorage;
 import com.pwing.guilds.events.GuildDeleteEvent;
 import com.pwing.guilds.integration.WorldGuardHook;
+import com.pwing.guilds.alliance.Alliance;
 
 public class GuildManager {
     private final PwingGuilds plugin;
@@ -76,15 +77,27 @@ public class GuildManager {
     }
 
     public boolean claimChunk(Guild guild, Chunk chunk) {
-        if (!worldGuardHook.canClaim(chunk)) {
+        if (guild == null || chunk == null) {
             return false;
         }
-
+    
         ChunkLocation location = new ChunkLocation(chunk);
+    
+        // Validate if chunk is already claimed
         if (claimedChunks.containsKey(location)) {
             return false;
         }
-
+    
+        // Validate if guild can claim more chunks
+        if (!guild.canClaim()) {
+            return false;
+        }
+    
+        // Validate WorldGuard rules if applicable
+        if (plugin.hasWorldGuard() && !plugin.getWorldGuardHook().canClaim(chunk)) {
+            return false;
+        }
+    
         GuildClaimChunkEvent event = new GuildClaimChunkEvent(guild, location);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
@@ -182,7 +195,28 @@ public class GuildManager {
         guilds.put(newName, newGuild);
         storage.saveGuild(newGuild);
     }
+
     public GuildStorage getStorage() {
         return storage;
+    }
+
+    public boolean createAlliance(String allianceName, Guild guild) {
+        if (guild == null) {
+            return false;
+        }
+    
+        Alliance alliance = new Alliance(allianceName);
+        alliance.addMember(guild);
+        plugin.getAllianceManager().addAlliance(alliance);
+        return true;
+    }
+
+    public boolean inviteToAlliance(String allianceName, Guild inviterGuild, Guild invitedGuild) {
+        Optional<Alliance> allianceOpt = plugin.getAllianceManager().getAlliance(allianceName);
+        if (!allianceOpt.isPresent() || !allianceOpt.get().getMembers().contains(inviterGuild)) {
+            return false;
+        }
+    
+        return allianceOpt.get().inviteGuild(invitedGuild);
     }
 }

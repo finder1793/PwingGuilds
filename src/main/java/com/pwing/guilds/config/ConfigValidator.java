@@ -68,7 +68,14 @@ public class ConfigValidator {
         }
     }
 
+
     private void validateStorage() {
+        ConfigurationSection storage = plugin.getConfig().getConfigurationSection("storage");
+        if (storage == null) {
+            errors.add("Missing storage configuration section!");
+            return;
+        }
+
         String type = plugin.getConfig().getString("storage.type");
         if (type.equalsIgnoreCase("MYSQL")) {
             ConfigurationSection mysql = plugin.getConfig().getConfigurationSection("storage.mysql");
@@ -83,6 +90,25 @@ public class ConfigValidator {
             if (mysql.getString("database", "").isEmpty()) {
                 errors.add("MySQL database is not configured!");
             }
+        }
+
+        ConfigurationSection settings = storage.getConfigurationSection("settings");
+        if (settings == null) {
+            errors.add("Missing storage settings configuration!");
+            return;
+        }
+
+        if (!settings.contains("default-rows")) {
+            errors.add("Missing default-rows in storage settings!");
+        } else {
+            int rows = settings.getInt("default-rows");
+            if (rows < 1 || rows > 6) {
+                errors.add("Storage default-rows must be between 1 and 6!");
+            }
+        }
+
+        if (!settings.contains("save-interval")) {
+            errors.add("Missing save-interval in storage settings!");
         }
     }
 

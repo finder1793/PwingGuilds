@@ -34,3 +34,11 @@ commands:
       /guildadmin setlevel <guild> <level> - Set guild level
       /guildadmin delete <guild> - Delete a guild
       /guildadmin info <guild> - View detailed guild info      /guildadmin restore <file> - Restore from backup
+
+permissions:
+  guilds.storage:
+    description: Allows access to guild storage
+    default: true
+  guilds.storage.admin:
+    description: Allows admin access to all guild storages
+    default: op

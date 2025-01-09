@@ -151,6 +151,24 @@ public final class GuildGUIListener implements Listener {
                     .ifPresent(guild -> new GuildManagementGUI(plugin).openClaimsMap(player, guild));
             case 15 -> plugin.getGuildManager().getPlayerGuild(player.getUniqueId())
                     .ifPresent(guild -> new GuildManagementGUI(plugin).openBuffsMenu(player, guild));
+            case 17 -> {
+                plugin.getGuildManager().getPlayerGuild(player.getUniqueId())
+                    .ifPresentOrElse(
+                        guild -> {
+                            if (guild.getPerks().activatePerk("guild-storage")) {
+                                plugin.getStorageManager().openStorage(player, guild);
+                                player.playSound(player.getLocation(), Sound.BLOCK_ENDER_CHEST_OPEN, 1.0f, 1.0f);
+                            } else {
+                                player.sendMessage("§cYour guild needs to unlock storage access first!");
+                                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                            }
+                        },
+                        () -> {
+                            player.sendMessage("§cYou're not in a guild!");
+                            player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                        }
+                    );
+            }
             case 26 -> player.closeInventory();
         }
     }

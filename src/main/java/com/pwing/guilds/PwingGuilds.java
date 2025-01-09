@@ -36,10 +36,18 @@ public class PwingGuilds extends JavaPlugin {
     private RewardManager rewardManager;
     private Economy economy;
     private GuildEventManager eventManager;
-    private WorldGuardHook worldGuardHook;
     private AllianceManager allianceManager;
     private AllianceStorage allianceStorage;
     private GuildStorageManager storageManager;
+    private WorldGuardHook worldGuardHook;
+
+    public boolean hasWorldGuard() {
+        return worldGuardHook != null;
+    }
+    public WorldGuardHook getWorldGuardHook() {
+        return worldGuardHook;
+    }
+
     @Override
     public void onEnable() {
         saveDefaultConfig();
@@ -63,7 +71,11 @@ public class PwingGuilds extends JavaPlugin {
             this.allianceStorage = new YamlAllianceStorage(this);
         }
 
-        this.worldGuardHook = new WorldGuardHook(this);
+        // Initialize WorldGuard hook if the plugin is present
+        if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
+            worldGuardHook = new WorldGuardHook(this);
+        }
+
         this.guildManager = new GuildManager(this, storage, worldGuardHook);
         this.rewardManager = new RewardManager(this);
         this.eventManager = new GuildEventManager(this);
@@ -98,9 +110,7 @@ public class PwingGuilds extends JavaPlugin {
         }
 
         getLogger().info("PwingGuilds has been enabled!");
-    }
-
-    private boolean setupEconomy() {
+    }    private boolean setupEconomy() {
         if (getServer().getPluginManager().getPlugin("Vault") == null) {
             return false;
         }

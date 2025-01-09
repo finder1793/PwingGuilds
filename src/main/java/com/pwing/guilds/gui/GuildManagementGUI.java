@@ -30,7 +30,6 @@ public class GuildManagementGUI {
 
         GuildInventoryHolder holder = new GuildInventoryHolder(playerGuild.get());
         Inventory inv = Bukkit.createInventory(holder, 27, "Guild Management");
-
         // Members Management
         ItemStack members = createItem(Material.PLAYER_HEAD, "§6Members", "§7Click to manage guild members");
         inv.setItem(11, members);
@@ -42,6 +41,12 @@ public class GuildManagementGUI {
         // Guild Settings
         ItemStack settings = createItem(Material.COMPARATOR, "§6Guild Settings", "§7Configure guild settings");
         inv.setItem(15, settings);
+
+        // Add storage button
+        ItemStack storage = createItem(Material.ENDER_CHEST, "§6Guild Storage", 
+            "§7Access shared guild storage",
+            "§7Store and retrieve items");
+        inv.setItem(17, storage);
 
         player.openInventory(inv);
     }

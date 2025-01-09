@@ -43,8 +43,18 @@ public class WorldGuardHook implements Listener {
                         WorldGuardPlugin.inst().wrapPlayer(chunk.getWorld().getPlayers().get(0)),
                         ALLOW_GUILD_CLAIMS
                     );
+            } catch (IllegalStateException e) {
+                plugin.getLogger().warning("WorldGuard state error for chunk at " + chunk.getX() + "," + chunk.getZ() + ": " + e.getMessage());
+                return true;
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Invalid arguments for WorldGuard check at " + chunk.getX() + "," + chunk.getZ() + ": " + e.getMessage());
+                return true;
+            } catch (NullPointerException e) {
+                plugin.getLogger().warning("WorldGuard integration unavailable or world has no players: " + e.getMessage());
+                return true;
             } catch (Exception e) {
-                // If WorldGuard check fails, default to allowing claims
+                plugin.getLogger().severe("Unexpected error during WorldGuard claim check: " + e.getMessage());
+                e.printStackTrace();
                 return true;
             }
         }

@@ -1,4 +1,19 @@
 # Core Guild Settings
+# Storage Settings
+storage:
+  type: YAML
+  mysql:
+    host: localhost
+    port: 3306
+    database: guilds
+    username: root
+    password: password
+  #guild storage chest settings
+  settings: 
+    default-rows: 1
+    save-interval: 300  # seconds
+    transaction-logging: true
+
 guild-levels:
   1:
     max-claims: 5
@@ -9,6 +24,8 @@ guild-levels:
       exp-multiplier: 1.0
       keep-inventory: false
       home-limit: 1
+      storage-rows: 1  # 1 row (9 slots)
+      storage-access: true
   2:
     max-claims: 10
     exp-required: 1000
@@ -18,6 +35,7 @@ guild-levels:
       exp-multiplier: 1.2
       keep-inventory: false
       home-limit: 2
+      storage-rows: 2  # 2 rows (18 slots)
   3:
     max-claims: 15
     exp-required: 2500
@@ -27,6 +45,11 @@ guild-levels:
       exp-multiplier: 1.5
       keep-inventory: true
       home-limit: 3
+      storage-rows: 3  # 3 rows (27 slots)
+
+
+
+
 # Guild Buffs
 
 guild-buffs:
@@ -36,8 +59,8 @@ guild-buffs:
     effect: INCREASE_DAMAGE
     stat-type: PHYSICAL_DAMAGE
     stat-value: 5.0
-    level: 1
     cost: 1000
+    level: 1
     duration: 3600
     permission: "guild.buff.strength"
     slot: 0
@@ -221,15 +244,7 @@ event-schedule:
     min-players: 12
     announce-before: [60, 30, 15, 5]
 
-# Storage Settings
-storage:
-  type: YAML
-  mysql:
-    host: localhost
-    port: 3306
-    database: guilds
-    username: root
-    password: password
+
 
 # Backup Settings
 backup:
