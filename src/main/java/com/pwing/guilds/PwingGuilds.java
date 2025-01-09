@@ -3,6 +3,7 @@ package com.pwing.guilds;
 import com.pwing.guilds.guild.GuildManager;
 import com.pwing.guilds.exp.GuildExpManager;
 import com.pwing.guilds.listeners.*;
+import com.pwing.guilds.guild.Guild;
 import com.pwing.guilds.storage.GuildStorage;
 import com.pwing.guilds.storage.YamlGuildStorage;
 import com.pwing.guilds.alliance.AllianceManager;
@@ -32,6 +33,7 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.Bukkit;
+import java.util.Set;
 
 public class PwingGuilds extends JavaPlugin {
     private GuildStorage storage;
@@ -74,6 +76,9 @@ public class PwingGuilds extends JavaPlugin {
             this.storage = new YamlGuildStorage(this);
             this.allianceStorage = new YamlAllianceStorage(this);
         }
+
+        Set<Guild> loadedGuilds = storage.loadAllGuilds();
+        getLogger().info("Loaded " + loadedGuilds.size() + " guilds with their claims");
 
         // Initialize WorldGuard hook if the plugin is present
         if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
@@ -185,6 +190,8 @@ public class PwingGuilds extends JavaPlugin {
         getLogger().info("Guild data save completed!");
     }
 }
+
+
 
 
 
