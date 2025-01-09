@@ -91,7 +91,7 @@ public class AllianceManager {
         guildAllianceMap.remove(guildName);
     }
 
-    public Collection<Alliance> getAlliances() {
+    public Collection<Alliance> getAllAlliances() {
         return Collections.unmodifiableCollection(alliances.values());
     }
 

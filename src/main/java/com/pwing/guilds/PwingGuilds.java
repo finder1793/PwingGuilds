@@ -13,7 +13,11 @@ import com.pwing.guilds.storage.SQLGuildStorage;
 import com.pwing.guilds.events.custom.GuildEventManager;
 import com.pwing.guilds.placeholders.GuildPlaceholders;
 import com.pwing.guilds.commands.GuildCommand;
+import com.pwing.guilds.commands.GuildCommandTabCompleter;
 import com.pwing.guilds.commands.GuildAdminCommand;
+import com.pwing.guilds.commands.GuildAdminCommandTabCompleter;
+import com.pwing.guilds.commands.alliance.AllianceCommand;
+import com.pwing.guilds.commands.alliance.AllianceCommandTabCompleter;
 import com.pwing.guilds.config.ConfigValidator;
 import com.pwing.guilds.buffs.GuildBuffManager;
 import com.pwing.guilds.storage.GuildStorageManager;
@@ -99,14 +103,15 @@ public class PwingGuilds extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new GuildChatListener(this), this);
         getServer().getPluginManager().registerEvents(new GuildGUIListener(this), this);
         getServer().getPluginManager().registerEvents(new AllianceListener(this), this);
-
         // Register commands
         getCommand("guild").setExecutor(new GuildCommand(this));
+        getCommand("guild").setTabCompleter(new GuildCommandTabCompleter(this));
+        
         getCommand("guildadmin").setExecutor(new GuildAdminCommand(this));
-
-        // Register alliance commands
+        getCommand("guildadmin").setTabCompleter(new GuildAdminCommandTabCompleter(this));
+        
         getCommand("alliance").setExecutor(new AllianceCommand(this));
-
+        getCommand("alliance").setTabCompleter(new AllianceCommandTabCompleter(this));
         // Setup PlaceholderAPI if available
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new GuildPlaceholders(this).register();
