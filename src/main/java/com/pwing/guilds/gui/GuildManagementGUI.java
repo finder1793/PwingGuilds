@@ -11,6 +11,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Chunk;
 import org.bukkit.inventory.meta.SkullMeta;
 import java.util.*;
 
@@ -52,39 +53,42 @@ public class GuildManagementGUI {
     }
 
     public void openClaimsMap(Player player, Guild guild) {
-        // Change inventory size to 54 (6 rows)
         Inventory inv = Bukkit.createInventory(null, 54, "Guild Claims Map");
+        Chunk centerChunk = player.getLocation().getChunk();
 
-        int centerX = player.getLocation().getChunk().getX();
-        int centerZ = player.getLocation().getChunk().getZ();
+        // Using full 9x6 chest dimensions
+        for (int x = -4; x <= 4; x++) {
+            for (int z = -3; z <= 2; z++) {
+                Chunk chunk = player.getWorld().getChunkAt(centerChunk.getX() + x, centerChunk.getZ() + z);
+                ItemStack item;
 
-        // Adjust the loop to ensure we don't exceed inventory bounds
-        for (int z = -3; z <= 3; z++) {
-            for (int x = -3; x <= 3; x++) {
-                int slot = (z + 3) * 9 + (x + 3);
-                if (slot >= 0 && slot < 54) {  // Add bounds check
-                    int chunkX = centerX + x;
-                    int chunkZ = centerZ + z;
-
-                    ItemStack chunkItem;
-                    if (guild.isChunkClaimed(player.getWorld().getChunkAt(chunkX, chunkZ))) {
-                        chunkItem = createItem(Material.EMERALD_BLOCK,
-                                "§aClaimed Chunk",
-                                "§7X: " + chunkX,
-                                "§7Z: " + chunkZ,
-                                "",
-                                "§eClick to unclaim");
-                    } else {
-                        chunkItem = createItem(Material.GRASS_BLOCK,
-                                "§7Unclaimed Chunk",
-                                "§7X: " + chunkX,
-                                "§7Z: " + chunkZ,
-                                "",
-                                "§eClick to claim");
-                    }
-
-                    inv.setItem(slot, chunkItem);
+                if (guild.isChunkClaimed(chunk)) {
+                    item = new ItemStack(Material.EMERALD_BLOCK);
+                    var meta = item.getItemMeta();
+                    meta.setDisplayName("§aClaimed Chunk");
+                    meta.setLore(Arrays.asList(
+                        "§7X: " + chunk.getX(),
+                        "§7Z: " + chunk.getZ(),
+                        "",
+                        "§eClick to unclaim"
+                    ));
+                    item.setItemMeta(meta);
+                } else {
+                    item = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+                    var meta = item.getItemMeta();
+                    meta.setDisplayName("§7Unclaimed Chunk");
+                    meta.setLore(Arrays.asList(
+                        "§7X: " + chunk.getX(),
+                        "§7Z: " + chunk.getZ(),
+                        "",
+                        "§eClick to claim"
+                    ));
+                    item.setItemMeta(meta);
                 }
+
+                // Calculate inventory slot for 9x6 layout
+                int slot = (z + 3) * 9 + (x + 4);
+                inv.setItem(slot, item);
             }
         }
 
@@ -185,4 +189,6 @@ public class GuildManagementGUI {
         }
     }
 }
+
+
 

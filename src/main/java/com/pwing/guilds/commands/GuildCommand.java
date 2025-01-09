@@ -60,8 +60,13 @@ public class GuildCommand implements CommandExecutor {
             case "claim" -> {
                 plugin.getGuildManager().getPlayerGuild(player.getUniqueId())
                     .ifPresentOrElse(
-                        playerGuild -> {
-                            if (plugin.getGuildManager().claimChunk(playerGuild, player.getLocation().getChunk())) {
+                        guild -> {
+                            if (guild.isChunkClaimed(player.getLocation().getChunk())) {
+                                player.sendMessage("§cThis chunk is already claimed!");
+                                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                                return;
+                            }
+                            if (plugin.getGuildManager().claimChunk(guild, player.getLocation().getChunk())) {
                                 player.sendMessage("§aChunk claimed successfully!");
                                 ChunkVisualizer.showChunkBorders(player, player.getLocation().getChunk());
                                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f);
@@ -75,8 +80,7 @@ public class GuildCommand implements CommandExecutor {
                             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
                         }
                     );
-            }
-            case "visualize", "show" -> {
+            }            case "visualize", "show" -> {
                 plugin.getGuildManager().getPlayerGuild(player.getUniqueId())
                     .ifPresentOrElse(
                         guild -> {
@@ -239,6 +243,25 @@ public class GuildCommand implements CommandExecutor {
                     }
                 );
             }
+            case "unclaim" -> {
+                plugin.getGuildManager().getPlayerGuild(player.getUniqueId())
+                        .ifPresentOrElse(
+                                guild -> {
+                                    if (plugin.getGuildManager().unclaimChunk(guild, player.getLocation().getChunk())) {
+                                        player.sendMessage("§aChunk unclaimed successfully!");
+                                        ChunkVisualizer.showChunkBorders(player, player.getLocation().getChunk());
+                                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f);
+                                    } else {
+                                        player.sendMessage("§cThis chunk is not claimed by your guild!");
+                                        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                                    }
+                                },
+                                () -> {
+                                    player.sendMessage("§cYou're not in a guild!");
+                                    player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                                }
+                        );
+            }
             default -> sendHelpMessage(player);
         }
         return true;
@@ -262,3 +285,5 @@ public class GuildCommand implements CommandExecutor {
         player.sendMessage("§e/guild buff §7- Opens Guild Buff Menu");
     }
 }
+
+

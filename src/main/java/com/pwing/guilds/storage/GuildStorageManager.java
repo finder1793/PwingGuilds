@@ -130,16 +130,14 @@ public class GuildStorageManager implements Listener {
             timestamp, player.getName(), action, guild.getName()));
     }
 
-    public void closeAllStorages() {
-        // Create a copy to avoid concurrent modification
-        new HashMap<>(openStorages).forEach((uuid, inventory) -> {
-            Player player = Bukkit.getPlayer(uuid);
-            if (player != null) {
-                player.closeInventory();
+    private void closeAllStorages() {
+        if (plugin.getGuildManager() != null && plugin.getGuildManager().getStorage() != null) {
+            plugin.getLogger().info("Starting final guild data save...");
+            for (Guild guild : plugin.getGuildManager().getGuilds()) {
+                plugin.getGuildManager().getStorage().saveGuild(guild);
             }
-        });
-        // Force save all storages
-        plugin.getGuildManager().getStorage().saveAllStorages();
+            plugin.getLogger().info("Guild data save completed!");
+        }
     }
 
     private void saveStorage(String guildName) {
