@@ -34,7 +34,9 @@ public class YamlGuildStorage implements GuildStorage {
         if (!guildsFolder.exists()) {
             guildsFolder.mkdirs();
         }
+        initBackupSettings();
         startAutoSave();
+        startBackupCleaner();
     }
 
     @Override
@@ -244,5 +246,60 @@ public class YamlGuildStorage implements GuildStorage {
             return YamlConfiguration.loadConfiguration(storageFile);
         }
         return null;
+    }
+    private File backupSettingsFile;
+    private YamlConfiguration backupSettings;
+
+    private void initBackupSettings() {
+        backupSettingsFile = new File(plugin.getDataFolder(), "backup-settings.yml");
+        if (!backupSettingsFile.exists()) {
+            backupSettings = new YamlConfiguration();
+            backupSettings.set("cleanup-interval-days", 30);
+            backupSettings.set("last-cleanup", 0);
+            try {
+                backupSettings.save(backupSettingsFile);
+            } catch (IOException e) {
+                plugin.getLogger().warning("Could not create backup-settings.yml");
+            }
+        }
+        backupSettings = YamlConfiguration.loadConfiguration(backupSettingsFile);
+    }
+
+    private void startBackupCleaner() {
+        long lastCleanup = backupSettings.getLong("last-cleanup", 0);
+        long currentTime = System.currentTimeMillis();
+        long cleanupInterval = backupSettings.getLong("cleanup-interval-days", 30) * 24L * 60L * 60L * 1000L;
+
+        if (currentTime - lastCleanup >= cleanupInterval) {
+            plugin.getLogger().info("Starting backup cleanup...");
+            cleanupOldBackups(backupSettings.getInt("cleanup-interval-days", 30));
+            backupSettings.set("last-cleanup", currentTime);
+            try {
+                backupSettings.save(backupSettingsFile);
+            } catch (IOException e) {
+                plugin.getLogger().warning("Could not save backup-settings.yml");
+            }
+            plugin.getLogger().info("Backup cleanup completed!");
+        }
+
+
+        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+            long now = System.currentTimeMillis();
+            long lastRun = backupSettings.getLong("last-cleanup");
+            long interval = backupSettings.getLong("cleanup-interval-days", 30) * 24L * 60L * 60L * 1000L;
+
+            if (now - lastRun >= interval) {
+                plugin.getLogger().info("Starting backup cleanup...");
+                cleanupOldBackups(backupSettings.getInt("cleanup-interval-days", 30));
+                backupSettings.set("last-cleanup", now);
+                try {
+                    backupSettings.save(backupSettingsFile);
+                } catch (IOException e) {
+                    plugin.getLogger().warning("Could not save backup-settings.yml");
+                }
+                plugin.getLogger().info("Backup cleanup completed!");
+            }
+        // Check every hour (60 minutes * 60 seconds * 20 ticks)
+        }, 72000L, 72000L);
     }
 }
