@@ -24,7 +24,10 @@ commands:
       /guild home <name> - Teleport to guild home
       /guild delhome <name> - Delete a guild home
       /guild buff - Open buff menu
-  
+  alliance:
+    description: Alliance management commands
+    usage: /alliance help
+    aliases: [a]  
   guildadmin:
     description: Administrative commands for guilds
     permission: guilds.admin

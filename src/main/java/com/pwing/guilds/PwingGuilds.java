@@ -22,6 +22,7 @@ import com.pwing.guilds.storage.GuildBackupListener;
 import com.pwing.guilds.rewards.RewardManager;
 import com.pwing.guilds.gui.GuildGUIListener;
 import com.pwing.guilds.config.ConfigUpdater;
+import com.pwing.guilds.commands.alliance.AllianceCommand;
 import com.pwing.guilds.integration.WorldGuardHook;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -47,7 +48,6 @@ public class PwingGuilds extends JavaPlugin {
     public WorldGuardHook getWorldGuardHook() {
         return worldGuardHook;
     }
-
     @Override
     public void onEnable() {
         saveDefaultConfig();
@@ -104,13 +104,17 @@ public class PwingGuilds extends JavaPlugin {
         getCommand("guild").setExecutor(new GuildCommand(this));
         getCommand("guildadmin").setExecutor(new GuildAdminCommand(this));
 
+        // Register alliance commands
+        getCommand("alliance").setExecutor(new AllianceCommand(this));
+
         // Setup PlaceholderAPI if available
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new GuildPlaceholders(this).register();
         }
 
         getLogger().info("PwingGuilds has been enabled!");
-    }    private boolean setupEconomy() {
+    }
+        private boolean setupEconomy() {
         if (getServer().getPluginManager().getPlugin("Vault") == null) {
             return false;
         }
