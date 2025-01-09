@@ -19,6 +19,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.potion.PotionEffect;
 
+import java.util.List;
 import java.util.UUID;
 
 public final class GuildGUIListener implements Listener {
@@ -140,7 +141,11 @@ public final class GuildGUIListener implements Listener {
                         ItemStack head = new ItemStack(Material.PLAYER_HEAD);
                         SkullMeta skullMeta = (SkullMeta) head.getItemMeta();
                         skullMeta.setOwningPlayer(member);
-                        skullMeta.setDisplayName("§e" + member.getName());
+                        String name = member.getName() != null ? member.getName() : member.getUniqueId().toString();
+                        skullMeta.setDisplayName("§e" + name);
+                        List<String> lore = new ArrayList<>();
+                        lore.add("§7Click to view member info");
+                        skullMeta.setLore(lore);
                         head.setItemMeta(skullMeta);
                         memberInv.setItem(slot++, head);
                     }
