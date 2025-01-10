@@ -3,6 +3,9 @@ package com.pwing.guilds.guild;
 import org.bukkit.Chunk;
 import org.bukkit.World;
 
+/**
+ * Represents a location of a chunk in the world
+ */
 public class ChunkLocation {
     private final String world;
     private final int x;
@@ -11,6 +14,10 @@ public class ChunkLocation {
     // Cache the hashCode
     private final int hash;
 
+    /**
+     * Creates a new ChunkLocation from a Bukkit Chunk
+     * @param chunk The Bukkit chunk
+     */
     public ChunkLocation(Chunk chunk) {
         this.world = chunk.getWorld().getName();
         this.x = chunk.getX();
@@ -18,6 +25,12 @@ public class ChunkLocation {
         this.hash = calculateHash();
     }
 
+    /**
+     * Creates a new ChunkLocation from coordinates
+     * @param world The world name
+     * @param x The x coordinate
+     * @param z The z coordinate
+     */
     public ChunkLocation(String world, int x, int z) {
         this.world = world;
         this.x = x;
@@ -25,8 +38,22 @@ public class ChunkLocation {
         this.hash = calculateHash();
     }
 
+    /**
+     * Gets the world name
+     * @return The world name
+     */
     public String getWorld() { return world; }
+
+    /**
+     * Gets the x coordinate
+     * @return The x coordinate
+     */
     public int getX() { return x; }
+
+    /**
+     * Gets the z coordinate
+     * @return The z coordinate
+     */
     public int getZ() { return z; }
 
     private int calculateHash() {

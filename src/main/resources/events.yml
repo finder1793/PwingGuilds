@@ -1,0 +1,80 @@
+events:
+  territory-control:
+    enabled: true
+    rewards:
+      first-place:
+        - "money 15000"
+        - "mythic:TerritoryKey"
+        - "claims 5"
+      second-place:
+        - "money 10000"
+        - "claims 3"
+      third-place:
+        - "money 5000"
+        - "claims 1"
+  pvp-tournament:
+    enabled: true
+    rewards:
+      first-place:
+        - "money 20000"
+      second-place:
+        - "money 12000"
+        - "mythic:GladiatorArmor"
+      third-place:
+        - "money 8000"
+        - "mythic:WarriorKey"
+  resource-race:
+    enabled: true
+    rewards:
+      first-place:
+        - "money 25000"
+      second-place:
+        - "money 15000"
+        - "mythic:MinerKey"
+      third-place:
+        - "money 10000"
+        - "command give %player% diamond 32"
+  boss-raid:
+    enabled: true
+    boss-type: "mythic:GuildBoss"
+    spawn-location:
+      world: "world"
+      x: 0
+      y: 80
+      z: 0
+    rewards:
+      first-place:
+        - "mythic:LegendaryKey"
+        - "money 10000"
+      second-place:
+        - "mythic:RareKey"
+        - "money 5000"
+      third-place:
+        - "mythic:CommonKey"
+        - "money 2500"
+# Event Schedule
+event-schedule:
+  territory-control:
+    time: "12:00"
+    days: [MONDAY, WEDNESDAY, FRIDAY]
+    duration: 60
+    min-players: 10
+    announce-before: [30, 15, 5]
+  pvp-tournament:
+    time: "18:00"
+    days: [TUESDAY, THURSDAY]
+    duration: 45
+    min-players: 8
+    announce-before: [30, 15, 5]
+  resource-race:
+    time: "15:00"
+    days: [SATURDAY]
+    duration: 30
+    min-players: 6
+    announce-before: [15, 5]
+  boss-raid:
+    time: "20:00"
+    days: [SUNDAY]
+    duration: 90
+    min-players: 12
+    announce-before: [60, 30, 15, 5]

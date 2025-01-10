@@ -1,0 +1,43 @@
+messages:
+  general:
+    prefix: "&8[&6Guilds&8]&r "
+    no-permission: "&cYou don't have permission to do that!"
+    not-in-guild: "&cYou are not in a guild!"
+    player-not-found: "&cPlayer not found!"
+    
+  guild:
+    created: "&aGuild successfully created!"
+    disbanded: "&cGuild has been disbanded!"
+    invited: "&aInvited %player% to your guild!"
+    joined: "&aYou joined %guild%!"
+    left: "&cYou left your guild!"
+    kicked: "&cYou were kicked from your guild!"
+    level-up: "&aYour guild has reached level %level%!"
+    
+  buffs:
+    activated: "&aActivated %buff% buff!"
+    expired: "&cYour %buff% buff has expired!"
+    not-enough-money: "&cYou need %cost% to activate this buff!"
+    no-permission: "&cYou don't have permission to use this buff!"
+    
+  events:
+    starting: "&aA %event% event is starting in %time% minutes!"
+    started: "&aThe %event% event has begun!"
+    ended: "&aThe %event% event has ended!"
+    join: "&aYou have joined the %event% event!"
+    leave: "&cYou have left the %event% event!"
+    not-enough-players: "&cNot enough players to start %event%!"
+
+  alliance:
+    created: "&aAlliance %name% has been created!"
+    disbanded: "&cAlliance has been disbanded!"
+    invited: "&aYour guild has been invited to join %alliance%!"
+    joined: "&aYour guild has joined %alliance%!"
+    left: "&cYour guild has left %alliance%!"
+
+  error:
+    already-in-guild: "&cYou are already in a guild!"
+    guild-not-found: "&cGuild not found!"
+    alliance-not-found: "&cAlliance not found!"
+    insufficient-funds: "&cInsufficient funds!"
+    invalid-name: "&cInvalid name format!"

@@ -6,14 +6,31 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Manages plugin configuration files and their loading/saving.
+ * This class handles loading, saving, and reloading of all plugin configuration files.
+ */
 public class ConfigManager {
     private final PwingGuilds plugin;
     private final Map<String, FileConfiguration> configs;
     private final Map<String, File> configFiles;
 
+    private static final String[] CONFIG_FILES = {
+        "config.yml",
+        "messages.yml",
+        "buffs.yml",
+        "events.yml"
+    };
+
+    /**
+     * Creates a new ConfigManager instance
+     * @param plugin The plugin instance
+     */
     public ConfigManager(PwingGuilds plugin) {
         this.plugin = plugin;
         this.configs = new HashMap<>();
@@ -21,31 +38,57 @@ public class ConfigManager {
         loadConfigs();
     }
 
+    /**
+     * Loads all default configuration files for the plugin
+     */
     private void loadConfigs() {
-        loadConfig("config.yml");
-        loadConfig("messages.yml");
-        loadConfig("buffs.yml");
-        loadConfig("events.yml");
+        for (String filename : CONFIG_FILES) {
+            loadConfig(filename);
+        }
     }
 
+    /**
+     * Loads a configuration file
+     * @param filename The name of the file to load
+     */
     public void loadConfig(String filename) {
         if (!plugin.getDataFolder().exists()) {
             plugin.getDataFolder().mkdirs();
         }
 
         File file = new File(plugin.getDataFolder(), filename);
-        if (!file.exists()) {
+        
+        // Always create default config if it doesn't exist
+        if (!file.exists() || filename.equals("config.yml")) {
             plugin.saveResource(filename, false);
         }
 
         configFiles.put(filename, file);
-        configs.put(filename, YamlConfiguration.loadConfiguration(file));
+        FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+        
+        // Load defaults from jar if they exist
+        InputStream defaultStream = plugin.getResource(filename);
+        if (defaultStream != null) {
+            config.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(defaultStream)));
+            config.options().copyDefaults(true);
+        }
+        
+        configs.put(filename, config);
     }
 
+    /**
+     * Gets a configuration file
+     * @param filename The name of the file
+     * @return The configuration file
+     */
     public FileConfiguration getConfig(String filename) {
         return configs.getOrDefault(filename, null);
     }
 
+    /**
+     * Saves a configuration file
+     * @param filename The name of the file to save
+     */
     public void saveConfig(String filename) {
         try {
             configs.get(filename).save(configFiles.get(filename));
@@ -55,14 +98,24 @@ public class ConfigManager {
         }
     }
 
+    /**
+     * Saves all loaded configuration files
+     */
     public void saveConfigs() {
         configs.keySet().forEach(this::saveConfig);
     }
 
+    /**
+     * Reloads a specific configuration file
+     * @param filename The name of the file to reload
+     */
     public void reloadConfig(String filename) {
         loadConfig(filename);
     }
 
+    /**
+     * Reloads all configuration files
+     */
     public void reloadAllConfigs() {
         configs.clear();
         configFiles.clear();

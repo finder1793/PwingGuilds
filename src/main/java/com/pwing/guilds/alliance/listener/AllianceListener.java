@@ -12,12 +12,25 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Listens to and handles alliance-related events.
+ * Processes chat events and other alliance interactions.
+ */
 public class AllianceListener implements Listener {
     private final PwingGuilds plugin;
 
+    /**
+     * Creates a new AllianceListener instance
+     * @param plugin The PwingGuilds plugin instance
+     */
     public AllianceListener(PwingGuilds plugin) {
         this.plugin = plugin;
     }
+
+    /**
+     * Handles alliance chat messages
+     * @param event The chat event
+     */
     @EventHandler
     public void onAllianceChat(AsyncPlayerChatEvent event) {
         if (!event.getMessage().startsWith("@a ")) {

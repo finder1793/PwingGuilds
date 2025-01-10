@@ -6,13 +6,25 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
+/**
+ * Listens for and handles guild chat messages.
+ * Processes chat formatting and routing of guild messages.
+ */
 public class GuildChatListener implements Listener {
     private final PwingGuilds plugin;
 
+    /**
+     * Creates a new guild chat listener
+     * @param plugin The plugin instance
+     */
     public GuildChatListener(PwingGuilds plugin) {
         this.plugin = plugin;
     }
 
+    /**
+     * Handles player chat events for guild chat
+     * @param event The chat event
+     */
     @EventHandler
     public void onChat(AsyncPlayerChatEvent event) {
         if (!event.getMessage().startsWith("@g")) {

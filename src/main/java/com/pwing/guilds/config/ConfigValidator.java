@@ -7,32 +7,53 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import org.bukkit.configuration.file.FileConfiguration;
 
+/**
+ * Validates plugin configuration files to ensure required settings are present and valid.
+ */
 public class ConfigValidator {
     private final PwingGuilds plugin;
     private final List<String> errors = new ArrayList<>();
     private final DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm");
 
+    /**
+     * Creates a new ConfigValidator instance
+     * @param plugin The plugin instance
+     */
     public ConfigValidator(PwingGuilds plugin) {
         this.plugin = plugin;
     }
 
+    /**
+     * Validates all configuration files
+     * @return true if validation passes, false if any critical settings are missing
+     */
     public boolean validate() {
+        // Main config validation
         validateGuildLevels();
-        validateEventSchedules();
         validateStorage();
         validateExpSources();
-        validateRewards();
+        
+        // Events config validation
+        validateEvents(); // Changed from validateEventConfigs()
+        validateEventSchedules();
         validateLocations();
-        validateBuffs();
+        validateRewards();
+        
+        // Buffs config validation
+        validateBuffConfigs();
+        
+        // Messages config validation
+        validateMessages();
 
         if (!errors.isEmpty()) {
             plugin.getLogger().warning("=== Configuration Warnings ===");
             errors.forEach(error -> plugin.getLogger().warning(error));
-            plugin.getLogger().warning("Some features may not work as expected. Please review the warnings above.");
+            return false;
         }
 
-        return true; // Always return true to allow plugin to continue loading
+        return true;
     }
 
     private void validateGuildLevels() {
@@ -220,14 +241,86 @@ public class ConfigValidator {
         }
     }
 
-    private void validateBuffs() {
-        ConfigurationSection buffs = plugin.getConfig().getConfigurationSection("guild-buffs");
-        if (buffs == null) return;
+    private void validateMessages() {
+        FileConfiguration messages = plugin.getConfigManager().getConfig("messages.yml");
+        if (messages == null) {
+            errors.add("Missing messages.yml configuration!");
+            return;
+        }
 
-        for (String buffKey : buffs.getKeys(false)) {
-            ConfigurationSection buff = buffs.getConfigurationSection(buffKey);
+        if (!messages.contains("messages.general.prefix")) {
+            errors.add("Missing required message: general.prefix");
+        }
+    }
+
+    private void validateBuffConfigs() {
+        FileConfiguration buffs = plugin.getConfigManager().getConfig("buffs.yml");
+        if (buffs == null) {
+            errors.add("Missing buffs.yml configuration!");
+            return;
+        }
+
+        ConfigurationSection buffsSection = buffs.getConfigurationSection("buffs");
+        if (buffsSection == null) {
+            errors.add("Missing buffs section in buffs.yml!");
+            return;
+        }
+
+        for (String buffKey : buffsSection.getKeys(false)) {
+            ConfigurationSection buff = buffsSection.getConfigurationSection(buffKey);
             if (buff == null) continue;
 
+            // Validate required fields
+            String[] requiredFields = {
+                "name",
+                "type",
+                "cost",
+                "duration",
+                "material"
+            };
+
+            for (String field : requiredFields) {
+                if (!buff.contains(field)) {
+                    errors.add("Buff " + buffKey + " missing required field: " + field);
+                }
+            }
+
+            // Validate buff type and related fields
+            String type = buff.getString("type", "").toUpperCase();
+            switch (type) {
+                case "POTION" -> {
+                    if (!buff.contains("effect")) {
+                        errors.add("Potion buff " + buffKey + " missing effect type!");
+                    }
+                }
+                case "STAT" -> {
+                    if (!buff.contains("stat-type")) {
+                        errors.add("Stat buff " + buffKey + " missing stat-type!");
+                    }
+                    if (!buff.contains("stat-value")) {
+                        errors.add("Stat buff " + buffKey + " missing stat-value!");
+                    }
+                }
+                case "BOTH" -> {
+                    if (!buff.contains("effect")) {
+                        errors.add("Hybrid buff " + buffKey + " missing effect type!");
+                    }
+                    if (!buff.contains("stat-type") || !buff.contains("stat-value")) {
+                        errors.add("Hybrid buff " + buffKey + " missing stat configuration!");
+                    }
+                }
+                default -> errors.add("Invalid buff type for " + buffKey + ": " + type);
+            }
+
+            // Validate numeric values
+            validateNumericValue(buff, "cost", buffKey, 0);
+            validateNumericValue(buff, "duration", buffKey, 1);
+            validateNumericValue(buff, "slot", buffKey, 0);
+            if (buff.contains("level")) {
+                validateNumericValue(buff, "level", buffKey, 1);
+            }
+
+            // Validate material
             String materialName = buff.getString("material");
             if (materialName != null) {
                 try {
@@ -236,10 +329,14 @@ public class ConfigValidator {
                     errors.add("Invalid material for buff " + buffKey + ": " + materialName);
                 }
             }
+        }
+    }
 
-            int slot = buff.getInt("slot", -1);
-            if (slot < 0) {
-                errors.add("Invalid slot number for buff " + buffKey + ": " + slot);
+    private void validateNumericValue(ConfigurationSection section, String path, String buffKey, int minimum) {
+        if (section.contains(path)) {
+            int value = section.getInt(path);
+            if (value < minimum) {
+                errors.add("Buff " + buffKey + " has invalid " + path + " value: " + value + " (minimum: " + minimum + ")");
             }
         }
     }

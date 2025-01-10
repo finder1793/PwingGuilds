@@ -7,13 +7,25 @@ import org.bukkit.entity.Player;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 
+/**
+ * Handles announcements for upcoming guild events
+ */
 public class EventAnnouncer {
     private final PwingGuilds plugin;
 
+    /**
+     * Creates a new EventAnnouncer
+     * @param plugin The plugin instance
+     */
     public EventAnnouncer(PwingGuilds plugin) {
         this.plugin = plugin;
     }
 
+    /**
+     * Announces an upcoming event to all players
+     * @param eventName The name of the event
+     * @param minutesUntil Minutes until the event starts
+     */
     public void announceUpcoming(String eventName, int minutesUntil) {
         String message = switch (minutesUntil) {
             case 60 -> "§6§lGuild Event: §e" + eventName + " §fstarts in §61 hour!";

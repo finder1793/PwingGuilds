@@ -17,6 +17,9 @@ import com.pwing.guilds.guild.Guild;
 import io.lumine.mythic.bukkit.MythicBukkit;
 import io.lumine.mythic.core.mobs.ActiveMob;
 
+/**
+ * Represents a boss raid event that guilds can participate in
+ */
 public class BossRaidEvent extends GuildEvent implements Listener {
     private LivingEntity boss;
     private ActiveMob mythicBoss;
@@ -24,6 +27,12 @@ public class BossRaidEvent extends GuildEvent implements Listener {
     private final boolean isMythicMob;
     private final String bossType;
 
+    /**
+     * Creates a new boss raid event
+     * @param plugin Plugin instance
+     * @param name Name of the event
+     * @param duration Duration in seconds
+     */
     public BossRaidEvent(PwingGuilds plugin, String name, int duration) {
         super(plugin, name, duration);
         this.description = "Work together to defeat the mighty boss! Most damage dealt wins!";
@@ -78,6 +87,11 @@ public class BossRaidEvent extends GuildEvent implements Listener {
             boss.getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(10.0);
         }
     }
+
+    /**
+     * Handles damage dealt to the boss
+     * @param event The damage event
+     */
     @EventHandler
     public void onBossDamage(EntityDamageByEntityEvent event) {
         if (!isActive || event.getEntity() != boss) return;
@@ -102,6 +116,10 @@ public class BossRaidEvent extends GuildEvent implements Listener {
         }
     }
 
+    /**
+     * Handles the boss death event
+     * @param event The death event
+     */
     @EventHandler
     public void onBossDeath(EntityDeathEvent event) {
         if (!isActive || event.getEntity() != boss) return;

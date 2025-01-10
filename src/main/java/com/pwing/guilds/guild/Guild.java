@@ -19,6 +19,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @SerializableAs("Guild")
+/**
+ * Represents a guild in the plugin.
+ * Handles guild data, members, permissions, and actions.
+ */
 public class Guild implements ConfigurationSerializable {
     private final PwingGuilds plugin;
     private final String name;
@@ -36,6 +40,12 @@ public class Guild implements ConfigurationSerializable {
     private long lastUpdate;
     private final Set<UUID> onlineMembers = new HashSet<>();
 
+    /**
+     * Creates a new guild with the specified parameters
+     * @param plugin The plugin instance
+     * @param name The name of the guild
+     * @param owner The UUID of the guild owner
+     */
     public Guild(PwingGuilds plugin, String name, UUID owner) {
         this.plugin = plugin;
         this.name = name;
@@ -50,6 +60,11 @@ public class Guild implements ConfigurationSerializable {
         return invites.add(player);
     }
 
+    /**
+     * Accepts a player's invitation to join the guild
+     * @param player The UUID of the player
+     * @return true if successful, false if no invite exists
+     */
     public boolean acceptInvite(UUID player) {
         if (invites.remove(player)) {
             return members.add(player);
@@ -87,6 +102,11 @@ public class Guild implements ConfigurationSerializable {
         }
         return unclaimed;
     }
+    /**
+     * Adds experience points to the guild
+     * @param amount The amount of exp to add
+     * @return true if level up occurred
+     */
     public boolean addExp(long amount) {
         GuildExpGainEvent expEvent = new GuildExpGainEvent(this, amount);
         Bukkit.getPluginManager().callEvent(expEvent);
@@ -119,6 +139,10 @@ public class Guild implements ConfigurationSerializable {
         return false;
     }
 
+    /**
+     * Adds bonus claim chunks to the guild
+     * @param amount The amount of bonus claims to add
+     */
     public void addBonusClaims(int amount) {
         this.bonusClaims += amount;
     }
@@ -305,13 +329,17 @@ public class Guild implements ConfigurationSerializable {
     }
 
     // Getters
+    /** @return The guild's name */
     public String getName() { return name; }
+    /** @return The guild owner's UUID */
     public UUID getOwner() { return owner; }
+    /** @return The guild's current experience points */
+    public long getExp() { return exp; }
+    /** @return The guild's current level */
+    public int getLevel() { return level; }
     public UUID getLeader() { return leader; }
     public Set<UUID> getMembers() { return Collections.unmodifiableSet(members); }
     public Set<ChunkLocation> getClaimedChunks() { return Collections.unmodifiableSet(claimedChunks); }
-    public int getLevel() { return level; }
-    public long getExp() { return exp; }
     public GuildPerks getPerks() { return perks; }
     public int getBonusClaims() { return bonusClaims; }
     public Map<String, GuildHome> getHomes() { return Collections.unmodifiableMap(homes); }
@@ -353,5 +381,34 @@ public class Guild implements ConfigurationSerializable {
         
         // Save changes
         plugin.getGuildManager().getStorage().saveGuild(this);
+    }
+
+    /**
+     * Checks if the guild bank has enough money
+     * @param amount Amount to check for
+     * @return true if the guild has enough money
+     */
+    public boolean hasMoney(double amount) {
+        UUID leaderId = getLeader();
+        if (leaderId == null) return false;
+        
+        return plugin.getEconomy() != null && 
+               plugin.getEconomy().has(Bukkit.getOfflinePlayer(leaderId), amount);
+    }
+
+    /**
+     * Withdraws money from the guild bank
+     * @param amount Amount to withdraw
+     * @return true if withdrawal was successful
+     */
+    public boolean withdrawMoney(double amount) {
+        UUID leaderId = getLeader();
+        if (leaderId == null || !hasMoney(amount)) return false;
+
+        plugin.getEconomy().withdrawPlayer(
+            Bukkit.getOfflinePlayer(leaderId), 
+            amount
+        );
+        return true;
     }
 }

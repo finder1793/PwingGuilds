@@ -1,0 +1,94 @@
+settings:
+  stack-buffs: false  # Whether buffs can stack
+  show-particles: true  # Show buff particles
+  broadcast-activation: true  # Broadcast when guild activates buff
+
+buffs:
+  strength:
+    name: "Warrior's Might"
+    type: BOTH
+    effect: INCREASE_DAMAGE
+    stat-type: PHYSICAL_DAMAGE
+    stat-value: 5.0
+    cost: 1000
+    level: 1
+    duration: 3600
+    permission: "guild.buff.strength"
+    slot: 0
+    material: DIAMOND_SWORD
+
+  defense:
+    name: "Guardian's Shield"
+    type: STAT
+    stat-type: DEFENSE
+    stat-value: 10.0
+    cost: 1500
+    duration: 3600
+    permission: "guild.buff.defense"
+    slot: 1
+    material: SHIELD
+
+  speed:
+    name: "Swift Movement"
+    type: POTION
+    effect: SPEED
+    level: 2
+    cost: 800
+    duration: 1800
+    permission: "guild.buff.speed"
+    slot: 2
+    material: FEATHER
+
+  critical:
+    name: "Critical Master"
+    type: STAT
+    stat-type: "CRITICAL_STRIKE_CHANCE"
+    stat-value: 15.0
+    level: 1
+    cost: 2000
+    duration: 3600
+    slot: 3
+    material: DIAMOND_AXE
+
+  tank:
+    name: "Tank's Blessing"
+    type: STAT
+    stat-type: "ARMOR_GENERIC"
+    stat-value: 20.0
+    level: 1
+    cost: 1500
+    duration: 1800
+    slot: 4
+    material: DIAMOND_CHESTPLATE
+
+  lifesteal:
+    name: "Vampiric Aura"
+    type: STAT
+    stat-type: "LIFESTEAL_POWER"
+    stat-value: 0.15
+    level: 1
+    cost: 2500
+    duration: 1200
+    slot: 5
+    material: REDSTONE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

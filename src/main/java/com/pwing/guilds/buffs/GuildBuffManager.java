@@ -2,6 +2,9 @@ package com.pwing.guilds.buffs;
 
 import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.guild.Guild;
+import com.pwing.guilds.message.MessageManager;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import io.lumine.mythic.bukkit.MythicBukkit;
 import io.lumine.mythic.core.skills.stats.StatExecutor;
 import io.lumine.mythic.core.skills.stats.StatType;
@@ -16,18 +19,29 @@ import java.util.UUID;
 import java.util.Map;
 import java.util.HashMap;
 
+/**
+ * Manages guild buff system including loading, activation and expiration.
+ * Handles buff effects, costs, and player application.
+ */
 public class GuildBuffManager {
     private final Map<String, GuildBuff> availableBuffs = new HashMap<>();
     private final Map<UUID, Map<String, GuildBuff>> activeBuffs = new HashMap<>();
     private final PwingGuilds plugin;
 
+    /**
+     * Creates a new GuildBuffManager instance
+     * @param plugin The plugin instance
+     */
     public GuildBuffManager(PwingGuilds plugin) {
         this.plugin = plugin;
         loadBuffs();
     }
 
     private void loadBuffs() {
-        ConfigurationSection buffsSection = plugin.getConfig().getConfigurationSection("guild-buffs");
+        FileConfiguration buffsConfig = plugin.getConfigManager().getConfig("buffs.yml");
+        if (buffsConfig == null) return;
+
+        ConfigurationSection buffsSection = buffsConfig.getConfigurationSection("buffs");
         if (buffsSection == null) return;
 
         for (String key : buffsSection.getKeys(false)) {
@@ -72,18 +86,60 @@ public class GuildBuffManager {
         }
     }
 
+    /**
+     * Activates a buff for a guild
+     * @param guild The guild to activate the buff for
+     * @param buffName The name of the buff to activate
+     * @return true if activation was successful
+     */
     public boolean activateGuildBuff(Guild guild, String buffName) {
         GuildBuff buff = availableBuffs.get(buffName);
         if (buff == null) return false;
 
+        // Get the player attempting to activate the buff
+        Player activator = guild.getMembers().stream()
+            .map(Bukkit::getPlayer)
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElse(null);
+
+        if (activator == null) return false;
+
+        double cost = buff.getCost();
+
+        if (!activator.hasPermission("guild.buff." + buffName)) {
+            activator.sendMessage(plugin.getMessageManager().getMessage("buffs.no-permission")); 
+            return false;
+        }
+
+        if (!guild.hasMoney(cost)) {
+            activator.sendMessage(plugin.getMessageManager().getMessage("buffs.not-enough-money")
+                .replace("%cost%", String.format("%.2f", cost)));
+            return false;
+        }
+
+        if (!guild.withdrawMoney(cost)) {
+            activator.sendMessage(plugin.getMessageManager().getMessage("buffs.not-enough-money")
+                .replace("%cost%", String.format("%.2f", cost)));
+            return false;
+        }
+
         guild.getMembers().stream()
             .map(Bukkit::getPlayer)
             .filter(Objects::nonNull)
-            .forEach(buff::applyToMember);
+            .forEach(p -> {
+                buff.applyToMember(p);
+                p.sendMessage(plugin.getMessageManager().getMessage("buffs.activated")
+                    .replace("%buff%", buff.getName()));
+            });
 
         return true;
     }
 
+    /**
+     * Gets all available guild buffs
+     * @return Map of buff names to buff objects
+     */
     public Map<String, GuildBuff> getAvailableBuffs() {
         return availableBuffs;
     }
@@ -98,6 +154,8 @@ public class GuildBuffManager {
                         .getStatRegistry();
                         
                     registry.removeValueSilently(buff.getStatType(), buff);
+                    player.sendMessage(plugin.getMessageManager().getMessage("buffs.expired")
+                        .replace("%buff%", buff.getName()));
                 }
             }
         }

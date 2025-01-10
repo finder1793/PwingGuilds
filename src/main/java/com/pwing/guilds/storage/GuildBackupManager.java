@@ -16,7 +16,9 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.Comparator;
 
-
+/**
+ * Manages guild data backups including scheduled backups and restoration.
+ */
 public class GuildBackupManager {
     private final PwingGuilds plugin;
     private final File backupFolder;
@@ -26,6 +28,10 @@ public class GuildBackupManager {
     private final int minBackups;
     private BukkitTask backupTask;
 
+    /**
+     * Creates a new backup manager instance
+     * @param plugin The plugin instance
+     */
     public GuildBackupManager(PwingGuilds plugin) {
         this.plugin = plugin;
         this.backupFolder = new File(plugin.getDataFolder(), "backups");
@@ -44,6 +50,10 @@ public class GuildBackupManager {
     }
 
     private void startScheduledBackups() {
+        if (backupTask != null) {
+            backupTask.cancel();
+        }
+        
         backupTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
             plugin.getLogger().info("Starting scheduled guild backup...");
             backupAllGuilds();
@@ -51,12 +61,29 @@ public class GuildBackupManager {
         }, backupInterval, backupInterval);
     }
 
+    /**
+     * Stops the scheduled backup task
+     */
+    public void shutdown() {
+        if (backupTask != null) {
+            backupTask.cancel();
+            backupTask = null;
+        }
+    }
+
+    /**
+     * Creates backups for all guilds
+     */
     public void backupAllGuilds() {
         for (Guild guild : plugin.getGuildManager().getGuilds()) {
             createCompressedBackup(guild);
         }
     }
 
+    /**
+     * Creates a compressed backup file for a guild
+     * @param guild The guild to backup
+     */
     public void createCompressedBackup(Guild guild) {
         String timestamp = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
         File backupFile = new File(backupFolder, guild.getName() + "-" + timestamp + ".gz");
@@ -74,6 +101,10 @@ public class GuildBackupManager {
         }
     }
 
+    /**
+     * Restores a guild from a backup file
+     * @param backupFileName Name of the backup file to restore
+     */
     public void restoreFromBackup(String backupFileName) {
         File backupFile = new File(backupFolder, backupFileName);
         if (!backupFile.exists()) return;

@@ -10,6 +10,7 @@ import com.pwing.guilds.alliance.AllianceManager;
 import com.pwing.guilds.alliance.storage.AllianceStorage;
 import com.pwing.guilds.alliance.storage.YamlAllianceStorage;
 import com.pwing.guilds.alliance.storage.SQLAllianceStorage;
+import com.pwing.guilds.message.MessageManager;
 import com.pwing.guilds.storage.SQLGuildStorage;
 import com.pwing.guilds.events.custom.GuildEventManager;
 import com.pwing.guilds.placeholders.GuildPlaceholders;
@@ -27,6 +28,7 @@ import com.pwing.guilds.storage.GuildBackupListener;
 import com.pwing.guilds.rewards.RewardManager;
 import com.pwing.guilds.config.ConfigUpdater;
 import com.pwing.guilds.config.ConfigManager;
+import com.pwing.guilds.config.ConfigMigration;
 import com.pwing.guilds.integration.WorldGuardHook;
 import com.pwing.guilds.events.EventRegistry;
 import com.pwing.guilds.database.DatabaseManager;
@@ -53,6 +55,8 @@ public class PwingGuilds extends JavaPlugin {
     private DatabaseManager databaseManager;
     private EventRegistry eventRegistry;
     private ServerAdapter serverAdapter;
+    private GuildBackupManager guildBackupManager;
+    private MessageManager messageManager;
 
     public boolean hasWorldGuard() {
         return worldGuardHook != null;
@@ -63,6 +67,9 @@ public class PwingGuilds extends JavaPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        
+        // Run config migration before loading configs
+        new ConfigMigration(this).migrateConfigs();
         new ConfigUpdater(this).update();
 
         ConfigValidator validator = new ConfigValidator(this);
@@ -76,6 +83,7 @@ public class PwingGuilds extends JavaPlugin {
 
         // Initialize managers
         this.configManager = new ConfigManager(this);
+        this.messageManager = new MessageManager(this);
         this.databaseManager = new DatabaseManager(getConfig());
         this.eventRegistry = new EventRegistry(this);
 
@@ -110,8 +118,8 @@ public class PwingGuilds extends JavaPlugin {
         this.allianceManager.initialize();
 
         // Register backup system
-        GuildBackupManager backupManager = new GuildBackupManager(this);
-        getServer().getPluginManager().registerEvents(new GuildBackupListener(this, backupManager), this);
+        guildBackupManager = new GuildBackupManager(this);
+        getServer().getPluginManager().registerEvents(new GuildBackupListener(this, guildBackupManager), this);
 
         // Register all listeners
         eventRegistry.registerListeners();
@@ -182,6 +190,12 @@ public class PwingGuilds extends JavaPlugin {
     public ServerAdapter getServerAdapter() {
         return serverAdapter;
     }
+    public ConfigManager getConfigManager() {
+        return configManager;
+    }
+    public MessageManager getMessageManager() {
+        return messageManager;
+    }
     @Override
     public void onDisable() {
         getLogger().info("Starting final guild data save...");
@@ -202,6 +216,10 @@ public class PwingGuilds extends JavaPlugin {
         configManager.saveConfigs();
         databaseManager.shutdown();
         eventRegistry.unregisterAll();
+
+        if (guildBackupManager != null) {
+            guildBackupManager.shutdown();
+        }
 
         getLogger().info("Guild data save completed!");
     }

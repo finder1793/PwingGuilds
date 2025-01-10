@@ -4,9 +4,16 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.configuration.Configuration;
 
+/**
+ * Manages database connections and operations for the plugin
+ */
 public class DatabaseManager {
     private final HikariDataSource dataSource;
 
+    /**
+     * Creates a new DatabaseManager with the specified configuration
+     * @param config The database configuration
+     */
     public DatabaseManager(Configuration config) {
         HikariConfig hikariConfig = new HikariConfig();
         
@@ -25,10 +32,17 @@ public class DatabaseManager {
         this.dataSource = new HikariDataSource(hikariConfig);
     }
 
+    /**
+     * Gets the active database connection pool
+     * @return The HikariCP datasource
+     */
     public HikariDataSource getDataSource() {
         return dataSource;
     }
 
+    /**
+     * Closes the database connection pool
+     */
     public void shutdown() {
         if (dataSource != null && !dataSource.isClosed()) {
             dataSource.close();

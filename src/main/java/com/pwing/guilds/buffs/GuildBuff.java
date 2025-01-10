@@ -15,6 +15,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Represents a guild buff that can be applied to guild members.
+ * Buffs can provide potion effects and/or stat boosts.
+ */
 public class GuildBuff implements StatSource {
     private final PwingGuilds plugin;
     private final String name;
@@ -27,15 +31,35 @@ public class GuildBuff implements StatSource {
     private final String permission;
     private final BuffType type;
 
+    /**
+     * Defines the type of buff effect
+     */
     public enum BuffType {
+        /** Potion effect only */
         POTION,
+        /** Stat boost only */
         STAT,
+        /** Both potion and stat effects */
         BOTH
     }
 
     private final Material material;
     private final int slot;
 
+    /**
+     * Creates a new guild buff
+     * @param plugin Plugin instance
+     * @param name Buff name
+     * @param potionEffect Potion effect type
+     * @param statType Stat type
+     * @param statValue Stat value
+     * @param type Buff type
+     * @param duration Duration in seconds
+     * @param cost Cost to activate
+     * @param material GUI material
+     * @param slot GUI slot
+     * @param permission Permission required
+     */
     public GuildBuff(PwingGuilds plugin, String name, PotionEffectType potionEffect, StatType statType, 
                     double statValue, int level, int cost, int duration, String permission, 
                     BuffType type, Material material, int slot) {
@@ -55,6 +79,10 @@ public class GuildBuff implements StatSource {
 
     private final Map<UUID, Long> buffExpirations = new HashMap<>();
 
+    /**
+     * Applies the buff to a player
+     * @param player Player to apply buff to
+     */
     public void applyToMember(Player player) {
         // Potion effects work independently
         if (potionEffect != null) {
@@ -90,12 +118,19 @@ public class GuildBuff implements StatSource {
         return true;
     }
 
+    // Getters with simple documentation
+    /** @return The buff's name */
     public String getName() { return name; }
+    
+    /** @return The buff's potion effect type */
     public PotionEffectType getPotionEffect() { return potionEffect; }
+    
+    /** @return The buff's cost */
+    public int getCost() { return cost; }
+
     public StatType getStatType() { return statType; }
     public double getStatValue() { return statValue; }
     public int getLevel() { return level; }
-    public int getCost() { return cost; }
     public int getDuration() { return duration; }
     public String getPermission() { return permission; }
     public BuffType getType() { return type; }

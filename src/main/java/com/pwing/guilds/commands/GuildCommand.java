@@ -6,12 +6,17 @@ import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import com.pwing.guilds.message.MessageManager;
 import org.bukkit.entity.Player;
 import com.pwing.guilds.guild.Guild;
 import com.pwing.guilds.guild.GuildHome;
 import com.pwing.guilds.visualization.ChunkVisualizer;
 import com.pwing.guilds.gui.GuildManagementGUI;
 
+/**
+ * Handles all guild-related commands.
+ * Manages guild creation, deletion, invites, claims, and other guild operations.
+ */
 public class GuildCommand implements CommandExecutor {
     private final PwingGuilds plugin;
 
@@ -21,8 +26,13 @@ public class GuildCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!sender.hasPermission("guilds.command.guild")) {
+            sender.sendMessage(plugin.getMessageManager().getMessage("general.no-permission"));
+            return true;
+        }
+
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("§cOnly players can use guild commands!");
+            sender.sendMessage(plugin.getMessageManager().getMessage("general.player-only"));
             return true;
         }
 

@@ -12,6 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 
+/**
+ * Base class for guild events that can be participated in
+ */
 public abstract class GuildEvent implements Listener {
     protected final PwingGuilds plugin;
     protected final String name;
@@ -26,7 +29,14 @@ public abstract class GuildEvent implements Listener {
         this.duration = Duration.ofMinutes(durationMinutes);
     }
 
+    /**
+     * Starts the guild event
+     */
     public abstract void start();
+
+    /**
+     * Updates the scores for the event
+     */
     public abstract void updateScores();
 
     public String getName() {
@@ -56,10 +66,17 @@ public abstract class GuildEvent implements Listener {
     public void distributeRewards() {
         plugin.getRewardManager().giveEventRewards(this);
     }
+
+    /**
+     * Announces the results of the event
+     */
     public void announceResults() {
         // Implement logic to announce the results of the event
     }
 
+    /**
+     * Ends the guild event
+     */
     public void end() {
         isActive = false;
         HandlerList.unregisterAll(this);
