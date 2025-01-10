@@ -10,15 +10,12 @@ softdepend: [WorldGuard, PlaceholderAPI, MythicMobs]
 commands:
   guild:
     description: Main guild command
-    usage: /guild <subcommand>
     aliases: [g]
   guildadmin:
     description: Guild admin commands
-    usage: /guildadmin <subcommand>
-    aliases: [gadmin]
+    aliases: [ga]
   alliance:
     description: Alliance management commands
-    usage: /alliance <subcommand>
     aliases: [ally]
 
 permissions:
