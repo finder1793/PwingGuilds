@@ -6,18 +6,36 @@ import org.bukkit.event.Cancellable;
 import com.pwing.guilds.guild.Guild;
 import com.pwing.guilds.guild.ChunkLocation;
 
+/**
+ * Called when a guild attempts to claim a chunk
+ * Can be cancelled to prevent the claim
+ */
 public class GuildClaimChunkEvent extends Event implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
     private final Guild guild;
     private final ChunkLocation chunk;
     private boolean cancelled;
 
+    /**
+     * Creates a new GuildClaimChunkEvent
+     * @param guild The guild attempting to claim
+     * @param chunk The chunk being claimed
+     */
     public GuildClaimChunkEvent(Guild guild, ChunkLocation chunk) {
         this.guild = guild;
         this.chunk = chunk;
     }
 
+    /**
+     * Gets the guild attempting to claim
+     * @return The claiming guild
+     */
     public Guild getGuild() { return guild; }
+
+    /**
+     * Gets the chunk being claimed
+     * @return The chunk location
+     */
     public ChunkLocation getChunk() { return chunk; }
     
     @Override

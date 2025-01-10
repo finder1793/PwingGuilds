@@ -8,9 +8,16 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+/**
+ * Handles all alliance-related commands
+ */
 public class AllianceCommand implements CommandExecutor {
     private final PwingGuilds plugin;
 
+    /**
+     * Creates a new alliance command handler
+     * @param plugin The main plugin instance
+     */
     public AllianceCommand(PwingGuilds plugin) {
         this.plugin = plugin;
     }

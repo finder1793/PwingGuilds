@@ -10,15 +10,31 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Provides tab completion for alliance commands
+ * Suggests command arguments based on context
+ */
 public class AllianceCommandTabCompleter implements TabCompleter {
     private final PwingGuilds plugin;
 
+    /**
+     * Creates a new alliance command tab completer
+     * @param plugin The plugin instance
+     */
     public AllianceCommandTabCompleter(PwingGuilds plugin) {
         this.plugin = plugin;
     }
 
+    /**
+     * Handles tab completion requests
+     * @param sender The command sender
+     * @param command The command being completed
+     * @param label The command label
+     * @param args The current command arguments
+     * @return List of possible completions
+     */
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 1) {
             return Arrays.asList("create", "invite", "accept", "decline", "info", "ally")
                     .stream()

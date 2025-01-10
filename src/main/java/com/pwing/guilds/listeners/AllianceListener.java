@@ -10,13 +10,25 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.entity.Player;
 
+/**
+ * Handles alliance-related events and chat functionality
+ * Manages alliance join/leave events and alliance chat channel
+ */
 public class AllianceListener implements Listener {
     private final PwingGuilds plugin;
 
+    /**
+     * Creates a new alliance listener
+     * @param plugin The plugin instance
+     */
     public AllianceListener(PwingGuilds plugin) {
         this.plugin = plugin;
     }
 
+    /**
+     * Handles when a guild joins an alliance
+     * @param event The alliance join event
+     */
     @EventHandler
     public void onGuildJoinAlliance(GuildJoinAllianceEvent event) {
         Alliance alliance = event.getAlliance();
@@ -30,6 +42,10 @@ public class AllianceListener implements Listener {
             g.broadcastMessage("§a" + guild.getName() + " has joined the alliance!"));
     }
 
+    /**
+     * Handles when a guild leaves an alliance
+     * @param event The alliance leave event
+     */
     @EventHandler
     public void onGuildLeaveAlliance(GuildLeaveAllianceEvent event) {
         Alliance alliance = event.getAlliance();
@@ -43,6 +59,11 @@ public class AllianceListener implements Listener {
             g.broadcastMessage("§c" + guild.getName() + " has left the alliance."));
     }
 
+    /**
+     * Handles alliance chat messages
+     * Routes messages between alliance members
+     * @param event The chat event
+     */
     @EventHandler
     public void onAllianceChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();

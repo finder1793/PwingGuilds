@@ -20,8 +20,8 @@ import java.util.stream.Collectors;
 
 @SerializableAs("Guild")
 /**
- * Represents a guild in the plugin.
- * Handles guild data, members, permissions, and actions.
+ * Represents a guild within the plugin.
+ * A guild is a group of players that can claim land, level up, and work together.
  */
 public class Guild implements ConfigurationSerializable {
     private final PwingGuilds plugin;

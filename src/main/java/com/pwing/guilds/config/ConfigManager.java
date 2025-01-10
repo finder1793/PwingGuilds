@@ -12,8 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Manages plugin configuration files and their loading/saving.
- * This class handles loading, saving, and reloading of all plugin configuration files.
+ * Manages configuration files for the plugin
+ * Handles loading, saving and accessing config data
  */
 public class ConfigManager {
     private final PwingGuilds plugin;

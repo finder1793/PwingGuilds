@@ -144,6 +144,9 @@ public class GuildBuffManager {
         return availableBuffs;
     }
 
+    /**
+     * Removes all expired buffs from active players
+     */
     public void removeExpiredBuffs() {
         for (Map.Entry<UUID, Map<String, GuildBuff>> entry : activeBuffs.entrySet()) {
             Player player = Bukkit.getPlayer(entry.getKey());
@@ -161,10 +164,21 @@ public class GuildBuffManager {
         }
     }
 
+    /**
+     * Tracks a new active buff for a player
+     * @param playerId UUID of the player
+     * @param buffId ID of the buff
+     * @param buff The buff instance
+     */
     public void trackBuff(UUID playerId, String buffId, GuildBuff buff) {
         activeBuffs.computeIfAbsent(playerId, k -> new HashMap<>()).put(buffId, buff);
     }
 
+    /**
+     * Removes an active buff from a player
+     * @param playerId UUID of the player
+     * @param buffId ID of the buff to remove
+     */
     public void removeBuff(UUID playerId, String buffId) {
         if (activeBuffs.containsKey(playerId)) {
             activeBuffs.get(playerId).remove(buffId);

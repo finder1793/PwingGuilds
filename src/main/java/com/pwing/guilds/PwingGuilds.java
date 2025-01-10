@@ -39,9 +39,16 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.Bukkit;
 import java.util.Set;
 
+/**
+ * Main plugin class for PwingGuilds
+ * Handles initialization and management of all guild systems
+ */
 public class PwingGuilds extends JavaPlugin {
+    /** Storage implementation for guild data */
     private GuildStorage storage;
+    /** Manager for guild operations */
     private GuildManager guildManager;
+    /** Manager for guild experience systems */
     private GuildExpManager expManager;
     private GuildBuffManager buffManager;
     private RewardManager rewardManager;
@@ -58,6 +65,10 @@ public class PwingGuilds extends JavaPlugin {
     private GuildBackupManager guildBackupManager;
     private MessageManager messageManager;
 
+    /**
+     * Checks if WorldGuard is available
+     * @return true if WorldGuard is hooked
+     */
     public boolean hasWorldGuard() {
         return worldGuardHook != null;
     }
@@ -72,6 +83,10 @@ public class PwingGuilds extends JavaPlugin {
         new ConfigMigration(this).migrateConfigs();
         new ConfigUpdater(this).update();
 
+        // Initialize ConfigManager first
+        this.configManager = new ConfigManager(this);
+        
+        // Now validate configs with the initialized ConfigManager
         ConfigValidator validator = new ConfigValidator(this);
         if (!validator.validate()) {
             getLogger().severe("Configuration validation failed! Please fix the errors above.");
@@ -81,8 +96,7 @@ public class PwingGuilds extends JavaPlugin {
 
         setupEconomy();
 
-        // Initialize managers
-        this.configManager = new ConfigManager(this);
+        // Initialize remaining managers
         this.messageManager = new MessageManager(this);
         this.databaseManager = new DatabaseManager(getConfig());
         this.eventRegistry = new EventRegistry(this);
@@ -213,7 +227,9 @@ public class PwingGuilds extends JavaPlugin {
         }
         
         // Clean up resources
-        configManager.saveConfigs();
+        if (configManager != null) {
+            configManager.saveConfigs();
+        }
         databaseManager.shutdown();
         eventRegistry.unregisterAll();
 

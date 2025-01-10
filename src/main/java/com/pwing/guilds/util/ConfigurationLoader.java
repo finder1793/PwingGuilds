@@ -5,16 +5,18 @@ import java.util.Optional;
 import java.util.function.Function;
 
 /**
- * Utility class for loading and accessing configuration values with default fallbacks.
+ * Utility class for safely loading configuration values
+ * Provides methods to load config values with defaults
  */
 public class ConfigurationLoader {
 
     /**
-     * Gets a configuration value with a default fallback using a custom loader
-     * @param config The configuration section
+     * Gets a configuration value or returns a default if not found
+     * @param <T> The type of value to load
+     * @param config The configuration section to load from
      * @param path The path to the value
      * @param defaultValue The default value if not found
-     * @param loader The function to load the value
+     * @param loader Function to load the value
      * @return The loaded value or default
      */
     public static <T> T getOrDefault(ConfigurationSection config, String path, T defaultValue, Function<ConfigurationSection, T> loader) {

@@ -26,6 +26,7 @@ public class GuildBackupManager {
     private final long backupInterval;
     private final int retentionDays;
     private final int minBackups;
+    private final SimpleDateFormat dateFormat;
     private BukkitTask backupTask;
 
     /**
@@ -39,6 +40,7 @@ public class GuildBackupManager {
         this.backupInterval = plugin.getConfig().getLong("backup.interval", 60) * 1200L; // Convert to ticks
         this.retentionDays = plugin.getConfig().getInt("backup.retention.days", 7);
         this.minBackups = plugin.getConfig().getInt("backup.retention.keep-minimum", 5);
+        this.dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
 
         if (!backupFolder.exists()) {
             backupFolder.mkdirs();
@@ -147,6 +149,29 @@ public class GuildBackupManager {
             if (backups[i].lastModified() < cutoffTime) {
                 backups[i].delete();
             }
+        }
+    }
+
+    /**
+     * Creates a backup of a guild's data
+     * @param guild The guild to backup
+     * @param reason The reason for the backup
+     */
+    public void createBackup(Guild guild, String reason) {
+        try {
+            // Create backup file with timestamp and reason
+            String timestamp = dateFormat.format(new Date());
+            File backupFile = new File(backupFolder, 
+                String.format("%s_%s_%s.yml", guild.getName(), timestamp, reason));
+
+            // Save guild data to backup file
+            YamlConfiguration backup = new YamlConfiguration();
+            backup.set("guild", guild.serialize());
+            backup.save(backupFile);
+
+        } catch (IOException e) {
+            plugin.getLogger().severe("Failed to create backup for guild: " + guild.getName());
+            e.printStackTrace();
         }
     }
 }

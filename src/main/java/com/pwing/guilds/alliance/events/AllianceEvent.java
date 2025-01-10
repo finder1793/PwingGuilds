@@ -5,10 +5,13 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
 /**
- * Base event class for all alliance-related events
+ * Base class for all alliance-related events
  */
 public abstract class AllianceEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
+    /**
+     * The alliance involved in this event
+     */
     protected final Alliance alliance;
 
     /**

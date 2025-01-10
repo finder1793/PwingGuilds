@@ -14,9 +14,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import com.pwing.guilds.events.custom.EventAnnouncer;
 /**
- * Handles scheduling and automated execution of guild events.
- * Events can be configured to run at specific times on specific days.
- * Provides announcement functionality for upcoming events.
+ * Handles scheduling and management of timed guild events
+ * Manages event timing, activation, and cleanup
  */
 public class EventScheduler {
     private final PwingGuilds plugin;
@@ -24,11 +23,32 @@ public class EventScheduler {
     private final EventAnnouncer announcer;
     private final DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm");
 
+    /**
+     * Creates a new event scheduler
+     * @param plugin The plugin instance
+     */
     public EventScheduler(PwingGuilds plugin) {
         this.plugin = plugin;
         this.announcer = new EventAnnouncer(plugin);
         loadSchedule();
         startScheduler();
+    }
+
+    /**
+     * Schedules a new guild event
+     * @param event The event to schedule
+     * @param delay The delay before starting
+     * @param duration How long the event should last
+     */
+    public void scheduleEvent(GuildEvent event, long delay, long duration) {
+        // ...existing code...
+    }
+
+    /**
+     * Cancels all scheduled events
+     */
+    public void cancelAllEvents() {
+        // ...existing code...
     }
 
     /**
