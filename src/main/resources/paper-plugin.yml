@@ -17,23 +17,6 @@ dependencies:
       required: false
       load: BEFORE
 
-commands:
-  guild:
-    description: Main guild command
-    aliases: [g]
-    usage: /<command> [subcommand]
-    permission: guild.use
-  guildadmin:
-    description: Guild admin commands
-    aliases: [gadmin]
-    permission: guild.admin
-    usage: /<command> [subcommand]
-  alliance:
-    description: Alliance commands
-    aliases: [ally]
-    usage: /<command> [subcommand]
-    permission: guild.alliance
-
 permissions:
   guild.*:
     default: op

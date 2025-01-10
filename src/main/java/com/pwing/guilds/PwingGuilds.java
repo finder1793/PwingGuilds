@@ -78,8 +78,18 @@ public class PwingGuilds extends JavaPlugin {
     }
     @Override
     public void onEnable() {
+        // Save default config first
         saveDefaultConfig();
         
+        // Register commands first before any other initialization
+        try {
+            registerCommands();
+        } catch (Exception e) {
+            getLogger().severe("Failed to register commands: " + e.getMessage());
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         // Run config migration before loading configs
         new ConfigMigration(this).migrateConfigs();
         new ConfigUpdater(this).update();
@@ -147,19 +157,6 @@ public class PwingGuilds extends JavaPlugin {
         // Register all listeners
         eventRegistry.registerListeners();
 
-        // Register commands
-        GuildCommand guildCommand = new GuildCommand(this);
-        getCommand("guild").setExecutor(guildCommand);
-        getCommand("guild").setTabCompleter(new GuildCommandTabCompleter(this));
-
-        GuildAdminCommand guildAdminCommand = new GuildAdminCommand(this);
-        getCommand("guildadmin").setExecutor(guildAdminCommand);
-        getCommand("guildadmin").setTabCompleter(new GuildAdminCommandTabCompleter(this));
-
-        AllianceCommand allianceCommand = new AllianceCommand(this);
-        getCommand("alliance").setExecutor(allianceCommand);
-        getCommand("alliance").setTabCompleter(new AllianceCommandTabCompleter(this));
-
         // Setup PlaceholderAPI if available
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new GuildPlaceholders(this).register();
@@ -177,7 +174,39 @@ public class PwingGuilds extends JavaPlugin {
 
         getLogger().info("PwingGuilds has been enabled!");
     }
-        private boolean setupEconomy() {
+
+    private void registerCommands() {
+        // Create command executors
+        GuildCommand guildCmd = new GuildCommand(this);
+        GuildAdminCommand adminCmd = new GuildAdminCommand(this);
+        AllianceCommand allyCmd = new AllianceCommand(this);
+
+        // Register guild command
+        if (getCommand("guild") != null) {
+            getCommand("guild").setExecutor(guildCmd);
+            getCommand("guild").setTabCompleter(new GuildCommandTabCompleter(this));
+        } else {
+            throw new IllegalStateException("Failed to register guild command - command not found in plugin.yml");
+        }
+
+        // Register admin command
+        if (getCommand("guildadmin") != null) {
+            getCommand("guildadmin").setExecutor(adminCmd);
+            getCommand("guildadmin").setTabCompleter(new GuildAdminCommandTabCompleter(this));
+        } else {
+            throw new IllegalStateException("Failed to register guildadmin command - command not found in plugin.yml");
+        }
+
+        // Register alliance command
+        if (getCommand("alliance") != null) {
+            getCommand("alliance").setExecutor(allyCmd);
+            getCommand("alliance").setTabCompleter(new AllianceCommandTabCompleter(this));
+        } else {
+            throw new IllegalStateException("Failed to register alliance command - command not found in plugin.yml");
+        }
+    }
+
+    private boolean setupEconomy() {
         if (getServer().getPluginManager().getPlugin("Vault") == null) {
             return false;
         }

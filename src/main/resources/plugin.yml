@@ -12,17 +12,14 @@ commands:
     description: Main guild command
     usage: /guild <subcommand>
     aliases: [g]
-    permission: guild.use
   guildadmin:
     description: Guild admin commands
     usage: /guildadmin <subcommand>
     aliases: [gadmin]
-    permission: guild.admin
   alliance:
     description: Alliance management commands
     usage: /alliance <subcommand>
     aliases: [ally]
-    permission: guild.alliance
 
 permissions:
   guilds.command.guild:
