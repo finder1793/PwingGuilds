@@ -6,8 +6,8 @@ import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 
 /**
- * Provides visual effects for displaying chunk boundaries to players.
- * Uses particles to outline chunk borders in-game.
+ * Handles visualization of chunk borders for guild territory claims.
+ * Creates particle effects to show chunk boundaries to players.
  */
 public class ChunkVisualizer {
 

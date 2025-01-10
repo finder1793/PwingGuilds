@@ -14,11 +14,15 @@ import java.util.stream.Collectors;
 
 /**
  * Provides tab completion for guild commands.
- * Handles auto-completion of subcommands, player names, and guild names.
+ * Handles suggestions for command arguments and subcommands.
  */
 public class GuildCommandTabCompleter implements TabCompleter {
     private final PwingGuilds plugin;
 
+    /**
+     * Creates a new tab completer for guild commands
+     * @param plugin The plugin instance
+     */
     public GuildCommandTabCompleter(PwingGuilds plugin) {
         this.plugin = plugin;
     }

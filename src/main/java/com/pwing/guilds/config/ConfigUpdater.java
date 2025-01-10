@@ -9,12 +9,25 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Set;
 
+/**
+ * Handles updates to the plugin's configuration files.
+ * Ensures compatibility between different versions of the config format.
+ */
 public class ConfigUpdater {
     private final PwingGuilds plugin;
 
+    /**
+     * Creates a new ConfigUpdater instance
+     * @param plugin The PwingGuilds plugin instance
+     */
     public ConfigUpdater(PwingGuilds plugin) {
         this.plugin = plugin;
     }
+
+    /**
+     * Updates the configuration files to the latest version.
+     * Performs necessary migrations and saves updated configurations.
+     */
     public void update() {
         File configFile = new File(plugin.getDataFolder(), "config.yml");
         FileConfiguration currentConfig = YamlConfiguration.loadConfiguration(configFile);

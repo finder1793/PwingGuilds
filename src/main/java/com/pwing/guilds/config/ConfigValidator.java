@@ -2,12 +2,12 @@ package com.pwing.guilds.config;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import com.pwing.guilds.PwingGuilds;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import org.bukkit.configuration.file.FileConfiguration;
 
 /**
  * Validates plugin configuration files to ensure required settings are present and valid.
@@ -17,35 +17,18 @@ public class ConfigValidator {
     private final List<String> errors = new ArrayList<>();
     private final DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm");
 
-    /**
-     * Creates a new ConfigValidator instance
-     * @param plugin The plugin instance
-     */
     public ConfigValidator(PwingGuilds plugin) {
         this.plugin = plugin;
     }
 
-    /**
-     * Validates all configuration files
-     * @return true if validation passes, false if any critical settings are missing
-     */
     public boolean validate() {
-        // Main config validation
-        validateGuildLevels();
-        validateStorage();
-        validateExpSources();
-        
-        // Events config validation
-        validateEvents(); // Changed from validateEventConfigs()
-        validateEventSchedules();
-        validateLocations();
-        validateRewards();
-        
-        // Buffs config validation
-        validateBuffConfigs();
-        
-        // Messages config validation
-        validateMessages();
+        boolean isValid = true;
+
+        // Validate each config file
+        if (!validateMainConfig()) isValid = false;
+        if (!validateEventsConfig()) isValid = false;
+        if (!validateBuffsConfig()) isValid = false;
+        if (!validateMessagesConfig()) isValid = false;
 
         if (!errors.isEmpty()) {
             plugin.getLogger().warning("=== Configuration Warnings ===");
@@ -53,14 +36,164 @@ public class ConfigValidator {
             return false;
         }
 
+        return isValid;
+    }
+
+    private boolean validateMainConfig() {
+        FileConfiguration config = plugin.getConfig();
+        
+        // Validate storage settings
+        if (!validateStorageSection(config)) return false;
+        
+        // Validate guild levels
+        if (!validateGuildLevelsSection(config)) return false;
+        
+        // Validate exp sources
+        if (!validateExpSourcesSection(config)) return false;
+        
+        // Validate guild claims
+        if (!validateGuildClaimsSection(config)) return false;
+        
+        // Validate backup settings
+        return validateBackupSection(config);
+    }
+
+    private boolean validateEventsConfig() {
+        FileConfiguration events = plugin.getConfigManager().getConfig("events.yml");
+        if (events == null) {
+            plugin.saveResource("events.yml", false);
+            return false;
+        }
+
+        if (!events.isConfigurationSection("events")) {
+            errors.add("Missing events section in events.yml");
+            return false;
+        }
+
+        // Validate each event type
+        ConfigurationSection eventsSection = events.getConfigurationSection("events");
+        for (String eventName : eventsSection.getKeys(false)) {
+            ConfigurationSection event = eventsSection.getConfigurationSection(eventName);
+            if (!event.contains("enabled")) {
+                errors.add("Missing enabled flag for event: " + eventName);
+            }
+            if (!event.contains("rewards")) {
+                errors.add("Missing rewards section for event: " + eventName);
+            }
+        }
+
+        // Validate event schedule
+        if (!events.isConfigurationSection("event-schedule")) {
+            errors.add("Missing event-schedule section in events.yml");
+            return false;
+        }
+
         return true;
     }
 
-    private void validateGuildLevels() {
-        ConfigurationSection levels = plugin.getConfig().getConfigurationSection("guild-levels");
+    private boolean validateBuffsConfig() {
+        FileConfiguration buffs = plugin.getConfigManager().getConfig("buffs.yml");
+        if (buffs == null) {
+            plugin.saveResource("buffs.yml", false);
+            return false;
+        }
+
+        if (!buffs.isConfigurationSection("settings")) {
+            errors.add("Missing settings section in buffs.yml");
+            return false;
+        }
+
+        if (!buffs.isConfigurationSection("buffs")) {
+            errors.add("Missing buffs section in buffs.yml");
+            return false;
+        }
+
+        // Validate each buff
+        ConfigurationSection buffsSection = buffs.getConfigurationSection("buffs");
+        for (String buffName : buffsSection.getKeys(false)) {
+            validateBuff(buffName, buffsSection.getConfigurationSection(buffName));
+        }
+
+        return true;
+    }
+
+    private boolean validateMessagesConfig() {
+        FileConfiguration messages = plugin.getConfigManager().getConfig("messages.yml");
+        if (messages == null) {
+            plugin.saveResource("messages.yml", false);
+            return false;
+        }
+
+        String[] requiredSections = {
+            "messages.general",
+            "messages.guild",
+            "messages.buffs",
+            "messages.events",
+            "messages.alliance",
+            "messages.error"
+        };
+
+        for (String section : requiredSections) {
+            if (!messages.isConfigurationSection(section)) {
+                errors.add("Missing required section in messages.yml: " + section);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Helper methods for main config validation
+    private boolean validateStorageSection(FileConfiguration config) {
+        ConfigurationSection storage = config.getConfigurationSection("storage");
+        if (storage == null) {
+            errors.add("Missing storage configuration section!");
+            return false;
+        }
+
+        String type = config.getString("storage.type");
+        if (type.equalsIgnoreCase("MYSQL")) {
+            ConfigurationSection mysql = config.getConfigurationSection("storage.mysql");
+            if (mysql == null) {
+                errors.add("MySQL storage selected but configuration is missing!");
+                return false;
+            }
+
+            if (mysql.getString("host", "").isEmpty()) {
+                errors.add("MySQL host is not configured!");
+            }
+            if (mysql.getString("database", "").isEmpty()) {
+                errors.add("MySQL database is not configured!");
+            }
+        }
+
+        ConfigurationSection settings = storage.getConfigurationSection("settings");
+        if (settings == null) {
+            errors.add("Missing storage settings configuration!");
+            return false;
+        }
+
+        if (!settings.contains("default-rows")) {
+            errors.add("Missing default-rows in storage settings!");
+        } else {
+            int rows = settings.getInt("default-rows");
+            if (rows < 1 || rows > 6) {
+                errors.add("Storage default-rows must be between 1 and 6!");
+            }
+        }
+
+        if (!settings.contains("save-interval")) {
+            errors.add("Missing save-interval in storage settings!");
+        }
+
+        return true;
+    }
+
+    private boolean validateGuildLevelsSection(FileConfiguration config) {
+        ConfigurationSection levels = config.getConfigurationSection("guild-levels");
         if (levels == null) {
             errors.add("Missing guild-levels section!");
-            return;
+            return false;
         }
 
         String[] requiredPerks = {
@@ -94,68 +227,13 @@ public class ConfigValidator {
             }
             previousExp = expRequired;
         }
+
+        return true;
     }
 
-    private void validateEventSchedules() {
-        ConfigurationSection schedules = plugin.getConfig().getConfigurationSection("event-schedule");
-        if (schedules == null) return;
-
-        for (String event : schedules.getKeys(false)) {
-            String timeString = schedules.getString(event + ".time");
-            try {
-                LocalTime.parse(timeString, timeFormat);
-            } catch (Exception e) {
-                errors.add("Invalid time format for event " + event + ": " + timeString);
-            }
-        }
-    }
-
-    private void validateStorage() {
-        ConfigurationSection storage = plugin.getConfig().getConfigurationSection("storage");
-        if (storage == null) {
-            errors.add("Missing storage configuration section!");
-            return;
-        }
-
-        String type = plugin.getConfig().getString("storage.type");
-        if (type.equalsIgnoreCase("MYSQL")) {
-            ConfigurationSection mysql = plugin.getConfig().getConfigurationSection("storage.mysql");
-            if (mysql == null) {
-                errors.add("MySQL storage selected but configuration is missing!");
-                return;
-            }
-
-            if (mysql.getString("host", "").isEmpty()) {
-                errors.add("MySQL host is not configured!");
-            }
-            if (mysql.getString("database", "").isEmpty()) {
-                errors.add("MySQL database is not configured!");
-            }
-        }
-
-        ConfigurationSection settings = storage.getConfigurationSection("settings");
-        if (settings == null) {
-            errors.add("Missing storage settings configuration!");
-            return;
-        }
-
-        if (!settings.contains("default-rows")) {
-            errors.add("Missing default-rows in storage settings!");
-        } else {
-            int rows = settings.getInt("default-rows");
-            if (rows < 1 || rows > 6) {
-                errors.add("Storage default-rows must be between 1 and 6!");
-            }
-        }
-
-        if (!settings.contains("save-interval")) {
-            errors.add("Missing save-interval in storage settings!");
-        }
-    }
-
-    private void validateExpSources() {
-        ConfigurationSection expSources = plugin.getConfig().getConfigurationSection("exp-sources");
-        if (expSources == null) return;
+    private boolean validateExpSourcesSection(FileConfiguration config) {
+        ConfigurationSection expSources = config.getConfigurationSection("exp-sources");
+        if (expSources == null) return true;
 
         for (String source : expSources.getKeys(false)) {
             if (!expSources.getBoolean(source + ".enabled", false)) continue;
@@ -165,179 +243,35 @@ public class ConfigValidator {
                 errors.add("Missing values for exp source: " + source);
             }
         }
+
+        return true;
     }
 
-    private void validateRewards() {
-        ConfigurationSection events = plugin.getConfig().getConfigurationSection("events");
-        if (events == null) return;
-
-        for (String event : events.getKeys(false)) {
-            ConfigurationSection rewards = events.getConfigurationSection(event + ".rewards");
-            if (rewards == null) continue;
-
-            for (String place : rewards.getKeys(false)) {
-                List<String> rewardCommands = rewards.getStringList(place);
-                for (String command : rewardCommands) {
-                    if (!command.contains(" ")) {
-                        errors.add("Invalid reward command format in " + event + " " + place + ": " + command);
-                        continue;
-                    }
-
-                    String[] parts = command.split(" ", 2);
-                    if (parts[0].equals("claims")) {
-                        try {
-                            Integer.parseInt(parts[1]);
-                        } catch (NumberFormatException e) {
-                            errors.add("Invalid claim amount in " + event + " " + place + ": " + parts[1]);
-                        }
-                    }
-                }
-            }
-        }
+    private boolean validateGuildClaimsSection(FileConfiguration config) {
+        // Add your guild claims validation logic here
+        return true;
     }
 
-    private void validateLocations() {
-        ConfigurationSection bossRaid = plugin.getConfig().getConfigurationSection("events.boss-raid.spawn-location");
-        if (bossRaid != null) {
-            if (!bossRaid.contains("world")) {
-                errors.add("Boss raid spawn location missing world!");
-            }
-            if (!bossRaid.contains("x") || !bossRaid.contains("y") || !bossRaid.contains("z")) {
-                errors.add("Boss raid spawn location missing coordinates!");
-            }
-        }
+    private boolean validateBackupSection(FileConfiguration config) {
+        // Add your backup validation logic here
+        return true;
     }
 
-    private void validateEvents() {
-        ConfigurationSection events = plugin.getConfig().getConfigurationSection("events");
-        if (events == null) {
-            errors.add("Missing events section!");
-            return;
-        }
-
-        for (String eventName : events.getKeys(false)) {
-            if (!events.contains(eventName + ".enabled")) {
-                errors.add("Missing enabled flag for event: " + eventName);
-            }
-
-            if (events.getBoolean(eventName + ".enabled", false)) {
-                validateEventConfig(eventName, events.getConfigurationSection(eventName));
+    // Helper method for buff validation
+    private void validateBuff(String buffName, ConfigurationSection buff) {
+        String[] required = {"name", "type", "cost", "duration", "material"};
+        for (String field : required) {
+            if (!buff.contains(field)) {
+                errors.add("Buff " + buffName + " missing required field: " + field);
             }
         }
-    }
 
-    private void validateEventConfig(String eventName, ConfigurationSection config) {
-        switch (eventName) {
-            case "boss-raid" -> {
-                if (!config.contains("boss-type")) {
-                    errors.add("Boss raid event enabled but missing boss-type!");
-                }
-            }
-            case "resource-race" -> {
-                if (!config.contains("rewards")) {
-                    errors.add("Resource race event enabled but missing rewards!");
-                }
-            }
-        }
-    }
-
-    private void validateMessages() {
-        FileConfiguration messages = plugin.getConfigManager().getConfig("messages.yml");
-        if (messages == null) {
-            errors.add("Missing messages.yml configuration!");
-            return;
-        }
-
-        if (!messages.contains("messages.general.prefix")) {
-            errors.add("Missing required message: general.prefix");
-        }
-    }
-
-    private void validateBuffConfigs() {
-        FileConfiguration buffs = plugin.getConfigManager().getConfig("buffs.yml");
-        if (buffs == null) {
-            errors.add("Missing buffs.yml configuration!");
-            return;
-        }
-
-        ConfigurationSection buffsSection = buffs.getConfigurationSection("buffs");
-        if (buffsSection == null) {
-            errors.add("Missing buffs section in buffs.yml!");
-            return;
-        }
-
-        for (String buffKey : buffsSection.getKeys(false)) {
-            ConfigurationSection buff = buffsSection.getConfigurationSection(buffKey);
-            if (buff == null) continue;
-
-            // Validate required fields
-            String[] requiredFields = {
-                "name",
-                "type",
-                "cost",
-                "duration",
-                "material"
-            };
-
-            for (String field : requiredFields) {
-                if (!buff.contains(field)) {
-                    errors.add("Buff " + buffKey + " missing required field: " + field);
-                }
-            }
-
-            // Validate buff type and related fields
-            String type = buff.getString("type", "").toUpperCase();
-            switch (type) {
-                case "POTION" -> {
-                    if (!buff.contains("effect")) {
-                        errors.add("Potion buff " + buffKey + " missing effect type!");
-                    }
-                }
-                case "STAT" -> {
-                    if (!buff.contains("stat-type")) {
-                        errors.add("Stat buff " + buffKey + " missing stat-type!");
-                    }
-                    if (!buff.contains("stat-value")) {
-                        errors.add("Stat buff " + buffKey + " missing stat-value!");
-                    }
-                }
-                case "BOTH" -> {
-                    if (!buff.contains("effect")) {
-                        errors.add("Hybrid buff " + buffKey + " missing effect type!");
-                    }
-                    if (!buff.contains("stat-type") || !buff.contains("stat-value")) {
-                        errors.add("Hybrid buff " + buffKey + " missing stat configuration!");
-                    }
-                }
-                default -> errors.add("Invalid buff type for " + buffKey + ": " + type);
-            }
-
-            // Validate numeric values
-            validateNumericValue(buff, "cost", buffKey, 0);
-            validateNumericValue(buff, "duration", buffKey, 1);
-            validateNumericValue(buff, "slot", buffKey, 0);
-            if (buff.contains("level")) {
-                validateNumericValue(buff, "level", buffKey, 1);
-            }
-
-            // Validate material
-            String materialName = buff.getString("material");
-            if (materialName != null) {
-                try {
-                    Material.valueOf(materialName.toUpperCase());
-                } catch (IllegalArgumentException e) {
-                    errors.add("Invalid material for buff " + buffKey + ": " + materialName);
-                }
-            }
-        }
-    }
-
-    private void validateNumericValue(ConfigurationSection section, String path, String buffKey, int minimum) {
-        if (section.contains(path)) {
-            int value = section.getInt(path);
-            if (value < minimum) {
-                errors.add("Buff " + buffKey + " has invalid " + path + " value: " + value + " (minimum: " + minimum + ")");
-            }
+        // Validate material
+        String material = buff.getString("material");
+        try {
+            Material.valueOf(material.toUpperCase());
+        } catch (Exception e) {
+            errors.add("Invalid material for buff " + buffName + ": " + material);
         }
     }
 }

@@ -17,13 +17,30 @@ import java.util.Map;
  * Provides core functionality for event timing, scoring and rewards.
  */
 public abstract class GuildEvent implements Listener {
+    /** The plugin instance */
     protected final PwingGuilds plugin;
+    
+    /** The name of this event */
     protected final String name;
+    
+    /** The description of this event */
     protected String description;
+    
+    /** How long the event lasts */
     protected Duration duration;
+    
+    /** Tracks scores for participating guilds */
     protected Map<Guild, Integer> scores = new HashMap<>();
+    
+    /** Whether the event is currently running */
     protected boolean isActive = false;
 
+    /**
+     * Creates a new guild event
+     * @param plugin The plugin instance
+     * @param name The name of the event
+     * @param durationMinutes How long the event should last in minutes
+     */
     public GuildEvent(PwingGuilds plugin, String name, int durationMinutes) {
         this.plugin = plugin;
         this.name = name;

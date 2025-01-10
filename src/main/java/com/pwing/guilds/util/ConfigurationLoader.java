@@ -5,8 +5,8 @@ import java.util.Optional;
 import java.util.function.Function;
 
 /**
- * Utility class for safely loading configuration values
- * Provides methods to load config values with defaults
+ * Utility class for loading and managing plugin configuration files.
+ * Handles reading and writing YAML configuration data.
  */
 public class ConfigurationLoader {
 

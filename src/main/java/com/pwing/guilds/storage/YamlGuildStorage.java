@@ -97,6 +97,88 @@ public class YamlGuildStorage implements GuildStorage {
         }
     }
 
+    private Map<String, Object> configSectionToMap(ConfigurationSection section) {
+        Map<String, Object> map = new HashMap<>();
+        for (String key : section.getKeys(false)) {
+            Object value = section.get(key);
+            if (value instanceof ConfigurationSection) {
+                map.put(key, configSectionToMap((ConfigurationSection) value));
+            } else {
+                map.put(key, value);
+            }
+        }
+        return map;
+    }
+
+    private Guild loadGuild(File file) {
+        try {
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+            String name = config.getString("name");
+            String ownerString = config.getString("owner");
+            
+            if (name == null || ownerString == null) {
+                plugin.getLogger().warning("Invalid guild file (missing name or owner): " + file.getName());
+                return null;
+            }
+
+            Map<String, Object> data = configSectionToMap(config);
+            return Guild.deserialize(plugin, data);
+        } catch (Exception e) {
+            plugin.getLogger().severe("Error loading guild from file: " + file.getName());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private boolean needsMigration(YamlConfiguration config) {
+        // Check if the file uses the old format
+        return config.contains("claimed-chunks") && !config.contains("claims");
+    }
+
+    private YamlConfiguration migrateGuildData(YamlConfiguration oldConfig) {
+        YamlConfiguration newConfig = new YamlConfiguration();
+        
+        // Copy basic data
+        newConfig.set("name", oldConfig.getString("name"));
+        newConfig.set("owner", oldConfig.getString("owner"));
+        newConfig.set("level", oldConfig.getInt("level"));
+        newConfig.set("exp", oldConfig.getLong("exp", 0L));
+        newConfig.set("bonus-claims", oldConfig.getInt("bonus-claims", 0));
+        
+        // Migrate members
+        newConfig.set("members", oldConfig.getStringList("members"));
+        
+        // Migrate invites if they exist
+        if (oldConfig.contains("invites")) {
+            newConfig.set("invites", oldConfig.getStringList("invites"));
+        }
+
+        // Convert old claimed chunks format to new format
+        @SuppressWarnings("unchecked")
+        List<Map<?, ?>> oldChunks = oldConfig.getMapList("claimed-chunks");
+        List<String> newChunks = new ArrayList<>();
+        
+        for (Map<?, ?> chunk : oldChunks) {
+            String world = String.valueOf(chunk.get("world"));
+            int x = Integer.parseInt(String.valueOf(chunk.get("x")));
+            int z = Integer.parseInt(String.valueOf(chunk.get("z")));
+            newChunks.add(world + "," + x + "," + z);
+        }
+        newConfig.set("claims", newChunks);
+
+        // Migrate homes if they exist
+        if (oldConfig.contains("homes")) {
+            newConfig.set("homes", oldConfig.getConfigurationSection("homes"));
+        }
+
+        // Migrate alliance if it exists
+        if (oldConfig.contains("alliance")) {
+            newConfig.set("alliance", oldConfig.getString("alliance"));
+        }
+
+        return newConfig;
+    }
+
     public Guild loadGuild(String name) {
         if (guildCache.containsKey(name)) {
             return guildCache.get(name);
@@ -170,16 +252,36 @@ public class YamlGuildStorage implements GuildStorage {
         }
     }
 
+    @Override
     public Set<Guild> loadAllGuilds() {
         Set<Guild> guilds = new HashSet<>();
-        File[] files = guildsFolder.listFiles((dir, name) -> name.endsWith(".yml"));
+        
+        // Ensure guilds folder exists
+        if (!guildsFolder.exists()) {
+            guildsFolder.mkdirs();
+            plugin.getLogger().info("Created guilds directory");
+            return guilds; // Return empty set if no guilds exist yet
+        }
+
+        // Get only .yml files and filter out backup/storage files
+        File[] files = guildsFolder.listFiles((dir, name) -> 
+            name.endsWith(".yml") && 
+            !name.contains("backup") && 
+            !name.contains("-storage")
+        );
 
         if (files != null) {
             for (File file : files) {
-                String guildName = file.getName().replace(".yml", "");
-                Guild guild = loadGuild(guildName);
-                if (guild != null) {
-                    guilds.add(guild);
+                try {
+                    Guild guild = loadGuild(file);
+                    if (guild != null) {
+                        guilds.add(guild);
+                        guildCache.put(guild.getName(), guild);
+                        plugin.getLogger().info("Loaded guild: " + guild.getName());
+                    }
+                } catch (Exception e) {
+                    plugin.getLogger().warning("Failed to load guild from file: " + file.getName());
+                    e.printStackTrace();
                 }
             }
         }

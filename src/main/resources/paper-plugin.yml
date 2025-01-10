@@ -1,0 +1,74 @@
+name: PwingGuilds
+version: '${version}'
+main: com.pwing.guilds.PwingGuilds
+api-version: '1.20'
+dependencies:
+  server:
+    Vault:
+      required: true
+      load: BEFORE
+    WorldGuard:
+      required: false
+      load: BEFORE
+    PlaceholderAPI:
+      required: false
+      load: BEFORE
+    MythicMobs:
+      required: false
+      load: BEFORE
+
+commands:
+  guild:
+    description: Main guild command
+    aliases: [g]
+    usage: /<command> [subcommand]
+    permission: guild.use
+  guildadmin:
+    description: Guild admin commands
+    aliases: [gadmin]
+    permission: guild.admin
+    usage: /<command> [subcommand]
+  alliance:
+    description: Alliance commands
+    aliases: [ally]
+    usage: /<command> [subcommand]
+    permission: guild.alliance
+
+permissions:
+  guild.*:
+    default: op
+    description: All guild permissions
+    children:
+      guild.use: true
+      guild.create: true
+      guild.delete: true
+      guild.admin: true
+      guild.alliance: true
+      guild.buff.*: true
+      guild.claim.*: true
+      guild.event.*: true
+
+  guild.use:
+    default: true
+    description: Allows using basic guild commands
+  guild.create:
+    default: true
+    description: Allows creating a guild
+  guild.delete:
+    default: true
+    description: Allows deleting your own guild
+  guild.admin:
+    default: op
+    description: Allows using admin commands
+  guild.alliance:
+    default: true
+    description: Allows using alliance commands
+  guild.buff.*:
+    default: op
+    description: Access to all guild buffs
+  guild.claim.*:
+    default: op
+    description: Access to all claim commands
+  guild.event.*:
+    default: op
+    description: Access to all event commands

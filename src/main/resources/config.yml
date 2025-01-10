@@ -87,6 +87,10 @@ exp-sources:
         Elite: 50
         Boss: 25
         DEFAULT: 10
+
+guild-settings:
+  allow-friendly-fire: false  # Whether guild members can PvP each other in guild territory
+
 # Backup Settings
 backup:
   enabled: true
@@ -99,3 +103,5 @@ backup:
     on-guild-create: true
     on-guild-delete: true
     on-server-shutdown: true
+
+# Events configuration moved to events.yml

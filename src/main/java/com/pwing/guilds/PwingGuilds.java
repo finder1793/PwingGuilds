@@ -38,6 +38,7 @@ import com.pwing.guilds.compat.ServerAdapter;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.Bukkit;
 import java.util.Set;
+import org.bukkit.configuration.file.FileConfiguration;
 
 /**
  * Main plugin class for PwingGuilds
@@ -98,7 +99,12 @@ public class PwingGuilds extends JavaPlugin {
 
         // Initialize remaining managers
         this.messageManager = new MessageManager(this);
-        this.databaseManager = new DatabaseManager(getConfig());
+        
+        // Only initialize database manager for MySQL
+        if (getConfig().getString("storage.type").equalsIgnoreCase("mysql")) {
+            this.databaseManager = new DatabaseManager(getConfig());
+        }
+
         this.eventRegistry = new EventRegistry(this);
 
         // Initialize appropriate storage type
@@ -110,6 +116,10 @@ public class PwingGuilds extends JavaPlugin {
             this.allianceStorage = new YamlAllianceStorage(this);
         }
 
+        // Initialize GuildManager before loading guilds
+        this.guildManager = new GuildManager(this, storage, worldGuardHook);
+
+        // Now load guilds after GuildManager is initialized
         Set<Guild> loadedGuilds = storage.loadAllGuilds();
         getLogger().info("Loaded " + loadedGuilds.size() + " guilds with their claims");
 
@@ -118,7 +128,6 @@ public class PwingGuilds extends JavaPlugin {
             worldGuardHook = new WorldGuardHook(this);
         }
 
-        this.guildManager = new GuildManager(this, storage, worldGuardHook);
         this.rewardManager = new RewardManager(this);
         this.eventManager = new GuildEventManager(this);
         this.expManager = new GuildExpManager(this);
@@ -139,17 +148,31 @@ public class PwingGuilds extends JavaPlugin {
         eventRegistry.registerListeners();
 
         // Register commands
-        getCommand("guild").setExecutor(new GuildCommand(this));
+        GuildCommand guildCommand = new GuildCommand(this);
+        getCommand("guild").setExecutor(guildCommand);
         getCommand("guild").setTabCompleter(new GuildCommandTabCompleter(this));
-        
-        getCommand("guildadmin").setExecutor(new GuildAdminCommand(this));
+
+        GuildAdminCommand guildAdminCommand = new GuildAdminCommand(this);
+        getCommand("guildadmin").setExecutor(guildAdminCommand);
         getCommand("guildadmin").setTabCompleter(new GuildAdminCommandTabCompleter(this));
-        
-        getCommand("alliance").setExecutor(new AllianceCommand(this));
+
+        AllianceCommand allianceCommand = new AllianceCommand(this);
+        getCommand("alliance").setExecutor(allianceCommand);
         getCommand("alliance").setTabCompleter(new AllianceCommandTabCompleter(this));
+
         // Setup PlaceholderAPI if available
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new GuildPlaceholders(this).register();
+        }
+
+        // Register PvP listener
+        getServer().getPluginManager().registerEvents(new GuildPvPListener(this), this);
+
+        // Add default config values if they don't exist
+        FileConfiguration config = getConfig();
+        if (!config.isSet("guild-settings.allow-friendly-fire")) {
+            config.set("guild-settings.allow-friendly-fire", false);
+            saveConfig();
         }
 
         getLogger().info("PwingGuilds has been enabled!");
@@ -214,24 +237,27 @@ public class PwingGuilds extends JavaPlugin {
     public void onDisable() {
         getLogger().info("Starting final guild data save...");
         
-        // Force sync save for YAML storage
-        if (storage instanceof YamlGuildStorage) {
+        if (storage instanceof YamlGuildStorage && guildManager != null) {
             guildManager.getGuilds().forEach(guild -> storage.saveGuild(guild));
         }
         
-        // Process remaining queue and cleanup for SQL storage
         if (storage instanceof SQLGuildStorage) {
             SQLGuildStorage sqlStorage = (SQLGuildStorage) storage;
             sqlStorage.processRemainingQueue();
             sqlStorage.getDataSource().close();
         }
         
-        // Clean up resources
         if (configManager != null) {
             configManager.saveConfigs();
         }
-        databaseManager.shutdown();
-        eventRegistry.unregisterAll();
+        
+        if (databaseManager != null) {
+            databaseManager.shutdown();
+        }
+        
+        if (eventRegistry != null) {
+            eventRegistry.unregisterAll();
+        }
 
         if (guildBackupManager != null) {
             guildBackupManager.shutdown();

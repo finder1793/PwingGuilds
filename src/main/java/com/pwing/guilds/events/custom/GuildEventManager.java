@@ -4,6 +4,7 @@ import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.events.custom.GuildEvent;
 import com.pwing.guilds.guild.Guild;
 import org.bukkit.Bukkit;
+import com.pwing.guilds.config.ConfigValidator;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
@@ -14,18 +15,34 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Manages custom guild events.
+ * Handles starting, stopping and tracking guild events.
+ */
 public class GuildEventManager {
     private final PwingGuilds plugin;
     private final Map<String, GuildEvent> activeEvents = new HashMap<>();
     private final Map<String, GuildEvent> scheduledEvents = new HashMap<>();
     private final FileConfiguration eventConfig;
 
+    /**
+     * Creates a new guild event manager
+     * @param plugin The plugin instance
+     */
     public GuildEventManager(PwingGuilds plugin) {
         this.plugin = plugin;
         this.eventConfig = YamlConfiguration.loadConfiguration(
             new File(plugin.getDataFolder(), "events.yml"));
+        validateConfig();
         loadEvents();
         startEventScheduler();
+    }
+
+    private void validateConfig() {
+        if (!eventConfig.contains("events")) {
+            plugin.getLogger().warning("Missing events section!");
+            plugin.getLogger().severe("Configuration validation failed! Please fix the errors above.");
+        }
     }
 
     private void loadEvents() {
@@ -65,8 +82,12 @@ public class GuildEventManager {
         }
     }
 
+    /**
+     * Starts a guild event
+     * @param eventName Name of the event to start
+     */
     public void startEvent(String eventName) {
-        if (!plugin.getConfig().getBoolean("events." + eventName + ".enabled", false)) {
+        if (!eventConfig.getBoolean("events." + eventName + ".enabled", false)) {
             return;
         }
 
@@ -89,6 +110,10 @@ public class GuildEventManager {
         }
     }
 
+    /**
+     * Ends a guild event
+     * @param eventName Name of the event to end
+     */
     public void endEvent(String eventName) {
         GuildEvent event = activeEvents.remove(eventName);
         if (event != null) {
@@ -121,6 +146,10 @@ public class GuildEventManager {
         };
     }
 
+    /**
+     * Gets all currently active events
+     * @return Map of event names to event instances
+     */
     public Map<String, GuildEvent> getActiveEvents() {
         return Collections.unmodifiableMap(activeEvents);
     }

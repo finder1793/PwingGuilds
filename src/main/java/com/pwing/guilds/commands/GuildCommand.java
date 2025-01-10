@@ -14,12 +14,16 @@ import com.pwing.guilds.visualization.ChunkVisualizer;
 import com.pwing.guilds.gui.GuildManagementGUI;
 
 /**
- * Handles all guild-related commands.
- * Manages guild creation, deletion, invites, claims, and other guild operations.
+ * Handles all guild-related commands for players.
+ * Primary command handler for /guild and its subcommands.
  */
 public class GuildCommand implements CommandExecutor {
     private final PwingGuilds plugin;
 
+    /**
+     * Creates a new guild command handler
+     * @param plugin The plugin instance
+     */
     public GuildCommand(PwingGuilds plugin) {
         this.plugin = plugin;
     }

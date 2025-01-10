@@ -20,8 +20,9 @@ import java.util.stream.Collectors;
 
 @SerializableAs("Guild")
 /**
- * Represents a guild within the plugin.
- * A guild is a group of players that can claim land, level up, and work together.
+ * Represents a guild in the plugin.
+ * A guild is a player-created organization that can claim territory, manage members,
+ * and provide benefits to its members through various perks and upgrades.
  */
 public class Guild implements ConfigurationSerializable {
     private final PwingGuilds plugin;
@@ -39,6 +40,7 @@ public class Guild implements ConfigurationSerializable {
     private Alliance alliance;
     private long lastUpdate;
     private final Set<UUID> onlineMembers = new HashSet<>();
+    private boolean pvpEnabled = false;  // Default PvP off in guild territories
 
     /**
      * Creates a new guild with the specified parameters
@@ -56,6 +58,11 @@ public class Guild implements ConfigurationSerializable {
         this.perks = new GuildPerks(plugin, this, level);
     }
 
+    /**
+     * Invites a player to join the guild
+     * @param player The UUID of the player to invite
+     * @return true if invite was successful, false if already invited
+     */
     public boolean invite(UUID player) {
         return invites.add(player);
     }
@@ -72,6 +79,11 @@ public class Guild implements ConfigurationSerializable {
         return false;
     }
 
+    /**
+     * Checks if a player has a pending invite to this guild
+     * @param player The player's UUID to check
+     * @return true if the player has an invite, false otherwise
+     */
     public boolean hasInvite(UUID player) {
         return invites.contains(player);
     }
@@ -80,14 +92,25 @@ public class Guild implements ConfigurationSerializable {
         return members.contains(player);
     }
 
+    /**
+     * Checks if a given chunk is claimed by this guild
+     * @param chunk The chunk to check
+     * @return true if the chunk is claimed by this guild
+     */
     public boolean isChunkClaimed(Chunk chunk) {
         return claimedChunks.contains(new ChunkLocation(chunk));
     }
 
+    /**
+     * Claims a chunk of land for the guild
+     * @param chunk The chunk location to claim
+     * @return true if claim was successful, false if already claimed or at claim limit
+     */
     public boolean claimChunk(ChunkLocation chunk) {
         if (canClaim()) {
             boolean claimed = claimedChunks.add(chunk);
-            if (claimed) {
+            // Don't save during deserialization
+            if (claimed && plugin.getGuildManager() != null) {
                 plugin.getGuildManager().getStorage().saveGuild(this);
             }
             return claimed;
@@ -95,6 +118,11 @@ public class Guild implements ConfigurationSerializable {
         return false;
     }
 
+    /**
+     * Removes a guild's claim on a chunk of land
+     * @param chunk The chunk location to unclaim
+     * @return true if unclaim was successful, false if not claimed
+     */
     public boolean unclaimChunk(ChunkLocation chunk) {
         boolean unclaimed = claimedChunks.remove(chunk);
         if (unclaimed) {
@@ -147,15 +175,27 @@ public class Guild implements ConfigurationSerializable {
         this.bonusClaims += amount;
     }
 
+    /**
+     * Checks if the guild can claim more chunks based on level and bonus claims
+     * @return true if guild can claim more chunks, false if at limit
+     */
     public boolean canClaim() {
         int maxClaims = plugin.getConfig().getInt("guild-levels." + level + ".max-claims") + bonusClaims;
         return claimedChunks.size() < maxClaims;
     }
 
+    /**
+     * Checks if the guild can add another member
+     * @return true if guild has space for another member, false otherwise
+     */
     public boolean canAddMember() {
         return members.size() < perks.getMemberLimit();
     }
 
+    /**
+     * Broadcasts a message to all online guild members
+     * @param message The message to broadcast
+     */
     public void broadcastMessage(String message) {
         for (UUID uuid : members) {
             Player player = Bukkit.getPlayer(uuid);
@@ -166,6 +206,11 @@ public class Guild implements ConfigurationSerializable {
     }
 
 
+    /**
+     * Promotes a member to guild leader
+     * @param player UUID of the player to promote
+     * @return true if promotion was successful
+     */
     public boolean promotePlayer(UUID player) {
         if (!members.contains(player) || player.equals(leader)) {
             return false;
@@ -174,6 +219,12 @@ public class Guild implements ConfigurationSerializable {
         return true;
     }
 
+    /**
+     * Creates or updates a guild home location
+     * @param name The name of the home
+     * @param location The location of the home
+     * @return true if home was set successfully
+     */
     public boolean setHome(String name, Location location) {
         GuildHomeCreateEvent event = new GuildHomeCreateEvent(this, name, location);
         Bukkit.getPluginManager().callEvent(event);
@@ -185,13 +236,28 @@ public class Guild implements ConfigurationSerializable {
         return false;
     }
 
+    /**
+     * Gets a guild home by name
+     * @param name The name of the home
+     * @return Optional containing the home if it exists
+     */
     public Optional<GuildHome> getHome(String name) {
         return Optional.ofNullable(homes.get(name.toLowerCase()));
     }
 
+    /**
+     * Removes a guild home
+     * @param name The name of the home to delete
+     * @return true if home was deleted successfully
+     */
     public boolean deleteHome(String name) {
         return homes.remove(name.toLowerCase()) != null;
     }
+    /**
+     * Creates a new guild member
+     * @param player UUID of the player to add
+     * @return true if member was added successfully, false otherwise
+     */
     public boolean addMember(UUID player) {
         GuildMemberJoinEvent event = new GuildMemberJoinEvent(this, player);
         Bukkit.getPluginManager().callEvent(event);
@@ -257,6 +323,7 @@ public class Guild implements ConfigurationSerializable {
         if (alliance != null) {
             data.put("alliance", alliance.getName());
         }
+        data.put("pvp-enabled", pvpEnabled);
         return data;
     }
 
@@ -277,8 +344,20 @@ public class Guild implements ConfigurationSerializable {
         Guild guild = new Guild(plugin, name, owner);
 
         guild.setLevel((Integer) data.get("level"));
-        guild.setExp((Long) data.get("exp"));
-        guild.addBonusClaims((Integer) data.getOrDefault("bonus-claims", 0));
+        
+        // Fix the exp casting issue
+        Object expObj = data.get("exp");
+        if (expObj instanceof Integer) {
+            guild.setExp(((Integer) expObj).longValue());
+        } else if (expObj instanceof Long) {
+            guild.setExp((Long) expObj);
+        }
+
+        // Handle possible Integer for bonus claims
+        Object bonusClaimsObj = data.getOrDefault("bonus-claims", 0);
+        if (bonusClaimsObj instanceof Integer) {
+            guild.addBonusClaims((Integer) bonusClaimsObj);
+        }
 
         @SuppressWarnings("unchecked")
         List<String> membersList = (List<String>) data.get("members");
@@ -294,14 +373,22 @@ public class Guild implements ConfigurationSerializable {
                     .forEach(guild.invites::add);
         }
 
+        // Fix the claims loading
         @SuppressWarnings("unchecked")
-        List<Map<String, Object>> chunksList = (List<Map<String, Object>>) data.get("claimed-chunks");
-        chunksList.stream()
-                .map(chunkData -> new ChunkLocation(
-                        (String) chunkData.get("world"),
-                        (Integer) chunkData.get("x"),
-                        (Integer) chunkData.get("z")))
-                .forEach(guild::claimChunk);
+        List<String> claimsList = (List<String>) data.get("claims");
+        if (claimsList != null) {
+            claimsList.forEach(claimString -> {
+                String[] parts = claimString.split(",");
+                if (parts.length >= 3) {
+                    ChunkLocation claim = new ChunkLocation(
+                        parts[0], // world
+                        Integer.parseInt(parts[1]), // x
+                        Integer.parseInt(parts[2])  // z
+                    );
+                    guild.claimChunk(claim);
+                }
+            });
+        }
 
         @SuppressWarnings("unchecked")
         Map<String, Map<String, Object>> homes = (Map<String, Map<String, Object>>) data.get("homes");
@@ -325,6 +412,8 @@ public class Guild implements ConfigurationSerializable {
                     .ifPresent(guild::setAlliance);
         }
 
+        guild.setPvPEnabled((Boolean) data.getOrDefault("pvp-enabled", false));
+
         return guild;
     }
 
@@ -337,13 +426,74 @@ public class Guild implements ConfigurationSerializable {
     public long getExp() { return exp; }
     /** @return The guild's current level */
     public int getLevel() { return level; }
+    /** @return UUID of the guild leader */
     public UUID getLeader() { return leader; }
+    /**
+     * Gets an unmodifiable set of all guild members
+     * @return Set of member UUIDs
+     */
     public Set<UUID> getMembers() { return Collections.unmodifiableSet(members); }
+    /**
+     * Gets an unmodifiable set of all claimed chunks
+     * @return Set of claimed chunk locations
+     */
     public Set<ChunkLocation> getClaimedChunks() { return Collections.unmodifiableSet(claimedChunks); }
+    /**
+     * Gets the guild's perks manager
+     * @return GuildPerks instance
+     */
     public GuildPerks getPerks() { return perks; }
+    /**
+     * Gets the number of bonus claim chunks
+     * @return Number of bonus claims
+     */
     public int getBonusClaims() { return bonusClaims; }
+    /**
+     * Gets an unmodifiable map of all guild homes
+     * @return Map of home names to GuildHome objects
+     */
     public Map<String, GuildHome> getHomes() { return Collections.unmodifiableMap(homes); }
+    /**
+     * Gets the guild's current alliance
+     * @return Alliance object or null if not in an alliance
+     */
     public Alliance getAlliance() { return alliance; }
+    /**
+     * Checks if PvP is enabled in guild claimed territories
+     * @return true if PvP is enabled, false if disabled
+     */
+    public boolean isPvPEnabled() {
+        return pvpEnabled;
+    }
+
+    /**
+     * Sets whether PvP is enabled in guild territories
+     * @param enabled true to enable PvP, false to disable
+     */
+    public void setPvPEnabled(boolean enabled) {
+        this.pvpEnabled = enabled;
+        plugin.getGuildManager().getStorage().saveGuild(this);
+    }
+
+    /**
+     * Checks if PvP is allowed between two players in guild territory
+     * @param player1 First player
+     * @param player2 Second player
+     * @return true if PvP is allowed between these players
+     */
+    public boolean isPvPAllowed(Player player1, Player player2) {
+        if (!pvpEnabled) {
+            return false;
+        }
+        
+        // If both players are guild members, check if friendly fire is enabled
+        boolean areBothMembers = isMember(player1.getUniqueId()) && isMember(player2.getUniqueId());
+        if (areBothMembers) {
+            return plugin.getConfig().getBoolean("guild-settings.allow-friendly-fire", false);
+        }
+        
+        return true;
+    }
 
     // Setters
     public void setLevel(int level) {

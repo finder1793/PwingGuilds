@@ -6,6 +6,10 @@ import io.lumine.mythic.core.mobs.ActiveMob;
 import org.bukkit.entity.Entity;
 import org.bukkit.block.Block;
 
+/**
+ * Manages experience points for guilds.
+ * Handles calculation and distribution of exp from various sources.
+ */
 public class GuildExpManager {
     private final PwingGuilds plugin;
     private boolean mythicMobsEnabled;
@@ -21,6 +25,11 @@ public class GuildExpManager {
         }
     }
 
+    /**
+     * Calculates experience points for breaking a block
+     * @param block The block that was broken
+     * @return Amount of exp to award
+     */
     public long calculateBlockExp(Block block) {
         String blockType = block.getType().name();
         return plugin.getConfig().getLong("exp-sources.blocks.values." + blockType,

@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.gradleup.shadow") version "9.0.0-beta4"
 }
 
 group = "com.pwing"
@@ -46,11 +46,14 @@ dependencies {
     compileOnly(libs.adventure.text.serializer.legacy)
     compileOnly(libs.worldguard)
     compileOnly(libs.worldedit)
+    implementation("com.zaxxer:HikariCP:5.1.0") {
+        exclude(group = "org.slf4j", module = "slf4j-api")
+    }
 }
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(21)) 
     }
     withSourcesJar()
     withJavadocJar()
@@ -60,15 +63,22 @@ tasks {
     shadowJar {
         archiveClassifier.set("")
         minimize()
+        relocate("com.zaxxer.hikari", "com.pwing.guilds.libs.hikari")
+        dependencies {
+            include(dependency("com.zaxxer:HikariCP:.*"))
+        }
     }
 
     withType<JavaCompile>().configureEach {
         options.encoding = "UTF-8"
-        options.release.set(21)
+        options.release.set(21) 
     }
 
     processResources {
         filesMatching("plugin.yml") {
+            expand(project.properties)
+        }
+        filesMatching("paper-plugin.yml") {
             expand(project.properties)
         }
     }
