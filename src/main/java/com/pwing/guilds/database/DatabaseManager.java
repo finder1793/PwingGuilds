@@ -5,14 +5,20 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.configuration.Configuration;
 
 /**
- * Manages database connections and operations for the plugin
+ * Manages database connectivity and connection pooling.
+ * Provides optimized database access using HikariCP connection pool.
+ * Supports MySQL/MariaDB database backends.
  */
 public class DatabaseManager {
     private final HikariDataSource dataSource;
 
     /**
-     * Creates a new DatabaseManager with the specified configuration
-     * @param config The database configuration
+     * Creates new database manager with specified configuration
+     * Initializes connection pool with optimized settings
+     * 
+     * @param config Configuration containing database credentials and settings
+     * @throws IllegalArgumentException if required config values are missing
+     * @throws RuntimeException if connection pool initialization fails
      */
     public DatabaseManager(Configuration config) {
         HikariConfig hikariConfig = new HikariConfig();
@@ -33,8 +39,9 @@ public class DatabaseManager {
     }
 
     /**
-     * Gets the active database connection pool
-     * @return The HikariCP datasource
+     * Gets the active connection pool
+     * @return HikariCP datasource for database connections
+     * @throws IllegalStateException if pool has been shut down
      */
     public HikariDataSource getDataSource() {
         return dataSource;

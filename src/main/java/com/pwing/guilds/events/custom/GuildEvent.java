@@ -13,7 +13,8 @@ import java.util.Map;
 
 
 /**
- * Base class for guild events that can be participated in
+ * Base class for all guild events.
+ * Provides core functionality for event timing, scoring and rewards.
  */
 public abstract class GuildEvent implements Listener {
     protected final PwingGuilds plugin;
@@ -51,10 +52,19 @@ public abstract class GuildEvent implements Listener {
         return duration;
     }
 
+    /**
+     * Gets the current scores for all guilds
+     * @return Unmodifiable map of guilds to their scores
+     */
     public Map<Guild, Integer> getScores() {
         return Collections.unmodifiableMap(scores);
     }
 
+    /**
+     * Adds score for a guild in this event
+     * @param guild The guild to add points to
+     * @param points Number of points to add
+     */
     public void addScore(Guild guild, int points) {
         scores.merge(guild, points, Integer::sum);
     }
@@ -63,6 +73,10 @@ public abstract class GuildEvent implements Listener {
         return isActive;
     }
 
+    /**
+     * Distributes rewards to participating guilds based on placement
+     * Rewards are configured in the plugin config file
+     */  
     public void distributeRewards() {
         plugin.getRewardManager().giveEventRewards(this);
     }

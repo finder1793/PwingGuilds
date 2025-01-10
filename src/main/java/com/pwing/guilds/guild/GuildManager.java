@@ -13,6 +13,10 @@ import com.pwing.guilds.events.GuildDeleteEvent;
 import com.pwing.guilds.integration.WorldGuardHook;
 import com.pwing.guilds.alliance.Alliance;
 
+/**
+ * Manages all guild-related operations and data within the plugin.
+ * Handles guild creation, deletion, member management, and chunk claiming.
+ */
 public class GuildManager {
     private final PwingGuilds plugin;
     private final Map<String, Guild> guilds;
@@ -21,6 +25,12 @@ public class GuildManager {
     private final GuildStorage storage;
     private final WorldGuardHook worldGuardHook;
 
+    /**
+     * Creates a new GuildManager instance
+     * @param plugin Main plugin instance
+     * @param storage Storage implementation to use
+     * @param worldGuardHook WorldGuard integration hook
+     */
     public GuildManager(PwingGuilds plugin, GuildStorage storage, WorldGuardHook worldGuardHook) {
         this.plugin = plugin;
         this.storage = storage;
@@ -28,6 +38,10 @@ public class GuildManager {
         this.worldGuardHook = worldGuardHook;
     }
 
+    /**
+     * Gets the map of player UUIDs to their guild memberships
+     * @return Map of player UUIDs to guilds
+     */
     public Map<UUID, Guild> getPlayerGuilds() {
         return playerGuilds;
     }
@@ -42,6 +56,12 @@ public class GuildManager {
         plugin.getLogger().info("Loaded " + guilds.size() + " guilds with " + playerGuilds.size() + " members");
     }
 
+    /**
+     * Creates a new guild with the specified name and owner
+     * @param name The name for the new guild
+     * @param owner UUID of the guild owner
+     * @return true if guild was created successfully, false if owner already has a guild or name is taken
+     */
     public boolean createGuild(String name, UUID owner) {
         if (playerGuilds.containsKey(owner)) {
             return false;
@@ -76,6 +96,12 @@ public class GuildManager {
         }
     }
 
+    /**
+     * Claims a chunk for a guild if possible
+     * @param guild The guild attempting to claim
+     * @param chunk The chunk to claim
+     * @return true if claim was successful, false if chunk is already claimed or guild cannot claim more
+     */
     public boolean claimChunk(Guild guild, Chunk chunk) {
         if (guild == null || chunk == null) {
             return false;

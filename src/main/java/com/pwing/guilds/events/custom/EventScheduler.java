@@ -13,8 +13,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import com.pwing.guilds.events.custom.EventAnnouncer;
-
-
+/**
+ * Handles scheduling and automated execution of guild events.
+ * Events can be configured to run at specific times on specific days.
+ * Provides announcement functionality for upcoming events.
+ */
 public class EventScheduler {
     private final PwingGuilds plugin;
     private final Map<LocalTime, ScheduledEvent> scheduledEvents = new HashMap<>();
@@ -28,6 +31,10 @@ public class EventScheduler {
         startScheduler();
     }
 
+    /**
+     * Loads event schedules from configuration
+     * Parses time formats and validates event settings
+     */
     private void loadSchedule() {
         ConfigurationSection scheduleSection = plugin.getConfig().getConfigurationSection("event-schedule");
         if (scheduleSection != null) {
@@ -50,6 +57,10 @@ public class EventScheduler {
         }
     }
 
+    /**
+     * Starts the scheduler task that checks for and executes events
+     * Runs every minute to check scheduled times
+     */
     private void startScheduler() {
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             LocalTime now = LocalTime.now();
@@ -65,6 +76,9 @@ public class EventScheduler {
         }, 20L, 1200L);
     }
 
+    /**
+     * Inner class representing a scheduled event with its timing configuration
+     */
     private static class ScheduledEvent {
         private final String name;
         private final List<Integer> announceTimings;
@@ -78,11 +92,20 @@ public class EventScheduler {
             this.minPlayers = minPlayers;
         }
 
+        /**
+         * Checks if an announcement should be made at the given time
+         * @param minutesUntil Minutes until event starts
+         * @return true if announcement timing matches configuration
+         */
         public boolean shouldAnnounce(long minutesUntil) {
             return announceTimings.contains((int) minutesUntil) &&
                     days.contains(LocalDate.now().getDayOfWeek());
         }
 
+        /**
+         * Checks if the event can start based on day and player count
+         * @return true if conditions are met to start event
+         */
         public boolean canStart() {
             return days.contains(LocalDate.now().getDayOfWeek()) &&
                     Bukkit.getOnlinePlayers().size() >= minPlayers;

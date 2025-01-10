@@ -16,8 +16,9 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Represents a guild buff that can be applied to guild members.
- * Buffs can provide potion effects and/or stat boosts.
+ * Represents a guild buff that can be purchased and applied to guild members.
+ * Buffs can provide potion effects, stat modifications via MythicMobs, or both.
+ * Each buff has an associated cost, duration, and permission requirement.
  */
 public class GuildBuff implements StatSource {
     private final PwingGuilds plugin;
@@ -80,8 +81,9 @@ public class GuildBuff implements StatSource {
     private final Map<UUID, Long> buffExpirations = new HashMap<>();
 
     /**
-     * Applies the buff to a player
-     * @param player Player to apply buff to
+     * Applies this buff to a player
+     * @param player The player to receive the buff
+     * @throws IllegalStateException if MythicMobs integration fails for stat buffs
      */
     public void applyToMember(Player player) {
         // Potion effects work independently
@@ -113,6 +115,10 @@ public class GuildBuff implements StatSource {
         }
     }
 
+    /**
+     * Controls if this buff's effects should be removed when plugin reloads
+     * @return true to remove on reload, false to persist
+     */
     @Override
     public boolean removeOnReload() {
         return true;
@@ -132,8 +138,18 @@ public class GuildBuff implements StatSource {
     public double getStatValue() { return statValue; }
     public int getLevel() { return level; }
     public int getDuration() { return duration; }
+
+    /**
+     * Gets the permission required to purchase/use this buff
+     * @return Permission node string
+     */
     public String getPermission() { return permission; }
-    public BuffType getType() { return type; }
+
+    /**
+     * Gets the material used to represent this buff in GUIs
+     * @return Bukkit Material enum value
+     */
     public Material getMaterial() { return material; }
     public int getSlot() { return slot; }
+    public BuffType getType() { return type; }
 }

@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Represents the perks/benefits that an alliance provides to its member guilds
+ * Represents bonuses and benefits provided to guilds in an alliance.
+ * Includes experience multipliers, extra claim slots, and shared features.
+ * Perks are configurable and can be enabled/disabled per alliance.
  */
 public class AlliancePerks implements ConfigurationSerializable {
     private double expBonus;
@@ -22,8 +24,9 @@ public class AlliancePerks implements ConfigurationSerializable {
     }
 
     /**
-     * Gets the experience bonus multiplier for alliance members
-     * @return The experience bonus multiplier
+     * Gets the experience multiplier for alliance members
+     * Values above 1.0 provide bonus exp, below 1.0 reduce exp gain
+     * @return The exp multiplier value
      */
     public double getExpBonus() {
         return expBonus;
@@ -38,8 +41,9 @@ public class AlliancePerks implements ConfigurationSerializable {
     }
 
     /**
-     * Gets the number of extra land claims available to alliance members
-     * @return The number of extra claims
+     * Gets the number of additional chunks that can be claimed
+     * This is added to the guild's base claim limit
+     * @return Number of extra chunk claims
      */
     public int getExtraClaims() {
         return extraClaims;

@@ -24,6 +24,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
+/**
+ * SQL implementation of guild data storage.
+ * Handles all database operations for storing and retrieving guild data using MySQL/MariaDB.
+ * Provides caching and asynchronous saving capabilities for optimal performance.
+ */
 public class SQLGuildStorage implements GuildStorage {
     private final PwingGuilds plugin;
     private final HikariDataSource dataSource;
@@ -32,6 +37,11 @@ public class SQLGuildStorage implements GuildStorage {
     private static final long SAVE_INTERVAL = 100L;
     private final GuildManager guildManager;
 
+    /**
+     * Creates a new SQL storage manager
+     * @param plugin Main plugin instance
+     * @param dataSource HikariCP datasource for database connections
+     */
     public SQLGuildStorage(PwingGuilds plugin, HikariDataSource dataSource) {
         this.plugin = plugin;
         this.guildManager = plugin.getGuildManager();
@@ -40,6 +50,12 @@ public class SQLGuildStorage implements GuildStorage {
         startAsyncSaveProcessor();
     }
 
+    /**
+     * Serializes Bukkit ItemStacks to byte array for storage
+     * @param items Array of items to serialize
+     * @return Serialized byte array
+     * @throws RuntimeException if serialization fails
+     */
     private byte[] serializeItems(ItemStack[] items) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
              BukkitObjectOutputStream dataOutput = new BukkitObjectOutputStream(outputStream)) {
@@ -50,6 +66,12 @@ public class SQLGuildStorage implements GuildStorage {
         }
     }
 
+    /**
+     * Deserializes byte array back to Bukkit ItemStacks
+     * @param data Byte array to deserialize
+     * @return Array of ItemStacks
+     * @throws RuntimeException if deserialization fails
+     */
     private ItemStack[] deserializeItems(byte[] data) {
         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
              BukkitObjectInputStream dataInput = new BukkitObjectInputStream(inputStream)) {
@@ -59,6 +81,10 @@ public class SQLGuildStorage implements GuildStorage {
         }
     }
 
+    /**
+     * Initializes required database tables if they don't exist
+     * Creates tables for guilds, members, chunks, homes and storage
+     */
     private void initTables() {
         try (Connection conn = dataSource.getConnection();
              Statement stmt = conn.createStatement()) {
@@ -107,6 +133,10 @@ public class SQLGuildStorage implements GuildStorage {
         }
     }
 
+    /**
+     * Processes any remaining guild saves in the queue
+     * Should be called before plugin shutdown
+     */
     public void processRemainingQueue() {
         try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
@@ -121,6 +151,10 @@ public class SQLGuildStorage implements GuildStorage {
         }
     }
 
+    /**
+     * Starts async task to periodically save queued guild data
+     * Runs every SAVE_INTERVAL ticks
+     */
     private void startAsyncSaveProcessor() {
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
             try (Connection conn = dataSource.getConnection()) {
@@ -137,6 +171,12 @@ public class SQLGuildStorage implements GuildStorage {
         }, SAVE_INTERVAL, SAVE_INTERVAL);
     }
 
+    /**
+     * Saves guild data to database as a transaction
+     * @param guild Guild to save
+     * @param conn Active database connection
+     * @throws SQLException if database error occurs
+     */
     private void saveGuildData(Guild guild, Connection conn) throws SQLException {
         executeTransaction(connection -> {
             // Save main guild data
@@ -378,6 +418,11 @@ public class SQLGuildStorage implements GuildStorage {
         return dataSource;
     }
 
+    /**
+     * Executes a database transaction with automatic connection management
+     * @param transaction Transaction to execute
+     * @throws SQLException if database error occurs
+     */
     protected void executeTransaction(SQLTransaction transaction) throws SQLException {
         try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
@@ -393,6 +438,9 @@ public class SQLGuildStorage implements GuildStorage {
         }
     }
     
+    /**
+     * Functional interface for database transactions
+     */
     @FunctionalInterface
     protected interface SQLTransaction {
         void execute(Connection conn) throws SQLException;

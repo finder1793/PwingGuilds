@@ -12,12 +12,25 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Provides tab completion for guild commands.
+ * Handles auto-completion of subcommands, player names, and guild names.
+ */
 public class GuildCommandTabCompleter implements TabCompleter {
     private final PwingGuilds plugin;
 
     public GuildCommandTabCompleter(PwingGuilds plugin) {
         this.plugin = plugin;
     }
+
+    /**
+     * Handles tab completion for guild commands
+     * @param sender Command sender
+     * @param command The command being completed
+     * @param alias Command alias used
+     * @param args Current command arguments
+     * @return List of completion suggestions
+     */
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
