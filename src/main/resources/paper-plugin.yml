@@ -1,0 +1,67 @@
+name: PwingGuilds
+version: '${version}'
+main: com.pwing.guilds.PwingGuilds
+api-version: '1.20'
+description: A comprehensive guild system plugin
+authors: [finder17]
+website: https://github.com/finder17/PwingGuilds
+dependencies:
+  server:
+    Vault:
+      load: BEFORE
+      required: true
+    WorldGuard:
+      load: BEFORE
+      required: false
+    PlaceholderAPI:
+      load: BEFORE
+      required: false
+    MythicMobs:
+      load: BEFORE
+      required: false
+  libraries:
+    - com.zaxxer:HikariCP:5.1.0
+loader: com.pwing.guilds.loader.PwingGuildsLoader
+provides: ['GuildAPI']
+
+prefix: PwingGuilds
+load: STARTUP
+
+permissions:
+  guild.*:
+    default: op
+    description: All guild permissions
+    children:
+      guild.use: true
+      guild.create: true
+      guild.delete: true
+      guild.admin: true
+      guild.alliance: true
+      guild.buff.*: true
+      guild.claim.*: true
+      guild.event.*: true
+
+  guild.use:
+    default: true
+    description: Allows using basic guild commands
+  guild.create:
+    default: true
+    description: Allows creating a guild
+  guild.delete:
+    default: true
+    description: Allows deleting your own guild
+  guild.admin:
+    default: op
+    description: Allows using admin commands
+  guild.alliance:
+    default: true
+    description: Allows using alliance commands
+  guild.buff.*:
+    default: op
+    description: Access to all guild buffs
+  guild.claim.*:
+    default: op
+    description: Access to all claim commands
+  guild.event.*:
+    default: op
+    description: Access to all event commands
