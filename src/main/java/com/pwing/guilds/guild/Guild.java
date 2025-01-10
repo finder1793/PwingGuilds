@@ -33,6 +33,8 @@ public class Guild implements ConfigurationSerializable {
     private long exp;
     private int bonusClaims;
     private Alliance alliance;
+    private long lastUpdate;
+    private final Set<UUID> onlineMembers = new HashSet<>();
 
     public Guild(PwingGuilds plugin, String name, UUID owner) {
         this.plugin = plugin;
@@ -326,5 +328,30 @@ public class Guild implements ConfigurationSerializable {
 
     public ItemStack[] getStorageContents() {
         return plugin.getStorageManager().getGuildStorage(this.name);
+    }
+
+    public List<Player> getOnlineMembers() {
+        return members.stream()
+                .map(Bukkit::getPlayer)
+                .filter(player -> player != null && player.isOnline())
+                .collect(Collectors.toList());
+    }
+
+    public void updateMemberList() {
+        // Update last activity timestamp
+        this.lastUpdate = System.currentTimeMillis();
+        
+        // Update online status for members
+        for (UUID memberId : members) {
+            Player player = Bukkit.getPlayer(memberId);
+            if (player != null && player.isOnline()) {
+                onlineMembers.add(memberId);
+            } else {
+                onlineMembers.remove(memberId);
+            }
+        }
+        
+        // Save changes
+        plugin.getGuildManager().getStorage().saveGuild(this);
     }
 }

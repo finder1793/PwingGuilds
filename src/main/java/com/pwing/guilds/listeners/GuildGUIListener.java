@@ -1,8 +1,10 @@
-package com.pwing.guilds.gui;
+package com.pwing.guilds.listeners;
 
 import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.guild.ChunkLocation;
 import com.pwing.guilds.buffs.GuildBuff;
+import com.pwing.guilds.gui.GuildManagementGUI;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.ChatColor;

@@ -1,7 +1,6 @@
 package com.pwing.guilds.alliance.listener;
 
 import com.pwing.guilds.PwingGuilds;
-import com.pwing.guilds.alliance.Alliance;
 import com.pwing.guilds.guild.Guild;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

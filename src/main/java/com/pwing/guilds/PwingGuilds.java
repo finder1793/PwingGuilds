@@ -25,10 +25,11 @@ import com.pwing.guilds.storage.GuildStorageManager;
 import com.pwing.guilds.storage.GuildBackupManager;
 import com.pwing.guilds.storage.GuildBackupListener;
 import com.pwing.guilds.rewards.RewardManager;
-import com.pwing.guilds.gui.GuildGUIListener;
 import com.pwing.guilds.config.ConfigUpdater;
-import com.pwing.guilds.commands.alliance.AllianceCommand;
+import com.pwing.guilds.config.ConfigManager;
 import com.pwing.guilds.integration.WorldGuardHook;
+import com.pwing.guilds.events.EventRegistry;
+import com.pwing.guilds.database.DatabaseManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -47,6 +48,9 @@ public class PwingGuilds extends JavaPlugin {
     private AllianceStorage allianceStorage;
     private GuildStorageManager storageManager;
     private WorldGuardHook worldGuardHook;
+    private ConfigManager configManager;
+    private DatabaseManager databaseManager;
+    private EventRegistry eventRegistry;
 
     public boolean hasWorldGuard() {
         return worldGuardHook != null;
@@ -68,10 +72,15 @@ public class PwingGuilds extends JavaPlugin {
 
         setupEconomy();
 
+        // Initialize managers
+        this.configManager = new ConfigManager(this);
+        this.databaseManager = new DatabaseManager(getConfig());
+        this.eventRegistry = new EventRegistry(this);
+
         // Initialize appropriate storage type
         if (getConfig().getString("storage.type").equalsIgnoreCase("mysql")) {
-            this.storage = new SQLGuildStorage(this);
-            this.allianceStorage = new SQLAllianceStorage(this, ((SQLGuildStorage) storage).getDataSource());
+            this.storage = new SQLGuildStorage(this, databaseManager.getDataSource());
+            this.allianceStorage = new SQLAllianceStorage(this, databaseManager.getDataSource());
         } else {
             this.storage = new YamlGuildStorage(this);
             this.allianceStorage = new YamlAllianceStorage(this);
@@ -102,12 +111,8 @@ public class PwingGuilds extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new GuildBackupListener(this, backupManager), this);
 
         // Register all listeners
-        getServer().getPluginManager().registerEvents(new GuildPlayerListener(this), this);
-        getServer().getPluginManager().registerEvents(new GuildProtectionListener(this), this);
-        getServer().getPluginManager().registerEvents(new GuildExpListener(this), this);
-        getServer().getPluginManager().registerEvents(new GuildChatListener(this), this);
-        getServer().getPluginManager().registerEvents(new GuildGUIListener(this), this);
-        getServer().getPluginManager().registerEvents(new AllianceListener(this), this);
+        eventRegistry.registerListeners();
+
         // Register commands
         getCommand("guild").setExecutor(new GuildCommand(this));
         getCommand("guild").setTabCompleter(new GuildCommandTabCompleter(this));
@@ -187,6 +192,11 @@ public class PwingGuilds extends JavaPlugin {
             sqlStorage.getDataSource().close();
         }
         
+        // Clean up resources
+        configManager.saveConfigs();
+        databaseManager.shutdown();
+        eventRegistry.unregisterAll();
+
         getLogger().info("Guild data save completed!");
     }
 }

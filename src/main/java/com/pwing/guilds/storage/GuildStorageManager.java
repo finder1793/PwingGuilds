@@ -151,4 +151,15 @@ public class GuildStorageManager implements Listener {
     public ItemStack[] getGuildStorage(String guildName) {
         return guildStorages.get(guildName);
     }
+
+    public void saveInventory(Inventory inventory) {
+        if (inventory == null || !inventory.getViewers().get(0).getOpenInventory().getTitle().contains("Guild Storage")) {
+            return;
+        }
+        
+        String title = inventory.getViewers().get(0).getOpenInventory().getTitle();
+        String guildName = title.substring(title.indexOf(":") + 2);
+        
+        plugin.getGuildManager().getStorage().saveStorageData(guildName, inventory.getContents());
+    }
 }

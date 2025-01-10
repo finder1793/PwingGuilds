@@ -32,26 +32,31 @@ public class SQLGuildStorage implements GuildStorage {
     private static final long SAVE_INTERVAL = 100L;
     private final GuildManager guildManager;
 
-    public SQLGuildStorage(PwingGuilds plugin) {
+    public SQLGuildStorage(PwingGuilds plugin, HikariDataSource dataSource) {
         this.plugin = plugin;
         this.guildManager = plugin.getGuildManager();
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:mysql://" +
-                plugin.getConfig().getString("storage.mysql.host") + ":" +
-                plugin.getConfig().getInt("storage.mysql.port") + "/" +
-                plugin.getConfig().getString("storage.mysql.database"));
-        config.setUsername(plugin.getConfig().getString("storage.mysql.username"));
-        config.setPassword(plugin.getConfig().getString("storage.mysql.password"));
-        config.setMaximumPoolSize(10);
-
-        this.dataSource = new HikariDataSource(config);
+        this.dataSource = dataSource;
         initTables();
         startAsyncSaveProcessor();
     }
 
-    @Override
-    public GuildManager getGuildManager() {
-        return guildManager;
+    private byte[] serializeItems(ItemStack[] items) {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+             BukkitObjectOutputStream dataOutput = new BukkitObjectOutputStream(outputStream)) {
+            dataOutput.writeObject(items);
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to serialize items", e);
+        }
+    }
+
+    private ItemStack[] deserializeItems(byte[] data) {
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
+             BukkitObjectInputStream dataInput = new BukkitObjectInputStream(inputStream)) {
+            return (ItemStack[]) dataInput.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("Failed to deserialize items", e);
+        }
     }
 
     private void initTables() {
@@ -133,10 +138,9 @@ public class SQLGuildStorage implements GuildStorage {
     }
 
     private void saveGuildData(Guild guild, Connection conn) throws SQLException {
-        conn.setAutoCommit(false);
-        try {
+        executeTransaction(connection -> {
             // Save main guild data
-            try (PreparedStatement ps = conn.prepareStatement(
+            try (PreparedStatement ps = connection.prepareStatement(
                     "REPLACE INTO guilds (name, owner, level, exp, bonus_claims) VALUES (?, ?, ?, ?, ?)")) {
                 ps.setString(1, guild.getName());
                 ps.setString(2, guild.getOwner().toString());
@@ -147,21 +151,21 @@ public class SQLGuildStorage implements GuildStorage {
             }
 
             // Clear existing data
-            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guild_members WHERE guild_name = ?")) {
+            try (PreparedStatement ps = connection.prepareStatement("DELETE FROM guild_members WHERE guild_name = ?")) {
                 ps.setString(1, guild.getName());
                 ps.executeUpdate();
             }
-            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guild_chunks WHERE guild_name = ?")) {
+            try (PreparedStatement ps = connection.prepareStatement("DELETE FROM guild_chunks WHERE guild_name = ?")) {
                 ps.setString(1, guild.getName());
                 ps.executeUpdate();
             }
-            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guild_homes WHERE guild_name = ?")) {
+            try (PreparedStatement ps = connection.prepareStatement("DELETE FROM guild_homes WHERE guild_name = ?")) {
                 ps.setString(1, guild.getName());
                 ps.executeUpdate();
             }
 
             // Save members
-            try (PreparedStatement ps = conn.prepareStatement(
+            try (PreparedStatement ps = connection.prepareStatement(
                     "INSERT INTO guild_members (guild_name, uuid) VALUES (?, ?)")) {
                 for (UUID member : guild.getMembers()) {
                     ps.setString(1, guild.getName());
@@ -172,7 +176,7 @@ public class SQLGuildStorage implements GuildStorage {
             }
 
             // Save chunks with sorting
-            try (PreparedStatement ps = conn.prepareStatement(
+            try (PreparedStatement ps = connection.prepareStatement(
                     "INSERT INTO guild_chunks (guild_name, world, x, z) VALUES (?, ?, ?, ?)")) {
                 List<ChunkLocation> sortedChunks = guild.getClaimedChunks().stream()
                     .sorted((c1, c2) -> {
@@ -195,7 +199,7 @@ public class SQLGuildStorage implements GuildStorage {
             }
 
             // Save homes
-            try (PreparedStatement ps = conn.prepareStatement(
+            try (PreparedStatement ps = connection.prepareStatement(
                     "INSERT INTO guild_homes (guild_name, home_name, world, x, y, z, yaw, pitch) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
                 for (Map.Entry<String, GuildHome> entry : guild.getHomes().entrySet()) {
                     Location loc = entry.getValue().getLocation();
@@ -213,12 +217,7 @@ public class SQLGuildStorage implements GuildStorage {
             }
 
             conn.commit();
-        } catch (SQLException e) {
-            conn.rollback();
-            throw e;
-        } finally {
-            conn.setAutoCommit(true);
-        }
+        });
     }
 
     @Override
@@ -370,27 +369,33 @@ public class SQLGuildStorage implements GuildStorage {
         return null;
     }
 
-    private byte[] serializeItems(ItemStack[] items) {
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-             BukkitObjectOutputStream dataOutput = new BukkitObjectOutputStream(outputStream)) {
-            dataOutput.writeObject(items);
-            return outputStream.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to serialize items", e);
-        }
-    }
-
-    private ItemStack[] deserializeItems(byte[] data) {
-        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
-             BukkitObjectInputStream dataInput = new BukkitObjectInputStream(inputStream)) {
-            return (ItemStack[]) dataInput.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException("Failed to deserialize items", e);
-        }
+    @Override
+    public GuildManager getGuildManager() {
+        return guildManager;
     }
 
     public HikariDataSource getDataSource() {
         return dataSource;
+    }
+
+    protected void executeTransaction(SQLTransaction transaction) throws SQLException {
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                transaction.execute(conn);
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
+    
+    @FunctionalInterface
+    protected interface SQLTransaction {
+        void execute(Connection conn) throws SQLException;
     }
 }
 

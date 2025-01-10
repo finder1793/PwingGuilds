@@ -13,10 +13,5 @@ public interface GuildStorage {
     void deleteGuild(String name);
     void saveStorageData(String guildName, ItemStack[] contents);
     ConfigurationSection getStorageData(String guildName);
-    GuildManager getGuildManager();
-
-    default void saveAllStorages() {
-        getGuildManager().getGuilds().forEach(guild -> 
-            saveStorageData(guild.getName(), guild.getStorageContents()));
-    }
+    GuildManager getGuildManager(); // Add this method to the interface
 }

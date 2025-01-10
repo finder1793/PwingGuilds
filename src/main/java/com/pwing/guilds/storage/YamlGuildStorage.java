@@ -39,7 +39,6 @@ public class YamlGuildStorage implements GuildStorage {
         startBackupCleaner();
     }
 
-    @Override
     public GuildManager getGuildManager() {
         return guildManager;
     }
@@ -59,7 +58,6 @@ public class YamlGuildStorage implements GuildStorage {
         }, AUTO_SAVE_INTERVAL, AUTO_SAVE_INTERVAL);
     }
 
-    @Override
     public void saveGuild(Guild guild) {
         File guildFile = new File(guildsFolder, guild.getName() + ".yml");
         YamlConfiguration config = new YamlConfiguration();
@@ -99,7 +97,6 @@ public class YamlGuildStorage implements GuildStorage {
         }
     }
 
-    @Override
     public Guild loadGuild(String name) {
         if (guildCache.containsKey(name)) {
             return guildCache.get(name);
@@ -173,7 +170,6 @@ public class YamlGuildStorage implements GuildStorage {
         }
     }
 
-    @Override
     public Set<Guild> loadAllGuilds() {
         Set<Guild> guilds = new HashSet<>();
         File[] files = guildsFolder.listFiles((dir, name) -> name.endsWith(".yml"));
@@ -191,7 +187,6 @@ public class YamlGuildStorage implements GuildStorage {
         return guilds;
     }
 
-    @Override
     public void deleteGuild(String name) {
         guildCache.remove(name);
         File guildFile = new File(guildsFolder, name + ".yml");
@@ -226,7 +221,6 @@ public class YamlGuildStorage implements GuildStorage {
                 location.getPitch();
     }
 
-    @Override
     public void saveStorageData(String guildName, ItemStack[] contents) {
         File storageFile = new File(guildsFolder, guildName + "-storage.yml");
         YamlConfiguration config = new YamlConfiguration();
@@ -239,7 +233,6 @@ public class YamlGuildStorage implements GuildStorage {
         }
     }
 
-    @Override
     public ConfigurationSection getStorageData(String guildName) {
         File storageFile = new File(guildsFolder, guildName + "-storage.yml");
         if (storageFile.exists()) {

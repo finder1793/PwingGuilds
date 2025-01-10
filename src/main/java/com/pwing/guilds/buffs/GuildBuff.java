@@ -1,15 +1,11 @@
 package com.pwing.guilds.buffs;
 
 import com.pwing.guilds.PwingGuilds;
-import com.pwing.guilds.guild.Guild;
 import io.lumine.mythic.bukkit.MythicBukkit;
-import io.lumine.mythic.bukkit.BukkitAdapter;
 import io.lumine.mythic.core.skills.stats.StatModifierType;
 import io.lumine.mythic.core.skills.stats.StatType;
 import io.lumine.mythic.core.skills.stats.StatRegistry;
 import io.lumine.mythic.core.skills.stats.StatSource;
-import io.lumine.mythic.core.mobs.equipment.MobEquipment;
-import io.lumine.mythic.core.skills.stats.StatExecutor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -18,7 +14,6 @@ import org.bukkit.potion.PotionEffectType;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.Optional;
 
 public class GuildBuff implements StatSource {
     private final PwingGuilds plugin;
