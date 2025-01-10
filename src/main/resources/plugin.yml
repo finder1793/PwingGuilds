@@ -3,7 +3,7 @@ version: '1.0.0'
 main: com.pwing.guilds.PwingGuilds
 api-version: '1.19'
 authors: [finder17]
-description: A guild plugin for Spigot
+description: A guild plugin for Spigot/Paper
 
 softdepend: [Vault, PlaceholderAPI, MythicMobs, WorldGuard]
 

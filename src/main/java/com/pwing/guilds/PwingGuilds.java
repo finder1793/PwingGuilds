@@ -32,6 +32,7 @@ import com.pwing.guilds.events.EventRegistry;
 import com.pwing.guilds.database.DatabaseManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
+import com.pwing.guilds.compat.ServerAdapter;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.Bukkit;
 import java.util.Set;
@@ -51,6 +52,7 @@ public class PwingGuilds extends JavaPlugin {
     private ConfigManager configManager;
     private DatabaseManager databaseManager;
     private EventRegistry eventRegistry;
+    private ServerAdapter serverAdapter;
 
     public boolean hasWorldGuard() {
         return worldGuardHook != null;
@@ -101,6 +103,7 @@ public class PwingGuilds extends JavaPlugin {
         this.buffManager = new GuildBuffManager(this);
         this.allianceManager = new AllianceManager(this, allianceStorage);
         this.storageManager = new GuildStorageManager(this);
+        this.serverAdapter = ServerAdapter.createAdapter(getServer());
 
         // Initialize managers
         this.guildManager.initialize();
@@ -175,6 +178,9 @@ public class PwingGuilds extends JavaPlugin {
     }
     public GuildStorageManager getStorageManager() {
     return storageManager;
+    }
+    public ServerAdapter getServerAdapter() {
+        return serverAdapter;
     }
     @Override
     public void onDisable() {
