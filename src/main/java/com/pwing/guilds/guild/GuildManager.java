@@ -79,6 +79,10 @@ public class GuildManager {
         return true;
     }
 
+    /**
+     * Adds a guild to the manager
+     * @param guild Guild to add
+     */
     public void addGuild(Guild guild) {
         guilds.put(guild.getName(), guild);
         guild.getMembers().forEach(member -> playerGuilds.put(member, guild));
@@ -149,6 +153,12 @@ public class GuildManager {
         return false;
     }
 
+    /**
+     * Checks if a player can interact with blocks in a chunk
+     * @param player UUID of player attempting interaction
+     * @param chunk The chunk being interacted with
+     * @return true if player can interact, false otherwise
+     */
     public boolean canInteract(UUID player, Chunk chunk) {
         ChunkLocation location = new ChunkLocation(chunk);
         Guild guild = claimedChunks.get(location);
@@ -175,6 +185,12 @@ public class GuildManager {
         return false;
     }
 
+    /**
+     * Accepts a player's invite to join a guild
+     * @param guildName Name of the guild
+     * @param player UUID of the accepting player
+     * @return true if successful, false if invite doesn't exist
+     */
     public boolean acceptInvite(String guildName, UUID player) {
         Guild guild = guilds.get(guildName);
         if (guild != null && guild.acceptInvite(player)) {

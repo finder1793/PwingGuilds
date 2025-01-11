@@ -41,3 +41,93 @@ messages:
     alliance-not-found: "&cAlliance not found!"
     insufficient-funds: "&cInsufficient funds!"
     invalid-name: "&cInvalid name format!"
+
+  commands:
+    guild:
+      help:
+        header: "&6=== Guild Commands ==="
+        create: "&e/guild create <name> &7- Create a new guild"
+        delete: "&e/guild delete &7- Delete your guild"
+        claim: "&e/guild claim &7- Claim the chunk you're standing in"
+        unclaim: "&e/guild unclaim &7- Unclaim current chunk"
+        visualize: "&e/guild visualize &7- Show chunk borders"
+        invite: "&e/guild invite <player> &7- Invite a player"
+        accept: "&e/guild accept <guild> &7- Accept invitation"
+        kick: "&e/guild kick <player> &7- Kick a member"
+        gui: "&e/guild gui &7- Open management interface"
+        storage: "&e/guild storage &7- Open guild storage"
+        buff: "&e/guild buff &7- Open buffs menu"
+        home: "&e/guild home <name> &7- Teleport to guild home"
+        sethome: "&e/guild sethome <name> &7- Set guild home"
+        delhome: "&e/guild delhome <name> &7- Delete guild home"
+      usage:
+        create: "&cUsage: /guild create <name>"
+        invite: "&cUsage: /guild invite <player>"
+        kick: "&cUsage: /guild kick <player>"
+        home: "&cUsage: /guild home <name>"
+        sethome: "&cUsage: /guild sethome <name>"
+        delhome: "&cUsage: /guild delhome <name>"
+      success:
+        created: "&aGuild %name% created successfully!"
+        deleted: "&aGuild deleted successfully!"
+        claimed: "&aChunk claimed successfully!"
+        unclaimed: "&aChunk unclaimed successfully!"
+        invited: "&aInvited %player% to your guild!"
+        joined: "&aYou've joined the guild!"
+        kicked: "&aKicked %player% from the guild!"
+        home-set: "&aGuild home '%name%' set!"
+        home-deleted: "&aGuild home '%name%' deleted!"
+      error:
+        not-leader: "&cOnly the guild leader can do this!"
+        already-claimed: "&cThis chunk is already claimed!"
+        not-claimed: "&cThis chunk is not claimed by your guild!"
+        home-limit: "&cYou've reached your guild's home limit!"
+        home-not-found: "&cHome '%name%' not found!"
+        no-storage-access: "&cYour guild doesn't have storage access yet!"
+
+    alliance:
+      help:
+        header: "&6=== Alliance Commands ==="
+        create: "&e/ally create <name> &7- Create alliance"
+        invite: "&e/ally invite <guild> &7- Invite guild"
+        accept: "&e/ally accept <alliance> &7- Accept invite"
+        decline: "&e/ally decline <alliance> &7- Decline invite"
+        info: "&e/ally info <alliance> &7- View info"
+        ally: "&e/ally ally <add/remove> <alliance> &7- Manage allies"
+      usage:
+        create: "&cUsage: /ally create <name>"
+        invite: "&cUsage: /ally invite <guild>"
+        accept: "&cUsage: /ally accept <alliance>"
+        decline: "&cUsage: /ally decline <alliance>"
+        info: "&cUsage: /ally info <alliance>"
+        ally: "&cUsage: /ally ally <add/remove> <alliance>"
+      info:
+        header: "&6=== Alliance: %name% ==="
+        owner: "&eOwner: &7%guild%"
+        members: "&eMembers: &7%members%"
+        allies: "&eAllies: &7%allies%"
+
+    admin:
+      help:
+        header: "&6=== Guild Admin Commands ==="
+        storage: "&e/ga storage <guild> &7- View guild storage"
+        addclaims: "&e/ga addclaims <guild> <amount> &7- Add claims"
+        setlevel: "&e/ga setlevel <guild> <level> &7- Set level"
+        delete: "&e/ga delete <guild> &7- Delete guild"
+        info: "&e/ga info <guild> &7- View detailed info"
+      usage:
+        storage: "&cUsage: /ga storage <guild>"
+        addclaims: "&cUsage: /ga addclaims <guild> <amount>"
+        setlevel: "&cUsage: /ga setlevel <guild> <level>"
+        delete: "&cUsage: /ga delete <guild>"
+        info: "&cUsage: /ga info <guild>"
+      success:
+        claims-added: "&aAdded %amount% bonus claims to %guild%"
+        level-set: "&aSet %guild%'s level to %level%"
+        guild-deleted: "&aDeleted guild %guild%"
+      info:
+        header: "&6=== Guild Info: %guild% ==="
+        level: "&eLevel: &7%level%"
+        members: "&eMembers: &7%count%"
+        claims: "&eClaims: &7%claims%"
+        bonus-claims: "&eBonus Claims: &7%bonus%"

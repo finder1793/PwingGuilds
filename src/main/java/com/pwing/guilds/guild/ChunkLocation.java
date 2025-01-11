@@ -1,13 +1,15 @@
 package com.pwing.guilds.guild;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.World;
 
 /**
  * Represents a location of a chunk in the world
  */
 public class ChunkLocation {
-    private final String world;
+    private final String worldName;
     private final int x;
     private final int z;
     
@@ -19,7 +21,7 @@ public class ChunkLocation {
      * @param chunk The Bukkit chunk
      */
     public ChunkLocation(Chunk chunk) {
-        this.world = chunk.getWorld().getName();
+        this.worldName = chunk.getWorld().getName();
         this.x = chunk.getX();
         this.z = chunk.getZ();
         this.hash = calculateHash();
@@ -27,12 +29,12 @@ public class ChunkLocation {
 
     /**
      * Creates a new ChunkLocation from coordinates
-     * @param world The world name
+     * @param worldName The world name
      * @param x The x coordinate
      * @param z The z coordinate
      */
-    public ChunkLocation(String world, int x, int z) {
-        this.world = world;
+    public ChunkLocation(String worldName, int x, int z) {
+        this.worldName = worldName;
         this.x = x;
         this.z = z;
         this.hash = calculateHash();
@@ -42,7 +44,17 @@ public class ChunkLocation {
      * Gets the world name
      * @return The world name
      */
-    public String getWorld() { return world; }
+    public String getWorldName() {
+        return worldName;
+    }
+
+    /**
+     * Gets the world
+     * @return The Bukkit world
+     */
+    public World getWorld() {
+        return Bukkit.getWorld(worldName);
+    }
 
     /**
      * Gets the x coordinate
@@ -56,8 +68,20 @@ public class ChunkLocation {
      */
     public int getZ() { return z; }
 
+    /**
+     * Converts this chunk location to a Bukkit Location
+     * @return Location at the center of this chunk
+     */
+    public Location toLocation() {
+        World world = getWorld();
+        if (world == null) {
+            throw new IllegalStateException("World '" + worldName + "' not found");
+        }
+        return new Location(world, x * 16, 64, z * 16);
+    }
+
     private int calculateHash() {
-        return 31 * (31 * world.hashCode() + x) + z;
+        return 31 * (31 * worldName.hashCode() + x) + z;
     }
 
     @Override
@@ -70,6 +94,11 @@ public class ChunkLocation {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         ChunkLocation other = (ChunkLocation) obj;
-        return x == other.x && z == other.z && world.equals(other.world);
+        return x == other.x && z == other.z && worldName.equals(other.worldName);
+    }
+
+    @Override 
+    public String toString() {
+        return String.format("%s(%d,%d)", worldName, x, z);
     }
 }

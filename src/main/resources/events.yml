@@ -1,10 +1,10 @@
 events:
   territory-control:
-    enabled: true
+    enabled: false
     rewards:
       first-place:
         - "money 15000"
-        - "mythic:TerritoryKey"
+#        - "mythic:TerritoryKey"
         - "claims 5"
       second-place:
         - "money 10000"
@@ -13,29 +13,28 @@ events:
         - "money 5000"
         - "claims 1"
   pvp-tournament:
-    enabled: true
+    enabled: false
     rewards:
       first-place:
         - "money 20000"
       second-place:
         - "money 12000"
-        - "mythic:GladiatorArmor"
       third-place:
         - "money 8000"
-        - "mythic:WarriorKey"
+#        - "mythic:WarriorKey"
   resource-race:
-    enabled: true
+    enabled: false
     rewards:
       first-place:
         - "money 25000"
       second-place:
         - "money 15000"
-        - "mythic:MinerKey"
+#        - "mythic:MinerKey"
       third-place:
         - "money 10000"
         - "command give %player% diamond 32"
   boss-raid:
-    enabled: true
+    enabled: false
     boss-type: "mythic:GuildBoss"
     spawn-location:
       world: "world"
@@ -44,14 +43,86 @@ events:
       z: 0
     rewards:
       first-place:
-        - "mythic:LegendaryKey"
         - "money 10000"
       second-place:
-        - "mythic:RareKey"
         - "money 5000"
       third-place:
-        - "mythic:CommonKey"
         - "money 2500"
+  merchant-festival:
+    enabled: false
+    type: merchant
+    item-values:
+      EMERALD: 10.0
+      DIAMOND: 8.0
+      GOLD_INGOT: 4.0
+      IRON_INGOT: 2.0
+    rewards:
+      first-place:
+        - "money 20000"
+      second-place:
+        - "money 12000"
+      third-place:
+        - "money 8000"
+  building-contest:
+    enabled: false
+    type: building
+    restore-blocks: false
+    block-bonuses:
+      unique-block: 10
+      placement-milestone: 100
+    rewards:
+      first-place:
+        - "money 15000"
+        - "command give %player% diamond_block 64"
+      second-place:
+        - "money 10000"
+        - "command give %player% diamond_block 32"
+      third-place:
+        - "money 5000"
+        - "command give %player% diamond_block 16"
+  exploration-race:
+    enabled: false
+    type: exploration
+    checkpoints: 10
+    checkpoint-radius: 5.0
+    scoring:
+      chunk-points: 1
+      checkpoint-points: 50
+    rewards:
+      first-place:
+        - "money 18000"
+        - "claims 3"
+      second-place:
+        - "money 12000"
+        - "claims 2"
+      third-place:
+        - "money 6000"
+        - "claims 1"
+  guild-raid-defense:
+    enabled: false
+    type: defense
+    wave-interval: 120
+    wave-scaling:
+      base-mobs: 5
+      mobs-per-wave: 2
+      health-multiplier: 0.5
+    mob-types:
+      - ZOMBIE
+      - SKELETON
+      - SPIDER
+      - WITCH
+      - CREEPER
+    rewards:
+      first-place:
+        - "money 25000"
+        - "guild-exp 1000"
+      second-place:
+        - "money 15000"
+        - "guild-exp 500"
+      third-place:
+        - "money 10000"
+        - "guild-exp 250"
+
 # Event Schedule
 event-schedule:
   territory-control:
@@ -78,3 +149,28 @@ event-schedule:
     duration: 90
     min-players: 12
     announce-before: [60, 30, 15, 5]
+  merchant-festival:
+    time: "14:00"
+    days: [MONDAY, THURSDAY]
+    duration: 45
+    min-players: 6
+    announce-before: [30, 15, 5]
+  building-contest:
+    time: "16:00"
+    days: [WEDNESDAY, SATURDAY]
+    duration: 60
+    min-players: 8
+    announce-before: [30, 15, 5]
+  exploration-race:
+    time: "13:00"
+    days: [TUESDAY, FRIDAY]
+    duration: 45
+    min-players: 5
+    announce-before: [15, 5]
+  guild-raid-defense:
+    time: "19:00"
+    days: [MONDAY, THURSDAY, SUNDAY]
+    duration: 30
+    min-players: 10
+    announce-before: [15, 10, 5]
+

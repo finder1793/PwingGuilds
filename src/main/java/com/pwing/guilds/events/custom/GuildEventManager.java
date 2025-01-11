@@ -87,27 +87,36 @@ public class GuildEventManager {
      * @param eventName Name of the event to start
      */
     public void startEvent(String eventName) {
-        if (!eventConfig.getBoolean("events." + eventName + ".enabled", false)) {
+        if (activeEvents.containsKey(eventName)) {
+            plugin.getLogger().warning("Event " + eventName + " is already running!");
             return;
         }
 
-        GuildEvent event = switch (eventName.toLowerCase()) {
-            case "territory-control" -> new TerritoryControlEvent(plugin, eventName, 60);
-            case "pvp-tournament" -> new PvPTournamentEvent(plugin, eventName, 45);
-            case "resource-race" -> new ResourceRaceEvent(plugin, eventName, 30);
-            case "boss-raid" -> new BossRaidEvent(plugin, eventName, 90);
-            default -> null;
-        };
-
+        GuildEvent event = createEventFromConfig(eventName);
         if (event != null) {
             activeEvents.put(eventName, event);
             event.start();
             Bukkit.broadcastMessage("§6§lGuild Event: §e" + eventName + " §ahas started!");
-
-            // Schedule event end
-            Bukkit.getScheduler().runTaskLater(plugin, () -> endEvent(eventName),
-                event.getDuration().toMinutes() * 1200L);
+            scheduleEventEnd(eventName, event);
         }
+    }
+
+    private GuildEvent createEventFromConfig(String eventName) {
+        String eventPath = "events." + eventName;
+        if (!eventConfig.contains(eventPath)) {
+            return null;
+        }
+
+        int duration = eventConfig.getInt(eventPath + ".duration", 30);
+        String type = eventConfig.getString(eventPath + ".type", eventName);
+        return createEvent(type, eventName, duration);
+    }
+
+    private void scheduleEventEnd(String eventName, GuildEvent event) {
+        Bukkit.getScheduler().runTaskLater(plugin, 
+            () -> endEvent(eventName),
+            event.getDuration().toMinutes() * 1200L
+        );
     }
 
     /**
@@ -142,6 +151,10 @@ public class GuildEventManager {
             case "resource" -> new ResourceRaceEvent(plugin, name, duration);
             case "pvp" -> new PvPTournamentEvent(plugin, name, duration);
             case "raid" -> new BossRaidEvent(plugin, name, duration);
+            case "merchant" -> new MerchantFestivalEvent(plugin, name, duration);
+            case "building" -> new BuildingContestEvent(plugin, name, duration);
+            case "exploration" -> new ExplorationRaceEvent(plugin, name, duration);
+            case "defense" -> new GuildRaidDefenseEvent(plugin, name, duration);
             default -> null;
         };
     }

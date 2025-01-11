@@ -6,16 +6,25 @@ import org.bukkit.entity.Player;
 import io.lumine.mythic.bukkit.MythicBukkit;
 import com.pwing.guilds.guild.Guild;
 import com.pwing.guilds.events.custom.GuildEvent;
+import com.pwing.guilds.rewards.handlers.*;
 import java.util.Map;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.*;
 
 public class RewardManager {
     private final PwingGuilds plugin;
+    private final List<RewardHandler> handlers = new ArrayList<>();
 
     public RewardManager(PwingGuilds plugin) {
         this.plugin = plugin;
+        registerHandlers();
+    }
+
+    private void registerHandlers() {
+        // ...existing handlers...
+        handlers.add(new GuildExpRewardHandler());
     }
 
     public void giveReward(Player player, String reward) {
@@ -50,37 +59,42 @@ public class RewardManager {
     }
 
     public void giveEventRewards(GuildEvent event) {
-        List<Map.Entry<Guild, Integer>> topGuilds = event.getScores().entrySet().stream()
-                .sorted(Map.Entry.<Guild, Integer>comparingByValue().reversed())
-                .limit(3)
-                .collect(Collectors.toList());
+        Map<Guild, Integer> scores = event.getScores();
+        if (scores.isEmpty()) return;
 
-        for (int i = 0; i < topGuilds.size(); i++) {
-            String placement;
-            switch (i) {
-                case 0:
-                    placement = "first-place";
-                    break;
-                case 1:
-                    placement = "second-place";
-                    break;
-                case 2:
-                    placement = "third-place";
-                    break;
-                default:
-                    continue;
-            }
+        List<Map.Entry<Guild, Integer>> topGuilds = new ArrayList<>(scores.entrySet());
+        topGuilds.sort(Map.Entry.<Guild, Integer>comparingByValue().reversed());
 
+        String eventPath = "events." + event.getName() + ".rewards";
+        
+        // Give rewards to top 3 guilds
+        for (int i = 0; i < Math.min(3, topGuilds.size()); i++) {
             Guild guild = topGuilds.get(i).getKey();
-            List<String> rewards = plugin.getConfig().getStringList("events." + event.getName() + ".rewards." + placement);
+            String placement = switch (i) {
+                case 0 -> "first-place";
+                case 1 -> "second-place";
+                case 2 -> "third-place";
+                default -> null;
+            };
+            
+            if (placement != null) {
+                List<String> rewards = plugin.getConfig().getStringList(eventPath + "." + placement);
+                giveRewards(guild, rewards);
+            }
+        }
+    }
 
-            for (UUID memberId : guild.getMembers()) {
-                Player player = Bukkit.getPlayer(memberId);
-                if (player != null && player.isOnline()) {
-                    for (String reward : rewards) {
-                        giveReward(player, reward);
-                    }
+    private void giveRewards(Guild guild, List<String> rewards) {
+        for (String reward : rewards) {
+            boolean handled = false;
+            for (RewardHandler handler : handlers) {
+                if (handler.handleReward(guild, reward)) {
+                    handled = true;
+                    break;
                 }
+            }
+            if (!handled) {
+                plugin.getLogger().warning("Unknown reward type: " + reward);
             }
         }
     }

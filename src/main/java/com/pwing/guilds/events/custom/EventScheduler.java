@@ -12,7 +12,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
 import com.pwing.guilds.events.custom.EventAnnouncer;
+
 /**
  * Handles scheduling and management of timed guild events
  * Manages event timing, activation, and cleanup
@@ -22,6 +24,8 @@ public class EventScheduler {
     private final Map<LocalTime, ScheduledEvent> scheduledEvents = new HashMap<>();
     private final EventAnnouncer announcer;
     private final DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm");
+    private final Map<String, Long> lastEventRun = new HashMap<>();
+    private final long COOLDOWN_MINUTES = 120; // 2 hour cooldown between events
 
     /**
      * Creates a new event scheduler
@@ -57,24 +61,48 @@ public class EventScheduler {
      */
     private void loadSchedule() {
         ConfigurationSection scheduleSection = plugin.getConfig().getConfigurationSection("event-schedule");
-        if (scheduleSection != null) {
-            for (String eventName : scheduleSection.getKeys(false)) {
-                if (!plugin.getConfig().getBoolean("events." + eventName + ".enabled", false)) {
-                    continue;
-                }
+        if (scheduleSection == null) return;
 
+        for (String eventName : scheduleSection.getKeys(false)) {
+            // Skip disabled events
+            if (!plugin.getConfig().getBoolean("events." + eventName + ".enabled", false)) {
+                continue;
+            }
+
+            try {
                 String timeString = scheduleSection.getString(eventName + ".time");
                 List<Integer> announceTimings = scheduleSection.getIntegerList(eventName + ".announce-before");
                 List<String> dayStrings = scheduleSection.getStringList(eventName + ".days");
+                int minPlayers = scheduleSection.getInt(eventName + ".min-players", 1);
+                int duration = scheduleSection.getInt(eventName + ".duration", 30);
+
                 List<DayOfWeek> days = dayStrings.stream()
-                        .map(DayOfWeek::valueOf)
-                        .collect(Collectors.toList());
-                int minPlayers = scheduleSection.getInt(eventName + ".min-players");
+                    .map(DayOfWeek::valueOf)
+                    .collect(Collectors.toList());
 
                 LocalTime time = LocalTime.parse(timeString, timeFormat);
-                scheduledEvents.put(time, new ScheduledEvent(eventName, announceTimings, days, minPlayers));
+                scheduledEvents.put(time, new ScheduledEvent(
+                    eventName, 
+                    announceTimings, 
+                    days, 
+                    minPlayers,
+                    duration
+                ));
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to load schedule for event: " + eventName);
+                e.printStackTrace();
             }
         }
+    }
+
+    private boolean canRunEvent(String eventName) {
+        if (!lastEventRun.containsKey(eventName)) {
+            return true;
+        }
+
+        long lastRun = lastEventRun.get(eventName);
+        long currentTime = System.currentTimeMillis();
+        return TimeUnit.MILLISECONDS.toMinutes(currentTime - lastRun) >= COOLDOWN_MINUTES;
     }
 
     /**
@@ -104,12 +132,15 @@ public class EventScheduler {
         private final List<Integer> announceTimings;
         private final List<DayOfWeek> days;
         private final int minPlayers;
+        private final int duration;
 
-        public ScheduledEvent(String name, List<Integer> announceTimings, List<DayOfWeek> days, int minPlayers) {
+        public ScheduledEvent(String name, List<Integer> announceTimings, 
+                            List<DayOfWeek> days, int minPlayers, int duration) {
             this.name = name;
             this.announceTimings = announceTimings;
             this.days = days;
             this.minPlayers = minPlayers;
+            this.duration = duration;
         }
 
         /**
@@ -133,6 +164,10 @@ public class EventScheduler {
 
         public String getName() {
             return name;
+        }
+
+        public int getDuration() {
+            return duration;
         }
     }
 }

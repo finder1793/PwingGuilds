@@ -3,11 +3,16 @@ package com.pwing.guilds.commands;
 import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.guild.Guild;
 import com.pwing.guilds.guild.GuildManager;
+import com.pwing.guilds.message.MessageManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GuildAdminCommand implements CommandExecutor {
     private final PwingGuilds plugin;
@@ -88,31 +93,41 @@ public class GuildAdminCommand implements CommandExecutor {
                 plugin.getGuildManager().deleteGuild(guildName);
                 sender.sendMessage("§aDeleted guild " + guildName);
             }
-            case "info" -> {
-                if (args.length < 2) {
-                    sender.sendMessage("§cUsage: /guildadmin info <guild>");
-                    return true;
-                }
-                String guildName = args[1];
-                plugin.getGuildManager().getGuild(guildName).ifPresent(guild -> {
-                    sender.sendMessage("§6=== Guild Info: " + guild.getName() + " ===");
-                    sender.sendMessage("§eLevel: §7" + guild.getLevel());
-                    sender.sendMessage("§eMembers: §7" + guild.getMembers().size());
-                    sender.sendMessage("§eClaims: §7" + guild.getClaimedChunks().size());
-                    sender.sendMessage("§eBonus Claims: §7" + guild.getBonusClaims());
-                });
-            }
+            case "info" -> handleInfo(sender, args);
             default -> sendAdminHelp(sender);
         }
         return true;
     }
 
     private void sendAdminHelp(CommandSender sender) {
-        sender.sendMessage("§6=== Guild Admin Commands ===");
-        sender.sendMessage("§e/guildadmin addclaims <guild> <amount> §7- Add bonus claims");
-        sender.sendMessage("§e/guildadmin setlevel <guild> <level> §7- Set guild level");
-        sender.sendMessage("§e/guildadmin delete <guild> §7- Delete a guild");
-        sender.sendMessage("§e/guildadmin info <guild> §7- View detailed guild info");
-        sender.sendMessage("§e/guildadmin storage <guild> §7- View guild storage");
+        MessageManager mm = plugin.getMessageManager();
+        sender.sendMessage(mm.getMessage("commands.admin.help.header"));
+        for (String key : Arrays.asList("storage", "addclaims", "setlevel", "delete", "info")) {
+            sender.sendMessage(mm.getMessage("commands.admin.help." + key));
+        }
+    }
+
+    private void handleInfo(CommandSender sender, String[] args) {
+        MessageManager mm = plugin.getMessageManager();
+        if (args.length < 2) {
+            sender.sendMessage(mm.getMessage("commands.admin.usage.info"));
+            return;
+        }
+
+        String guildName = args[1];
+        plugin.getGuildManager().getGuild(guildName).ifPresent(guild -> {
+            Map<String, String> replacements = new HashMap<>();
+            replacements.put("guild", guild.getName());
+            replacements.put("level", String.valueOf(guild.getLevel()));
+            replacements.put("count", String.valueOf(guild.getMembers().size()));
+            replacements.put("claims", String.valueOf(guild.getClaimedChunks().size()));
+            replacements.put("bonus", String.valueOf(guild.getBonusClaims()));
+
+            sender.sendMessage(mm.getMessage("commands.admin.info.header", replacements));
+            sender.sendMessage(mm.getMessage("commands.admin.info.level", replacements));
+            sender.sendMessage(mm.getMessage("commands.admin.info.members", replacements));
+            sender.sendMessage(mm.getMessage("commands.admin.info.claims", replacements));
+            sender.sendMessage(mm.getMessage("commands.admin.info.bonus-claims", replacements));
+        });
     }
 }

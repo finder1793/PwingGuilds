@@ -17,10 +17,19 @@ public class ConfigValidator {
     private final List<String> errors = new ArrayList<>();
     private final DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm");
 
+    /**
+     * Creates a new config validator
+     * @param plugin Plugin instance
+     */
     public ConfigValidator(PwingGuilds plugin) {
         this.plugin = plugin;
     }
 
+    /**
+     * Validates the plugin configuration
+     * Checks for required settings and valid values
+     * @return true if configuration is valid, false otherwise
+     */
     public boolean validate() {
         boolean isValid = true;
 

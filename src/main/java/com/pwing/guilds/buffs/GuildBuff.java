@@ -16,9 +16,8 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Represents a guild buff that can be purchased and applied to guild members.
- * Buffs can provide potion effects, stat modifications via MythicMobs, or both.
- * Each buff has an associated cost, duration, and permission requirement.
+ * Represents a temporary buff/bonus that can be activated by guilds
+ * Buffs can provide potion effects or stat boosts to guild members
  */
 public class GuildBuff implements StatSource {
     private final PwingGuilds plugin;

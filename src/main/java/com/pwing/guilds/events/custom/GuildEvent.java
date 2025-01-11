@@ -1,16 +1,12 @@
 package com.pwing.guilds.events.custom;
 
 import com.pwing.guilds.PwingGuilds;
-import com.pwing.guilds.rewards.RewardManager;
-
 import com.pwing.guilds.guild.Guild;
+import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
+import java.util.*;
 
 /**
  * Base class for all guild events.
@@ -34,6 +30,9 @@ public abstract class GuildEvent implements Listener {
     
     /** Whether the event is currently running */
     protected boolean isActive = false;
+
+    private final Map<Guild, Map<String, Integer>> eventStats = new HashMap<>();
+    protected final List<String> eventMessages = new ArrayList<>();
 
     /**
      * Creates a new guild event
@@ -102,7 +101,60 @@ public abstract class GuildEvent implements Listener {
      * Announces the results of the event
      */
     public void announceResults() {
-        // Implement logic to announce the results of the event
+        Bukkit.broadcastMessage("§6§l" + name + " Results:");
+        
+        // Announce top 3 scores
+        scores.entrySet().stream()
+            .sorted(Map.Entry.<Guild, Integer>comparingByValue().reversed())
+            .limit(3)
+            .forEach(entry -> {
+                Guild guild = entry.getKey();
+                int score = entry.getValue();
+                Bukkit.broadcastMessage("§e" + guild.getName() + " §7- §6" + score + " points");
+                
+                // Show guild's stats if any
+                Map<String, Integer> stats = getGuildStats(guild);
+                if (!stats.isEmpty()) {
+                    stats.forEach((stat, value) -> 
+                        Bukkit.broadcastMessage("  §7" + stat + ": §f" + value));
+                }
+            });
+
+        // Show event messages
+        if (!eventMessages.isEmpty()) {
+            Bukkit.broadcastMessage("§6§lHighlights:");
+            eventMessages.forEach(msg -> Bukkit.broadcastMessage("§7- " + msg));
+        }
+    }
+
+    /**
+     * Records a statistic for a guild during the event
+     * @param guild The guild to record for
+     * @param stat The name of the statistic
+     * @param value The value to add
+     */
+    protected void recordStat(Guild guild, String stat, int value) {
+        eventStats.computeIfAbsent(guild, k -> new HashMap<>())
+                 .merge(stat, value, Integer::sum);
+    }
+
+    /**
+     * Gets all recorded stats for a guild
+     * @param guild The guild to get stats for
+     * @return Map of stat names to values
+     */
+    public Map<String, Integer> getGuildStats(Guild guild) {
+        return Collections.unmodifiableMap(
+            eventStats.getOrDefault(guild, Collections.emptyMap())
+        );
+    }
+
+    /**
+     * Adds a message to be displayed in the event summary
+     * @param message The message to add
+     */
+    protected void addEventMessage(String message) {
+        eventMessages.add(message);
     }
 
     /**

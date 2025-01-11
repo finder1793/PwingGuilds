@@ -6,13 +6,25 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 
+/**
+ * Handles experience gain events for guilds
+ * Awards exp for block breaking and mob kills
+ */
 public class GuildExpListener implements Listener {
     private final PwingGuilds plugin;
 
+    /**
+     * Creates a new guild exp listener
+     * @param plugin Plugin instance
+     */
     public GuildExpListener(PwingGuilds plugin) {
         this.plugin = plugin;
     }
 
+    /**
+     * Awards exp for breaking blocks
+     * @param event Block break event
+     */
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         if (!plugin.getConfig().getBoolean("exp-sources.blocks.enabled")) return;
@@ -25,6 +37,10 @@ public class GuildExpListener implements Listener {
         });
     }
 
+    /**
+     * Awards exp for killing entities
+     * @param event Entity death event
+     */
     @EventHandler
     public void onEntityKill(EntityDeathEvent event) {
         if (event.getEntity().getKiller() == null) return;

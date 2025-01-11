@@ -7,13 +7,17 @@ import org.bukkit.entity.Entity;
 import org.bukkit.block.Block;
 
 /**
- * Manages experience points for guilds.
- * Handles calculation and distribution of exp from various sources.
+ * Manages experience points for guilds
+ * Handles exp calculations and level progression
  */
 public class GuildExpManager {
     private final PwingGuilds plugin;
     private boolean mythicMobsEnabled;
 
+    /**
+     * Creates a new guild exp manager
+     * @param plugin Plugin instance
+     */
     public GuildExpManager(PwingGuilds plugin) {
         this.plugin = plugin;
         setupMythicMobs();
@@ -36,6 +40,11 @@ public class GuildExpManager {
                 plugin.getConfig().getLong("exp-sources.blocks.values.DEFAULT", 1));
     }
 
+    /**
+     * Calculates exp reward for killing a mob
+     * @param entity The killed entity
+     * @return Amount of exp to award
+     */
     public long calculateMobExp(Entity entity) {
         if (mythicMobsEnabled && isMythicMob(entity)) {
             return calculateMythicMobExp(entity);

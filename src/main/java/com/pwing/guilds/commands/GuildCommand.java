@@ -13,17 +13,17 @@ import com.pwing.guilds.guild.GuildHome;
 import com.pwing.guilds.visualization.ChunkVisualizer;
 import com.pwing.guilds.gui.GuildManagementGUI;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * Handles all guild-related commands for players.
- * Primary command handler for /guild and its subcommands.
+ * Handles all guild-related commands.
+ * Manages guild creation, deletion, invites, claims, and other guild operations.
  */
 public class GuildCommand implements CommandExecutor {
     private final PwingGuilds plugin;
 
-    /**
-     * Creates a new guild command handler
-     * @param plugin The plugin instance
-     */
     public GuildCommand(PwingGuilds plugin) {
         this.plugin = plugin;
     }
@@ -46,19 +46,7 @@ public class GuildCommand implements CommandExecutor {
         }
 
         switch (args[0].toLowerCase()) {
-            case "create" -> {
-                if (args.length < 2) {
-                    player.sendMessage("§cUsage: /guild create <name>");
-                    return true;
-                }
-                if (plugin.getGuildManager().createGuild(args[1], player.getUniqueId())) {
-                    player.sendMessage("§aGuild " + args[1] + " created successfully!");
-                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-                } else {
-                    player.sendMessage("§cA guild with that name already exists!");
-                    player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
-                }
-            }
+            case "create" -> handleCreate(player, args);
             case "delete" -> {
                 plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresent(guild -> {
                     if (guild.getLeader().equals(player.getUniqueId())) {
@@ -282,22 +270,32 @@ public class GuildCommand implements CommandExecutor {
     }
 
     private void sendHelpMessage(Player player) {
-        player.sendMessage("§6=== Guild Commands ===");
-        player.sendMessage("§e/guild create <name> §7- Create a new guild");
-        player.sendMessage("§e/guild delete §7- Delete your guild");
-        player.sendMessage("§e/guild claim §7- Claim the chunk you're standing in");
-        player.sendMessage("§e/guild unclaim §7- Unclaim the chunk you're standing in");
-        player.sendMessage("§e/guild visualize §7- Show chunk borders");
-        player.sendMessage("§e/guild invite <player> §7- Invite a player to your guild");
-        player.sendMessage("§e/guild accept <guild> §7- Accept a guild invitation");
-        player.sendMessage("§e/guild kick <player> §7- Kick a player from your guild");
-        player.sendMessage("§e/guild gui §7- Open the guild management interface");
-        player.sendMessage("§e/guild sethome <name> §7- Set a guild home");
-        player.sendMessage("§e/guild home <name> §7- Teleport to a guild home");
-        player.sendMessage("§e/guild delhome <name> §7- Delete a guild home");
-        player.sendMessage("§e/guild storage §7- Open guild storage chest");
-        player.sendMessage("§e/guild buff §7- Opens Guild Buff Menu");
+        MessageManager mm = plugin.getMessageManager();
+        player.sendMessage(mm.getMessage("commands.guild.help.header"));
+        for (String key : Arrays.asList("create", "delete", "claim", "unclaim", "visualize",
+                "invite", "accept", "kick", "gui", "storage", "buff", "home", "sethome", "delhome")) {
+            player.sendMessage(mm.getMessage("commands.guild.help." + key));
+        }
     }
+
+    private void handleCreate(Player player, String[] args) {
+        MessageManager mm = plugin.getMessageManager();
+        if (args.length < 2) {
+            player.sendMessage(mm.getMessage("commands.guild.usage.create"));
+            return;
+        }
+        Map<String, String> replacements = new HashMap<>();
+        replacements.put("name", args[1]);
+        
+        if (plugin.getGuildManager().createGuild(args[1], player.getUniqueId())) {
+            player.sendMessage(mm.getMessage("commands.guild.success.created", replacements));
+            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
+        } else {
+            player.sendMessage(mm.getMessage("error.guild-exists"));
+        }
+    }
+
+    // Continue updating other command handlers similarly...
 }
 
 

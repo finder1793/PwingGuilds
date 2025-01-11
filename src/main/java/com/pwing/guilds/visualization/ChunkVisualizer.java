@@ -6,10 +6,17 @@ import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 
 /**
- * Handles visualization of chunk borders for guild territory claims.
- * Creates particle effects to show chunk boundaries to players.
+ * Utility class for visualizing chunk borders
+ * Helps players see guild territory boundaries
  */
 public class ChunkVisualizer {
+    
+    /**
+     * Private constructor to prevent instantiation of utility class
+     */
+    private ChunkVisualizer() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     /**
      * Displays particle effects around chunk borders for a player

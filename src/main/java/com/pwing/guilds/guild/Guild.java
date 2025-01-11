@@ -88,6 +88,11 @@ public class Guild implements ConfigurationSerializable {
         return invites.contains(player);
     }
 
+    /**
+     * Checks if a player is a member of this guild
+     * @param player Player UUID to check
+     * @return true if player is a member
+     */
     public boolean isMember(UUID player) {
         return members.contains(player);
     }
@@ -272,6 +277,12 @@ public class Guild implements ConfigurationSerializable {
         return false;
     }
 
+    /**
+     * Removes a member from the guild
+     * @param player UUID of player to remove
+     * @param reason Reason for removal
+     * @return true if player was removed successfully
+     */
     public boolean removeMember(UUID player, GuildMemberLeaveEvent.LeaveReason reason) {
         if (members.remove(player)) {
             Bukkit.getPluginManager().callEvent(new GuildMemberLeaveEvent(this, player, reason));
@@ -282,6 +293,11 @@ public class Guild implements ConfigurationSerializable {
     }
     
 
+    /**
+     * Sets the guild's name
+     * @param newName New name for guild
+     * @return true if name was changed successfully
+     */
     public boolean setName(String newName) {
         GuildRenameEvent event = new GuildRenameEvent(this, this.name, newName);
         Bukkit.getPluginManager().callEvent(event);
@@ -304,7 +320,7 @@ public class Guild implements ConfigurationSerializable {
         data.put("invites", invites.stream().map(UUID::toString).collect(Collectors.toList()));
         data.put("claimed-chunks", claimedChunks.stream()
                 .sorted((c1, c2) -> {
-                    int worldCompare = c1.getWorld().compareTo(c2.getWorld());
+                    int worldCompare = c1.getWorldName().compareTo(c2.getWorldName());
                     if (worldCompare != 0) return worldCompare;
                     int xCompare = Integer.compare(c1.getX(), c2.getX());
                     if (xCompare != 0) return xCompare;
@@ -338,6 +354,12 @@ public class Guild implements ConfigurationSerializable {
         );
     }
 
+    /**
+     * Deserializes guild data from configuration
+     * @param plugin Plugin instance
+     * @param data Map of serialized data
+     * @return The deserialized guild
+     */
     public static Guild deserialize(PwingGuilds plugin, Map<String, Object> data) {
         String name = (String) data.get("name");
         UUID owner = UUID.fromString((String) data.get("owner"));
@@ -496,18 +518,38 @@ public class Guild implements ConfigurationSerializable {
     }
 
     // Setters
+    /**
+     * Sets the guild's level
+     * @param level New level value
+     */
     public void setLevel(int level) {
         this.level = level;
         this.perks = new GuildPerks(plugin, this, level);
     }
+    /**
+     * Sets the guild's experience points
+     * @param exp New experience amount
+     */
     public void setExp(long exp) { this.exp = exp; }
+    /**
+     * Sets the guild's current alliance
+     * @param alliance Alliance to set
+     */
     public void setAlliance(Alliance alliance) { this.alliance = alliance; }
 
 
+    /**
+     * Gets all items stored in guild storage
+     * @return Array of stored items
+     */
     public ItemStack[] getStorageContents() {
         return plugin.getStorageManager().getGuildStorage(this.name);
     }
 
+    /**
+     * Gets all online guild members
+     * @return List of online players in guild
+     */
     public List<Player> getOnlineMembers() {
         return members.stream()
                 .map(Bukkit::getPlayer)
@@ -515,6 +557,9 @@ public class Guild implements ConfigurationSerializable {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Updates the member list and validates all members
+     */
     public void updateMemberList() {
         // Update last activity timestamp
         this.lastUpdate = System.currentTimeMillis();

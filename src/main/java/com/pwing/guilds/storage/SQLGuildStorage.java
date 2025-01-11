@@ -220,7 +220,7 @@ public class SQLGuildStorage implements GuildStorage {
                     "INSERT INTO guild_chunks (guild_name, world, x, z) VALUES (?, ?, ?, ?)")) {
                 List<ChunkLocation> sortedChunks = guild.getClaimedChunks().stream()
                     .sorted((c1, c2) -> {
-                        int worldCompare = c1.getWorld().compareTo(c2.getWorld());
+                        int worldCompare = c1.getWorldName().compareTo(c2.getWorldName());
                         if (worldCompare != 0) return worldCompare;
                         int xCompare = Integer.compare(c1.getX(), c2.getX());
                         if (xCompare != 0) return xCompare;
@@ -230,7 +230,7 @@ public class SQLGuildStorage implements GuildStorage {
                     
                 for (ChunkLocation chunk : sortedChunks) {
                     ps.setString(1, guild.getName());
-                    ps.setString(2, chunk.getWorld());
+                    ps.setString(2, chunk.getWorldName());
                     ps.setInt(3, chunk.getX());
                     ps.setInt(4, chunk.getZ());
                     ps.addBatch();

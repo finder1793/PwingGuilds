@@ -39,6 +39,16 @@ public class MessageManager {
         return message;
     }
 
+    public String getMessage(String key, Map<String, String> replacements) {
+        String message = messages.getOrDefault(key, "Missing message: " + key);
+        if (replacements != null) {
+            for (Map.Entry<String, String> entry : replacements.entrySet()) {
+                message = message.replace("%" + entry.getKey() + "%", entry.getValue());
+            }
+        }
+        return message;
+    }
+
     public void reload() {
         messages.clear();
         loadMessages();

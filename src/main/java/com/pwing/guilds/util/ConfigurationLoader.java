@@ -1,14 +1,22 @@
 package com.pwing.guilds.util;
 
-import org.bukkit.configuration.ConfigurationSection;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.bukkit.configuration.ConfigurationSection;
+
 /**
- * Utility class for loading and managing plugin configuration files.
- * Handles reading and writing YAML configuration data.
+ * Utility class for loading and managing plugin configuration files
+ * Handles file loading, saving, and default config creation
  */
 public class ConfigurationLoader {
+    
+    /**
+     * Private constructor to prevent instantiation of utility class
+     */
+    private ConfigurationLoader() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     /**
      * Gets a configuration value or returns a default if not found

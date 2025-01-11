@@ -3,10 +3,15 @@ package com.pwing.guilds.commands.alliance;
 import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.alliance.Alliance;
 import com.pwing.guilds.guild.Guild;
+import com.pwing.guilds.message.MessageManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Handles all alliance-related commands
@@ -133,20 +138,25 @@ public class AllianceCommand implements CommandExecutor {
     }
 
     private void handleInfo(Player player, String[] args) {
+        MessageManager mm = plugin.getMessageManager();
         if (args.length < 2) {
-            player.sendMessage("Usage: /alliance info <alliance>");
+            player.sendMessage(mm.getMessage("commands.alliance.usage.info"));
             return;
         }
 
         String allianceName = args[1];
         plugin.getAllianceManager().getAlliance(allianceName).ifPresent(alliance -> {
-            player.sendMessage("§6=== Alliance: " + alliance.getName() + " ===");
-            player.sendMessage("§eOwner: " + alliance.getOwnerGuild());
-            player.sendMessage("§eMembers: " + String.join(", ", 
-                alliance.getMembers().stream()
-                    .map(Guild::getName)
-                    .toArray(String[]::new)));
-            player.sendMessage("§eAllies: " + String.join(", ", alliance.getAllies()));
+            Map<String, String> replacements = new HashMap<>();
+            replacements.put("name", alliance.getName());
+            replacements.put("guild", alliance.getOwnerGuild().toString()); // Fixed getName() call
+            replacements.put("members", String.join(", ", alliance.getMembers().stream()
+                .map(Guild::toString).toArray(String[]::new))); // Fixed getName() call
+            replacements.put("allies", String.join(", ", alliance.getAllies()));
+
+            player.sendMessage(mm.getMessage("commands.alliance.info.header", replacements));
+            player.sendMessage(mm.getMessage("commands.alliance.info.owner", replacements));
+            player.sendMessage(mm.getMessage("commands.alliance.info.members", replacements));
+            player.sendMessage(mm.getMessage("commands.alliance.info.allies", replacements));
         });
     }
 
@@ -181,12 +191,10 @@ public class AllianceCommand implements CommandExecutor {
     }
 
     private void sendHelp(Player player) {
-        player.sendMessage("§6=== Alliance Commands ===");
-        player.sendMessage("§e/alliance create <name> - Create a new alliance");
-        player.sendMessage("§e/alliance invite <guild> - Invite a guild to your alliance");
-        player.sendMessage("§e/alliance accept <alliance> - Accept an alliance invite");
-        player.sendMessage("§e/alliance decline <alliance> - Decline an alliance invite");
-        player.sendMessage("§e/alliance info <alliance> - View alliance information");
-        player.sendMessage("§e/alliance ally <add/remove> <alliance> - Manage alliance relationships");
+        MessageManager mm = plugin.getMessageManager();
+        player.sendMessage(mm.getMessage("commands.alliance.help.header"));
+        for (String key : Arrays.asList("create", "invite", "accept", "decline", "info", "ally")) {
+            player.sendMessage(mm.getMessage("commands.alliance.help." + key));
+        }
     }
 }
