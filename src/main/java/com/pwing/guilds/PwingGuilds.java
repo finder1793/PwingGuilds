@@ -33,6 +33,7 @@ import com.pwing.guilds.config.ConfigMigration;
 import com.pwing.guilds.integration.WorldGuardHook;
 import com.pwing.guilds.database.DatabaseManager;
 import com.pwing.guilds.integrations.skript.SkriptGuildsHook;
+import com.pwing.guilds.compat.ItemCompatibilityHandler;
 
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -67,6 +68,7 @@ public class PwingGuilds extends JavaPlugin {
     private ServerAdapter serverAdapter;
     private GuildBackupManager guildBackupManager;
     private MessageManager messageManager;
+    private ItemCompatibilityHandler itemCompatHandler;
     private static PwingGuilds instance;
 
     /**
@@ -149,6 +151,7 @@ public class PwingGuilds extends JavaPlugin {
         this.allianceManager = new AllianceManager(this, allianceStorage);
         this.storageManager = new GuildStorageManager(this);
         this.serverAdapter = ServerAdapter.createAdapter(getServer());
+        this.itemCompatHandler = new ItemCompatibilityHandler(this);
 
         // Initialize managers
         this.guildManager.initialize();
@@ -272,6 +275,9 @@ public class PwingGuilds extends JavaPlugin {
     }
     public MessageManager getMessageManager() {
         return messageManager;
+    }
+    public ItemCompatibilityHandler getItemCompatHandler() {
+        return itemCompatHandler;
     }
     public static PwingGuilds getInstance() {
         return instance;

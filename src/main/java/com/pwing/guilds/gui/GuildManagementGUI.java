@@ -3,6 +3,7 @@ package com.pwing.guilds.gui;
 import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.guild.Guild;
 import com.pwing.guilds.buffs.GuildBuff;
+import com.pwing.guilds.util.ItemBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -37,29 +38,37 @@ public class GuildManagementGUI {
     public void openMainMenu(Player player) {
         Optional<Guild> playerGuild = plugin.getGuildManager().getPlayerGuild(player.getUniqueId());
         if (playerGuild.isEmpty()) {
-            player.sendMessage("§cYou are not in a guild!");
+            player.sendMessage(plugin.getMessageManager().getMessage("general.not-in-guild"));
             return;
         }
 
         GuildInventoryHolder holder = new GuildInventoryHolder(playerGuild.get());
-        Inventory inv = Bukkit.createInventory(holder, 27, "Guild Management");
+        String title = plugin.getMessageManager().getMessage("gui.titles.main");
+        Inventory inv = Bukkit.createInventory(holder, 27, title);
+
         // Members Management
-        ItemStack members = createItem(Material.PLAYER_HEAD, "§6Members", "§7Click to manage guild members");
-        inv.setItem(11, members);
+        ItemBuilder members = ItemBuilder.fromConfig("members", plugin, player)
+            .name(plugin.getMessageManager().getMessage("gui.items.members.name"))
+            .lore(plugin.getMessageManager().getMessage("gui.items.members.lore"));
+        inv.setItem(11, members.build());
 
         // Claims Management
-        ItemStack claims = createItem(Material.MAP, "§6Claims Map", "§7View and manage claimed chunks");
-        inv.setItem(13, claims);
+        ItemBuilder claims = ItemBuilder.fromConfig("claims", plugin, player)
+            .name(plugin.getMessageManager().getMessage("gui.items.claims.name"))
+            .lore(plugin.getMessageManager().getMessage("gui.items.claims.lore"));
+        inv.setItem(13, claims.build());
 
         // Guild Settings
-        ItemStack settings = createItem(Material.COMPARATOR, "§6Guild Settings", "§7Configure guild settings");
-        inv.setItem(15, settings);
+        ItemBuilder settings = ItemBuilder.fromConfig("settings", plugin, player)
+            .name(plugin.getMessageManager().getMessage("gui.items.settings.name"))
+            .lore(plugin.getMessageManager().getMessage("gui.items.settings.lore"));
+        inv.setItem(15, settings.build());
 
-        // Add storage button
-        ItemStack storage = createItem(Material.ENDER_CHEST, "§6Guild Storage", 
-            "§7Access shared guild storage",
-            "§7Store and retrieve items");
-        inv.setItem(17, storage);
+        // Storage
+        ItemBuilder storage = ItemBuilder.fromConfig("storage", plugin, player)
+            .name(plugin.getMessageManager().getMessage("gui.items.storage.name"))
+            .lore(plugin.getMessageManager().getMessage("gui.items.storage.lore"));
+        inv.setItem(17, storage.build());
 
         player.openInventory(inv);
     }

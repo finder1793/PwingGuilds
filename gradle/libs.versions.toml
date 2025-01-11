@@ -9,6 +9,7 @@ adventure = "4.14.0"
 worldguard = "7.0.7"
 worldedit = "7.2.15"
 skript = "2.7.0"
+viaversion = "4.9.2"
 
 [libraries]
 spigot-api = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigot" }
@@ -23,3 +24,4 @@ adventure-text-serializer-legacy = { group = "net.kyori", name = "adventure-text
 worldguard = { group = "com.sk89q.worldguard", name = "worldguard-bukkit", version.ref = "worldguard" }
 worldedit = { group = "com.sk89q.worldedit", name = "worldedit-bukkit", version.ref = "worldedit" }
 skript = { group = "com.github.SkriptLang", name = "Skript", version.ref = "skript" }
+viaversion = { group = "com.viaversion", name = "viaversion-api", version.ref = "viaversion" }

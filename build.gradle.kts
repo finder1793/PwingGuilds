@@ -37,6 +37,10 @@ repositories {
         name = "skript-releases"
         url = uri("https://repo.skriptlang.org/releases")
     }
+    maven {
+        name = "viaversion"
+        url = uri("https://repo.viaversion.com")
+    }
 }
 
 dependencies {
@@ -59,6 +63,7 @@ dependencies {
         exclude(group = "com.sk89q.worldguard", module = "worldguard-bukkit")
         exclude(group = "net.milkbowl.vault", module = "Vault")
     }
+    compileOnly(libs.viaversion)  // Add ViaVersion dependency
 }
 
 java {

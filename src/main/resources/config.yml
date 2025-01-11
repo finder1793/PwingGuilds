@@ -104,4 +104,40 @@ backup:
     on-guild-delete: true
     on-server-shutdown: true
 
+gui:
+  items:
+    members:
+      material: PLAYER_HEAD
+      model-data: 0  # CustomModelData value
+    claims:
+      material: MAP
+      model-data: 1
+    settings:
+      material: COMPARATOR 
+      model-data: 2
+    storage:
+      material: ENDER_CHEST
+      model-data: 3
+    claimed-chunk:
+      material: EMERALD_BLOCK
+      model-data: 4
+    unclaimed-chunk:
+      material: GRAY_STAINED_GLASS_PANE
+      model-data: 5
+    back:
+      material: ARROW
+      model-data: 6
+
+advanced:
+  custom-model-data:
+    enabled: false  # Disabled by default
+    fallback-materials:  # Regular items used when disabled
+      members: PLAYER_HEAD
+      claims: MAP
+      settings: COMPARATOR
+      storage: ENDER_CHEST
+      claimed-chunk: EMERALD_BLOCK
+      unclaimed-chunk: GRAY_STAINED_GLASS_PANE
+      back: ARROW
+
 # Events configuration moved to events.yml
