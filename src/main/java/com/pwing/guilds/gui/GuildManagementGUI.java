@@ -15,13 +15,25 @@ import org.bukkit.Chunk;
 import org.bukkit.inventory.meta.SkullMeta;
 import java.util.*;
 
+/**
+ * Handles all guild-related GUI menus.
+ * Provides interfaces for guild management, member management, buffs, and territory claims.
+ */
 public class GuildManagementGUI {
     private final PwingGuilds plugin;
 
+    /**
+     * Creates a new GUI manager
+     * @param plugin The plugin instance
+     */
     public GuildManagementGUI(PwingGuilds plugin) {
         this.plugin = plugin;
     }
 
+    /**
+     * Opens the main guild management menu for a player
+     * @param player The player to show the menu to
+     */
     public void openMainMenu(Player player) {
         Optional<Guild> playerGuild = plugin.getGuildManager().getPlayerGuild(player.getUniqueId());
         if (playerGuild.isEmpty()) {
@@ -52,6 +64,11 @@ public class GuildManagementGUI {
         player.openInventory(inv);
     }
 
+    /**
+     * Opens the guild territory claims map
+     * @param player The player viewing the map
+     * @param guild The guild whose claims to show
+     */
     public void openClaimsMap(Player player, Guild guild) {
         Inventory inv = Bukkit.createInventory(null, 54, "Guild Claims Map");
         Chunk centerChunk = player.getLocation().getChunk();
@@ -95,6 +112,11 @@ public class GuildManagementGUI {
         player.openInventory(inv);
     }
 
+    /**
+     * Opens the guild buffs management menu
+     * @param player The player viewing the menu
+     * @param guild The guild whose buffs to show
+     */
     public void openBuffsMenu(Player player, Guild guild) {
         Inventory inv = Bukkit.createInventory(null, 54, "Guild Buffs");
 
@@ -131,6 +153,11 @@ public class GuildManagementGUI {
         return item;
     }
 
+    /**
+     * Opens the guild member management interface
+     * @param player The player viewing the menu
+     * @param guild The guild to manage members for
+     */
     public void openMemberManagement(Player player, Guild guild) {
         Inventory inv = Bukkit.createInventory(null, 54, "Guild Members");
 
@@ -171,7 +198,9 @@ public class GuildManagementGUI {
         player.openInventory(inv);
     }
 
-
+    /**
+     * Custom inventory holder for guild GUIs
+     */
     public class GuildInventoryHolder implements InventoryHolder {
         private final Guild guild;
 

@@ -25,13 +25,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Handles inventory click events for guild GUI menus.
+ * Processes user interactions with the guild management interfaces.
+ */
 public final class GuildGUIListener implements Listener {
     private final PwingGuilds plugin;
 
+    /**
+     * Creates a new GUI listener
+     * 
+     * @param plugin The plugin instance
+     */
     public GuildGUIListener(PwingGuilds plugin) {
         this.plugin = plugin;
     }
 
+    /**
+     * Handles click events in guild GUI menus
+     * 
+     * @param event The click event
+     */
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         String title = event.getView().getTitle();
@@ -39,7 +53,8 @@ public final class GuildGUIListener implements Listener {
             event.setCancelled(true);
             event.setResult(Event.Result.DENY);
 
-            if (event.getClickedInventory() == null) return;
+            if (event.getClickedInventory() == null)
+                return;
 
             if (event.getClickedInventory().equals(event.getView().getTopInventory())) {
                 if (title.equals("Guild Members") && event.getCurrentItem() != null && event.getSlot() == 49) {
@@ -51,6 +66,11 @@ public final class GuildGUIListener implements Listener {
         }
     }
 
+    /**
+     * Handles item drag events in guild GUI menus
+     * 
+     * @param event The drag event
+     */
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent event) {
         if (event.getView().getTitle().contains("Guild")) {
@@ -70,12 +90,14 @@ public final class GuildGUIListener implements Listener {
     }
 
     private void handleClaimsMapClick(InventoryClickEvent event, Player player) {
-        if (event.getCurrentItem() == null) return;
+        if (event.getCurrentItem() == null)
+            return;
 
         plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresent(guild -> {
             var meta = event.getCurrentItem().getItemMeta();
             var lore = meta.getLore();
-            if (lore == null || lore.size() < 2) return;
+            if (lore == null || lore.size() < 2)
+                return;
 
             // Trim whitespace and remove any "X: " or "Z: " prefix
             int x = Integer.parseInt(lore.get(0).substring(4).trim());
@@ -103,7 +125,8 @@ public final class GuildGUIListener implements Listener {
     private void handleBuffsMenuClick(InventoryClickEvent event, Player player) {
         event.setCancelled(true);
         ItemStack clicked = event.getCurrentItem();
-        if (clicked == null) return;
+        if (clicked == null)
+            return;
 
         plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresent(guild -> {
             String buffName = ChatColor.stripColor(clicked.getItemMeta().getDisplayName());
@@ -132,7 +155,8 @@ public final class GuildGUIListener implements Listener {
     }
 
     private void handleMainMenuClick(InventoryClickEvent event, Player player) {
-        if (event.getCurrentItem() == null) return;
+        if (event.getCurrentItem() == null)
+            return;
 
         switch (event.getSlot()) {
             case 11 -> {
@@ -172,7 +196,8 @@ public final class GuildGUIListener implements Listener {
                                 guild -> {
                                     if (guild.getPerks().activatePerk("guild-storage")) {
                                         plugin.getStorageManager().openStorage(player, guild);
-                                        player.playSound(player.getLocation(), Sound.BLOCK_ENDER_CHEST_OPEN, 1.0f, 1.0f);
+                                        player.playSound(player.getLocation(), Sound.BLOCK_ENDER_CHEST_OPEN, 1.0f,
+                                                1.0f);
                                     } else {
                                         player.sendMessage("§cYour guild needs to unlock storage access first!");
                                         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
@@ -181,8 +206,7 @@ public final class GuildGUIListener implements Listener {
                                 () -> {
                                     player.sendMessage("§cYou're not in a guild!");
                                     player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
-                                }
-                        );
+                                });
             }
             case 26 -> player.closeInventory();
         }

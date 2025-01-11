@@ -15,7 +15,7 @@ import com.pwing.guilds.alliance.Alliance;
 
 /**
  * Manages all guild-related operations and data within the plugin.
- * Handles guild creation, deletion, member management, and chunk claiming.
+ * Handles creating, deleting, and managing guilds as well as their storage.
  */
 public class GuildManager {
     private final PwingGuilds plugin;
@@ -46,6 +46,9 @@ public class GuildManager {
         return playerGuilds;
     }
 
+    /**
+     * Initializes the guild manager and loads all guilds from storage
+     */
     public void initialize() {
         Set<Guild> loadedGuilds = storage.loadAllGuilds();
         loadedGuilds.forEach(guild -> {
@@ -165,10 +168,20 @@ public class GuildManager {
         return guild == null || guild.isMember(player);
     }
 
+    /**
+     * Gets a guild based on a claimed chunk
+     * @param chunk The chunk to check
+     * @return Optional containing the owning guild if found
+     */
     public Optional<Guild> getGuildByChunk(Chunk chunk) {
         return Optional.ofNullable(claimedChunks.get(new ChunkLocation(chunk)));
     }
 
+    /**
+     * Gets the guild a player belongs to
+     * @param player UUID of the player
+     * @return Optional containing the player's guild if they are in one
+     */
     public Optional<Guild> getPlayerGuild(UUID player) {
         return Optional.ofNullable(playerGuilds.get(player));
     }
@@ -213,10 +226,19 @@ public class GuildManager {
         return false;
     }
 
+    /**
+     * Gets all registered guilds
+     * @return Collection of all guilds
+     */
     public Collection<Guild> getGuilds() {
         return Collections.unmodifiableCollection(guilds.values());
     }
 
+    /**
+     * Gets a guild by name
+     * @param name The name of the guild
+     * @return Optional containing the guild if found
+     */
     public Optional<Guild> getGuild(String name) {
         return Optional.ofNullable(guilds.get(name));
     }
@@ -238,6 +260,10 @@ public class GuildManager {
         storage.saveGuild(newGuild);
     }
 
+    /**
+     * Gets the storage implementation being used
+     * @return The guild storage instance
+     */
     public GuildStorage getStorage() {
         return storage;
     }

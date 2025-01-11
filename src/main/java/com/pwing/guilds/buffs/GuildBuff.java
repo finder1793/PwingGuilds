@@ -133,9 +133,28 @@ public class GuildBuff implements StatSource {
     /** @return The buff's cost */
     public int getCost() { return cost; }
 
+    /**
+     * Gets the stat type affected by this buff
+     * @return The stat type
+     */
     public StatType getStatType() { return statType; }
+
+    /**
+     * Gets the value of the stat boost provided by this buff
+     * @return The stat value
+     */
     public double getStatValue() { return statValue; }
+
+    /**
+     * Gets the level/tier of this buff
+     * @return The buff level
+     */
     public int getLevel() { return level; }
+
+    /**
+     * Gets the duration of this buff in seconds
+     * @return Duration in seconds
+     */
     public int getDuration() { return duration; }
 
     /**

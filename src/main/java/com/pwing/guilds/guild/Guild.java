@@ -20,9 +20,9 @@ import java.util.stream.Collectors;
 
 @SerializableAs("Guild")
 /**
- * Represents a guild in the plugin.
- * A guild is a player-created organization that can claim territory, manage members,
- * and provide benefits to its members through various perks and upgrades.
+ * Represents a player guild within the plugin.
+ * Guilds are player-created organizations that can claim territory, maintain a roster of members,
+ * level up, and participate in guild events and alliances.
  */
 public class Guild implements ConfigurationSerializable {
     private final PwingGuilds plugin;
@@ -440,15 +440,35 @@ public class Guild implements ConfigurationSerializable {
     }
 
     // Getters
-    /** @return The guild's name */
+    /** 
+     * Gets the name of this guild
+     * The name uniquely identifies this guild across the server
+     * @return The guild's display name
+     */
     public String getName() { return name; }
-    /** @return The guild owner's UUID */
+    /** 
+     * Gets the UUID of the guild owner
+     * The owner has full control over the guild including deletion
+     * @return The UUID of the player who owns this guild
+     */
     public UUID getOwner() { return owner; }
-    /** @return The guild's current experience points */
+    /** 
+     * Gets the current experience points of the guild
+     * Experience is gained through various activities and determines guild level
+     * @return The guild's total experience points
+     */
     public long getExp() { return exp; }
-    /** @return The guild's current level */
+    /** 
+     * Gets the current level of the guild
+     * Higher levels unlock additional perks and capabilities
+     * @return The guild's current level
+     */
     public int getLevel() { return level; }
-    /** @return UUID of the guild leader */
+    /** 
+     * Gets the UUID of the guild leader
+     * The leader has administrative control over guild operations
+     * @return UUID of the guild leader
+     */
     public UUID getLeader() { return leader; }
     /**
      * Gets an unmodifiable set of all guild members
