@@ -33,17 +33,19 @@ public class ConfigMigration {
         FileConfiguration config = YamlConfiguration.loadConfiguration(oldConfig);
 
         // Check if this is an old single-file config
-        if (config.contains("messages") || config.contains("buffs") || config.contains("events")) {
+        if (config.contains("messages") || config.contains("buffs") || config.contains("events") || config.contains("gui")) {
             plugin.getLogger().info("Detected old config format - migrating to new format...");
             
             migrateSection(config, "messages", "messages.yml");
             migrateSection(config, "buffs", "buffs.yml");
             migrateSection(config, "events", "events.yml");
+            migrateSection(config, "gui", "gui.yml"); // Add GUI migration
             
             // Remove old sections from main config
             config.set("messages", null);
             config.set("buffs", null);
             config.set("events", null);
+            config.set("gui", null); // Remove GUI section
             
             try {
                 config.save(oldConfig);
@@ -53,6 +55,12 @@ public class ConfigMigration {
                 e.printStackTrace();
             }
         }
+
+        // Ensure new config files exist
+        ensureConfigExists("messages.yml");
+        ensureConfigExists("buffs.yml");
+        ensureConfigExists("events.yml");
+        ensureConfigExists("gui.yml"); // Ensure GUI config exists
     }
 
     private void migrateSection(FileConfiguration oldConfig, String section, String newFile) {
@@ -73,6 +81,14 @@ public class ConfigMigration {
         } catch (IOException e) {
             plugin.getLogger().severe("Failed to save " + newFile);
             e.printStackTrace();
+        }
+    }
+
+    private void ensureConfigExists(String filename) {
+        File file = new File(plugin.getDataFolder(), filename);
+        if (!file.exists()) {
+            plugin.saveResource(filename, false);
+            plugin.getLogger().info("Created default " + filename);
         }
     }
 }

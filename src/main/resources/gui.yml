@@ -1,0 +1,62 @@
+gui:
+  titles:
+    main: "&8Guild Management"
+    members: "&8Guild Members"
+    claims: "&8Territory Claims"
+    buffs: "&8Guild Buffs"
+    storage: "&8Guild Storage"
+  items:
+    members:
+      material: PLAYER_HEAD
+      model-data: 0  # CustomModelData value
+      name: "&6Members"
+      lore:
+        - "&7Click to manage guild members"
+    claims:
+      material: MAP
+      model-data: 1
+      name: "&6Claims Map"
+      lore:
+        - "&7View and manage claimed chunks"
+    settings:
+      material: COMPARATOR 
+      model-data: 2
+      name: "&6Guild Settings"
+      lore:
+        - "&7Configure guild settings"
+    storage:
+      material: ENDER_CHEST
+      model-data: 3
+      name: "&6Guild Storage"
+      lore:
+        - "&7Access shared guild storage"
+        - "&7Store and retrieve items"
+    claimed-chunk:
+      material: EMERALD_BLOCK
+      model-data: 4
+      name: "&aClaimed Chunk"
+      lore:
+        - "&7X: %x%"
+        - "&7Z: %z%"
+        - ""
+        - "&eClick to unclaim"
+    unclaimed-chunk:
+      material: GRAY_STAINED_GLASS_PANE
+      model-data: 5
+      name: "&7Unclaimed Chunk"
+      lore:
+        - "&7X: %x%"
+        - "&7Z: %z%"
+        - ""
+        - "&eClick to claim"
+    back:
+      material: ARROW
+      model-data: 6
+      name: "&cBack to Main Menu"
+    member-info:
+      material: BOOK
+      model-data: 0
+      name: "&6Guild Information"
+      lore:
+        - "&7Members: &f%count%/%max%"
+        - "&7Leader: &f%leader%"

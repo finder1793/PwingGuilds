@@ -24,7 +24,8 @@ public class ConfigManager {
         "config.yml",
         "messages.yml",
         "buffs.yml",
-        "events.yml"
+        "events.yml",
+        "gui.yml" // Add GUI config file
     };
 
     /**

@@ -53,6 +53,22 @@ public class ConfigUpdater {
             }
         }
 
+        // Ensure GUI items section exists
+        if (!currentConfig.isConfigurationSection("gui.items")) {
+            currentConfig.createSection("gui.items");
+        }
+
+        // Ensure each GUI item has required fields
+        ConfigurationSection guiItems = currentConfig.getConfigurationSection("gui.items");
+        String[] requiredFields = {"material", "model-data"};
+        for (String item : guiItems.getKeys(false)) {
+            for (String field : requiredFields) {
+                if (!guiItems.contains(item + "." + field)) {
+                    guiItems.set(item + "." + field, getDefaultGuiItemValue(item, field));
+                }
+            }
+        }
+
         plugin.getLogger().info("=== Configuration Load Complete ===");
 
         try {
@@ -60,6 +76,17 @@ public class ConfigUpdater {
         } catch (Exception e) {
             plugin.getLogger().severe("Failed to save updated config.yml");
             e.printStackTrace();
+        }
+    }
+
+    private Object getDefaultGuiItemValue(String item, String field) {
+        switch (field) {
+            case "material":
+                return "STONE"; // Default material
+            case "model-data":
+                return 0; // Default model data
+            default:
+                return null;
         }
     }
 }

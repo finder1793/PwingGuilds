@@ -38,6 +38,7 @@ public class ConfigValidator {
         if (!validateEventsConfig()) isValid = false;
         if (!validateBuffsConfig()) isValid = false;
         if (!validateMessagesConfig()) isValid = false;
+        if (!validateGuiConfig()) isValid = false; // Add GUI config validation
 
         if (!errors.isEmpty()) {
             plugin.getLogger().warning("=== Configuration Warnings ===");
@@ -263,6 +264,26 @@ public class ConfigValidator {
 
     private boolean validateBackupSection(FileConfiguration config) {
         // Add your backup validation logic here
+        return true;
+    }
+
+    private boolean validateGuiConfig() {
+        FileConfiguration config = plugin.getConfig();
+        ConfigurationSection guiItems = config.getConfigurationSection("gui.items");
+        if (guiItems == null) {
+            errors.add("Missing gui.items section in config.yml");
+            return false;
+        }
+
+        String[] requiredFields = {"material", "model-data"};
+        for (String item : guiItems.getKeys(false)) {
+            for (String field : requiredFields) {
+                if (!guiItems.contains(item + "." + field)) {
+                    errors.add("GUI item " + item + " missing required field: " + field);
+                }
+            }
+        }
+
         return true;
     }
 

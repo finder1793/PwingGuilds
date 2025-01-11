@@ -57,7 +57,7 @@ public final class GuildGUIListener implements Listener {
                 return;
 
             if (event.getClickedInventory().equals(event.getView().getTopInventory())) {
-                if (title.equals("Guild Members") && event.getCurrentItem() != null && event.getSlot() == 49) {
+                if (title.equals(plugin.getMessageManager().getMessage("gui.titles.members")) && event.getCurrentItem() != null && event.getSlot() == 49) {
                     new GuildManagementGUI(plugin).openMainMenu((Player) event.getWhoClicked());
                     return;
                 }
@@ -137,18 +137,18 @@ public final class GuildGUIListener implements Listener {
 
             if (buff != null) {
                 if (!player.hasPermission(buff.getPermission())) {
-                    player.sendMessage("§cYou don't have permission to activate this buff!");
+                    player.sendMessage(plugin.getMessageManager().getMessage("buffs.no-permission"));
                     return;
                 }
 
                 if (plugin.getEconomy().getBalance(player) < buff.getCost()) {
-                    player.sendMessage("§cYou cannot afford this buff!");
+                    player.sendMessage(plugin.getMessageManager().getMessage("buffs.not-enough-money").replace("%cost%", String.valueOf(buff.getCost())));
                     return;
                 }
 
                 plugin.getEconomy().withdrawPlayer(player, buff.getCost());
                 buff.applyToMember(player);
-                player.sendMessage("§aActivated " + buff.getName() + " buff!");
+                player.sendMessage(plugin.getMessageManager().getMessage("buffs.activated").replace("%buff%", buff.getName()));
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
             }
         });
@@ -161,7 +161,7 @@ public final class GuildGUIListener implements Listener {
         switch (event.getSlot()) {
             case 11 -> {
                 plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresent(guild -> {
-                    Inventory memberInv = Bukkit.createInventory(null, 54, "Guild Members");
+                    Inventory memberInv = Bukkit.createInventory(null, 54, plugin.getMessageManager().getMessage("gui.titles.members"));
                     int slot = 0;
                     for (UUID memberId : guild.getMembers()) {
                         OfflinePlayer member = Bukkit.getOfflinePlayer(memberId);
@@ -179,7 +179,7 @@ public final class GuildGUIListener implements Listener {
 
                     ItemStack back = new ItemStack(Material.ARROW);
                     var backMeta = back.getItemMeta();
-                    backMeta.setDisplayName("§cBack to Main Menu");
+                    backMeta.setDisplayName(plugin.getMessageManager().getMessage("gui.items.back.name"));
                     back.setItemMeta(backMeta);
                     memberInv.setItem(49, back);
 
@@ -199,12 +199,12 @@ public final class GuildGUIListener implements Listener {
                                         player.playSound(player.getLocation(), Sound.BLOCK_ENDER_CHEST_OPEN, 1.0f,
                                                 1.0f);
                                     } else {
-                                        player.sendMessage("§cYour guild needs to unlock storage access first!");
+                                        player.sendMessage(plugin.getMessageManager().getMessage("guild.error.no-storage-access"));
                                         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
                                     }
                                 },
                                 () -> {
-                                    player.sendMessage("§cYou're not in a guild!");
+                                    player.sendMessage(plugin.getMessageManager().getMessage("general.not-in-guild"));
                                     player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
                                 });
             }
