@@ -24,7 +24,12 @@ public class GuildMemberLeaveEvent extends Event {
         /** Member was kicked by leadership */
         KICKED,
         /** Member was banned from the guild */
-        BANNED
+        BANNED,
+        /** Guild was disbanded */
+        DISBANDED,
+        /** Member has Left the Guild */
+        LEFT,
+        
     }
 
     /**

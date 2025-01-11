@@ -32,6 +32,11 @@ repositories {
         name = "enginehub"
         url = uri("https://maven.enginehub.org/repo/")
     }
+    // Add Skript repository
+    maven {
+        name = "skript-releases"
+        url = uri("https://repo.skriptlang.org/releases")
+    }
 }
 
 dependencies {
@@ -48,6 +53,11 @@ dependencies {
     compileOnly(libs.worldedit)
     implementation("com.zaxxer:HikariCP:5.1.0") {
         exclude(group = "org.slf4j", module = "slf4j-api")
+    }
+    // Add Skript dependency
+    compileOnly(libs.skript) {
+        exclude(group = "com.sk89q.worldguard", module = "worldguard-bukkit")
+        exclude(group = "net.milkbowl.vault", module = "Vault")
     }
 }
 

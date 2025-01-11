@@ -32,6 +32,7 @@ import com.pwing.guilds.config.ConfigManager;
 import com.pwing.guilds.config.ConfigMigration;
 import com.pwing.guilds.integration.WorldGuardHook;
 import com.pwing.guilds.database.DatabaseManager;
+import com.pwing.guilds.integrations.skript.SkriptGuildsHook;
 
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -66,6 +67,7 @@ public class PwingGuilds extends JavaPlugin {
     private ServerAdapter serverAdapter;
     private GuildBackupManager guildBackupManager;
     private MessageManager messageManager;
+    private static PwingGuilds instance;
 
     /**
      * Checks if WorldGuard is available
@@ -79,6 +81,7 @@ public class PwingGuilds extends JavaPlugin {
     }
     @Override
     public void onEnable() {
+        instance = this;
         // Save default config first
         saveDefaultConfig();
         
@@ -173,6 +176,13 @@ public class PwingGuilds extends JavaPlugin {
             saveConfig();
         }
 
+        // Optional Skript integration
+        if (getServer().getPluginManager().getPlugin("Skript") != null) {
+            new SkriptGuildsHook(this).registerSkript();
+        } else {
+            getLogger().info("Skript not found - Skript integration will not be enabled");
+        }
+
         getLogger().info("PwingGuilds has been enabled!");
     }
 
@@ -262,6 +272,9 @@ public class PwingGuilds extends JavaPlugin {
     }
     public MessageManager getMessageManager() {
         return messageManager;
+    }
+    public static PwingGuilds getInstance() {
+        return instance;
     }
     @Override
     public void onDisable() {

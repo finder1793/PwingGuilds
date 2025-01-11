@@ -5,7 +5,7 @@ api-version: '1.20'
 description: A comprehensive guild system plugin
 authors: [finder17]
 depend: [Vault]
-softdepend: [WorldGuard, PlaceholderAPI, MythicMobs]
+softdepend: [WorldGuard, PlaceholderAPI, MythicMobs, Skript]
 
 commands:
   guild:
