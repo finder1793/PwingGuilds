@@ -1,13 +1,16 @@
-package com.pwing.guilds.events.custom;
+package com.pwing.guilds.contest.guildcontests;
 
 import com.pwing.guilds.PwingGuilds;
+import com.pwing.guilds.api.ChunkClaimEvent;
+import com.pwing.guilds.contest.guildcontests.GuildEvent;
+
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
-import com.pwing.guilds.events.custom.GuildEvent;
-import com.pwing.guilds.events.ChunkClaimEvent;
+
 import com.pwing.guilds.guild.Guild;
+
 import java.util.HashMap;
 import java.util.Map;
 

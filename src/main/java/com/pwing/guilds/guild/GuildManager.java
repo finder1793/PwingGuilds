@@ -5,13 +5,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import java.util.*;
 import java.util.Collection;
-import com.pwing.guilds.events.GuildCreateEvent;
-import com.pwing.guilds.events.GuildClaimChunkEvent;
-import com.pwing.guilds.events.GuildMemberLeaveEvent;
+
 import com.pwing.guilds.storage.GuildStorage;
-import com.pwing.guilds.events.GuildDeleteEvent;
 import com.pwing.guilds.integration.WorldGuardHook;
 import com.pwing.guilds.alliance.Alliance;
+import com.pwing.guilds.api.GuildClaimChunkEvent;
+import com.pwing.guilds.api.GuildCreateEvent;
+import com.pwing.guilds.api.GuildDeleteEvent;
+import com.pwing.guilds.api.GuildMemberLeaveEvent;
 
 /**
  * Manages all guild-related operations and data within the plugin.

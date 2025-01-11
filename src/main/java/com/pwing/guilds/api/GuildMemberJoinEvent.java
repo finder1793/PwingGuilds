@@ -1,28 +1,24 @@
-package com.pwing.guilds.events;
+package com.pwing.guilds.api;
 
-import com.pwing.guilds.guild.Guild;
-import com.pwing.guilds.guild.GuildHome;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Cancellable;
-import org.bukkit.Location;
+import com.pwing.guilds.guild.Guild;
+import java.util.UUID;
 
-public class GuildHomeCreateEvent extends Event implements Cancellable {
+public class GuildMemberJoinEvent extends Event implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
     private final Guild guild;
-    private final String homeName;
-    private final Location location;
+    private final UUID player;
     private boolean cancelled;
 
-    public GuildHomeCreateEvent(Guild guild, String homeName, Location location) {
+    public GuildMemberJoinEvent(Guild guild, UUID player) {
         this.guild = guild;
-        this.homeName = homeName;
-        this.location = location;
+        this.player = player;
     }
 
     public Guild getGuild() { return guild; }
-    public String getHomeName() { return homeName; }
-    public Location getLocation() { return location; }
+    public UUID getPlayer() { return player; }
     
     @Override
     public boolean isCancelled() { return cancelled; }

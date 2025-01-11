@@ -1,8 +1,7 @@
 package com.pwing.guilds.perks;
 
 import com.pwing.guilds.PwingGuilds;
-import com.pwing.guilds.events.GuildPerkActivateEvent;
-
+import com.pwing.guilds.api.GuildPerkActivateEvent;
 import com.pwing.guilds.guild.Guild;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;

@@ -1,4 +1,4 @@
-package com.pwing.guilds.events;
+package com.pwing.guilds.api;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;

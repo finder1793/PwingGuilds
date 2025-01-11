@@ -1,27 +1,28 @@
-package com.pwing.guilds.events;
+package com.pwing.guilds.api;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import com.pwing.guilds.guild.Guild;
 
 /**
- * Event called when a guild is deleted.
+ * Called when a new guild is created
+ * This event cannot be cancelled
  */
-public class GuildDeleteEvent extends Event {
+public class GuildCreateEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
     private final Guild guild;
 
     /**
-     * Creates a new guild delete event
-     * @param guild The guild being deleted
+     * Creates a new GuildCreateEvent
+     * @param guild The newly created guild
      */
-    public GuildDeleteEvent(Guild guild) {
+    public GuildCreateEvent(Guild guild) {
         this.guild = guild;
     }
 
     /**
-     * Gets the guild being deleted
-     * @return The guild
+     * Gets the newly created guild
+     * @return The new guild
      */
     public Guild getGuild() {
         return guild;
@@ -32,10 +33,6 @@ public class GuildDeleteEvent extends Event {
         return handlers;
     }
 
-    /**
-     * Gets the handler list for this event
-     * @return The handler list
-     */
     public static HandlerList getHandlerList() {
         return handlers;
     }

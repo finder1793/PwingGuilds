@@ -1,6 +1,8 @@
-package com.pwing.guilds.events.custom;
+package com.pwing.guilds.contest.guildcontests;
 
 import com.pwing.guilds.PwingGuilds;
+import com.pwing.guilds.contest.guildcontests.EventAnnouncer;
+
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import java.time.DayOfWeek;
@@ -13,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.concurrent.TimeUnit;
-import com.pwing.guilds.events.custom.EventAnnouncer;
 
 /**
  * Handles scheduling and management of timed guild events

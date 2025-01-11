@@ -1,4 +1,4 @@
-package com.pwing.guilds.events;
+package com.pwing.guilds.api;
 
 import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.listeners.GuildProtectionListener;

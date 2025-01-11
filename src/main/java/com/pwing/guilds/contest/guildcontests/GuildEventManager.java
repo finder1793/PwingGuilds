@@ -1,10 +1,12 @@
-package com.pwing.guilds.events.custom;
+package com.pwing.guilds.contest.guildcontests;
 
 import com.pwing.guilds.PwingGuilds;
-import com.pwing.guilds.events.custom.GuildEvent;
 import com.pwing.guilds.guild.Guild;
+
 import org.bukkit.Bukkit;
 import com.pwing.guilds.config.ConfigValidator;
+import com.pwing.guilds.contest.guildcontests.GuildEvent;
+
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;

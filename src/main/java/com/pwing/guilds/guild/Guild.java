@@ -4,7 +4,7 @@ import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.perks.GuildPerks;
 import com.pwing.guilds.storage.GuildStorage;
 import com.pwing.guilds.alliance.AllianceManager;
-import com.pwing.guilds.events.*;
+import com.pwing.guilds.api.*;
 import com.pwing.guilds.alliance.Alliance;
 
 import org.bukkit.inventory.ItemStack;

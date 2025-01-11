@@ -1,24 +1,28 @@
-package com.pwing.guilds.events;
+package com.pwing.guilds.api;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Cancellable;
 import com.pwing.guilds.guild.Guild;
-import java.util.UUID;
 
-public class GuildMemberJoinEvent extends Event implements Cancellable {
+
+
+public class GuildLevelUpEvent extends Event implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
     private final Guild guild;
-    private final UUID player;
+    private final int oldLevel;
+    private final int newLevel;
     private boolean cancelled;
 
-    public GuildMemberJoinEvent(Guild guild, UUID player) {
+    public GuildLevelUpEvent(Guild guild, int oldLevel, int newLevel) {
         this.guild = guild;
-        this.player = player;
+        this.oldLevel = oldLevel;
+        this.newLevel = newLevel;
     }
 
     public Guild getGuild() { return guild; }
-    public UUID getPlayer() { return player; }
+    public int getOldLevel() { return oldLevel; }
+    public int getNewLevel() { return newLevel; }
     
     @Override
     public boolean isCancelled() { return cancelled; }

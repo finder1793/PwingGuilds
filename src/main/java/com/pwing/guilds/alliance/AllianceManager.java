@@ -3,8 +3,9 @@ package com.pwing.guilds.alliance;
 import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.guild.Guild;
 import com.pwing.guilds.alliance.storage.AllianceStorage;
-import com.pwing.guilds.events.GuildJoinAllianceEvent;
-import com.pwing.guilds.events.GuildLeaveAllianceEvent;
+import com.pwing.guilds.api.GuildJoinAllianceEvent;
+import com.pwing.guilds.api.GuildLeaveAllianceEvent;
+
 import org.bukkit.Bukkit;
 import java.util.*;
 

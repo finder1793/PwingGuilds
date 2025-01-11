@@ -1,11 +1,12 @@
 package com.pwing.guilds.rewards;
 
 import com.pwing.guilds.PwingGuilds;
+import com.pwing.guilds.contest.guildcontests.GuildEvent;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import io.lumine.mythic.bukkit.MythicBukkit;
 import com.pwing.guilds.guild.Guild;
-import com.pwing.guilds.events.custom.GuildEvent;
 import com.pwing.guilds.rewards.handlers.*;
 import java.util.Map;
 import java.util.List;

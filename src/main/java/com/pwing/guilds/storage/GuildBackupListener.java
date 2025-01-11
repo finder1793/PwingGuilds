@@ -4,8 +4,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginDisableEvent;
 import com.pwing.guilds.PwingGuilds;
-import com.pwing.guilds.events.GuildCreateEvent;
-import com.pwing.guilds.events.GuildDeleteEvent;
+import com.pwing.guilds.api.GuildCreateEvent;
+import com.pwing.guilds.api.GuildDeleteEvent;
 import com.pwing.guilds.storage.GuildBackupManager;
 
 

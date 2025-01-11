@@ -1,28 +1,28 @@
-package com.pwing.guilds.events;
+package com.pwing.guilds.api;
 
+import com.pwing.guilds.guild.Guild;
+import com.pwing.guilds.guild.GuildHome;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Cancellable;
-import com.pwing.guilds.guild.Guild;
+import org.bukkit.Location;
 
-
-
-public class GuildLevelUpEvent extends Event implements Cancellable {
+public class GuildHomeCreateEvent extends Event implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
     private final Guild guild;
-    private final int oldLevel;
-    private final int newLevel;
+    private final String homeName;
+    private final Location location;
     private boolean cancelled;
 
-    public GuildLevelUpEvent(Guild guild, int oldLevel, int newLevel) {
+    public GuildHomeCreateEvent(Guild guild, String homeName, Location location) {
         this.guild = guild;
-        this.oldLevel = oldLevel;
-        this.newLevel = newLevel;
+        this.homeName = homeName;
+        this.location = location;
     }
 
     public Guild getGuild() { return guild; }
-    public int getOldLevel() { return oldLevel; }
-    public int getNewLevel() { return newLevel; }
+    public String getHomeName() { return homeName; }
+    public Location getLocation() { return location; }
     
     @Override
     public boolean isCancelled() { return cancelled; }

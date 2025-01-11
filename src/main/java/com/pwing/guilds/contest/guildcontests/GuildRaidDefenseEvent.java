@@ -1,4 +1,4 @@
-package com.pwing.guilds.events.custom;
+package com.pwing.guilds.contest.guildcontests;
 
 import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.guild.ChunkLocation;

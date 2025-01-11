@@ -1,8 +1,8 @@
 package com.pwing.guilds.listeners;
 
 import com.pwing.guilds.PwingGuilds;
-import com.pwing.guilds.events.GuildCreateEvent;
-import com.pwing.guilds.events.GuildDeleteEvent;
+import com.pwing.guilds.api.GuildCreateEvent;
+import com.pwing.guilds.api.GuildDeleteEvent;
 import com.pwing.guilds.guild.Guild;
 import com.pwing.guilds.storage.GuildBackupManager;
 import org.bukkit.event.EventHandler;
