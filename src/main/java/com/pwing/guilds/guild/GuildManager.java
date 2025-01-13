@@ -3,6 +3,11 @@ package com.pwing.guilds.guild;
 import com.pwing.guilds.PwingGuilds;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.*;
 import java.util.Collection;
 
@@ -13,6 +18,21 @@ import com.pwing.guilds.api.GuildClaimChunkEvent;
 import com.pwing.guilds.api.GuildCreateEvent;
 import com.pwing.guilds.api.GuildDeleteEvent;
 import com.pwing.guilds.api.GuildMemberLeaveEvent;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
+import com.sk89q.worldedit.function.operation.Operation;
+import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.session.ClipboardHolder;
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.WorldEditException;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.inventory.ItemStack;
 
 /**
  * Manages all guild-related operations and data within the plugin.
@@ -287,5 +307,97 @@ public class GuildManager {
         }
     
         return allianceOpt.get().inviteGuild(invitedGuild);
+    }
+
+    public boolean canPasteSchematic(Guild guild, Player player, String structureName) {
+        if (!plugin.isAllowStructures()) {
+            player.sendMessage(plugin.getMessageManager().getMessage("guild.structure-system-disabled"));
+            return false;
+        }
+
+        if (!guild.getLeader().equals(player.getUniqueId())) {
+            player.sendMessage(plugin.getMessageManager().getMessage("guild.only-leader-can-add-structures"));
+            return false;
+        }
+
+        FileConfiguration structuresConfig = plugin.getStructuresConfig();
+        ConfigurationSection structureSection = structuresConfig.getConfigurationSection("structures." + structureName);
+        if (structureSection == null) {
+            player.sendMessage(plugin.getMessageManager().getMessage("guild.structure-not-found"));
+            return false;
+        }
+
+        ConfigurationSection costSection = structureSection.getConfigurationSection("cost");
+        for (String materialName : costSection.getKeys(false)) {
+            Material material = Material.getMaterial(materialName);
+            int amount = costSection.getInt(materialName);
+            if (material == null || !player.getInventory().contains(material, amount)) {
+                player.sendMessage(plugin.getMessageManager().getMessage("guild.structure-need-materials")
+                        .replace("{amount}", String.valueOf(amount))
+                        .replace("{material}", materialName));
+                return false;
+            }
+        }
+
+        if (guild.hasBuiltStructure(structureName)) {
+            player.sendMessage(plugin.getMessageManager().getMessage("guild.structure-already-built"));
+            return false;
+        }
+
+        return true;
+    }
+
+    public void pasteSchematic(Guild guild, Player player, String structureName) {
+        FileConfiguration structuresConfig = plugin.getStructuresConfig();
+        ConfigurationSection structureSection = structuresConfig.getConfigurationSection("structures." + structureName);
+        if (structureSection == null) {
+            player.sendMessage(plugin.getMessageManager().getMessage("guild.structure-not-found"));
+            return;
+        }
+
+        String schematicName = structureSection.getString("schematic");
+        ConfigurationSection costSection = structureSection.getConfigurationSection("cost");
+
+        for (String materialName : costSection.getKeys(false)) {
+            Material material = Material.getMaterial(materialName);
+            int amount = costSection.getInt(materialName);
+            player.getInventory().removeItem(new ItemStack(material, amount));
+        }
+
+        guild.addBuiltStructure(structureName);
+
+        // Paste the schematic using WorldEdit/FAWE
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            try {
+                File schematicFile = new File(plugin.getDataFolder(), "schematics/" + schematicName);
+                if (!schematicFile.exists()) {
+                    player.sendMessage(plugin.getMessageManager().getMessage("guild.schematic-file-not-found"));
+                    return;
+                }
+
+                ClipboardFormat format = ClipboardFormats.findByFile(schematicFile);
+                if (format == null) {
+                    player.sendMessage(plugin.getMessageManager().getMessage("guild.unsupported-schematic-format"));
+                    return;
+                }
+
+                try (ClipboardReader reader = format.getReader(new FileInputStream(schematicFile))) {
+                    Clipboard clipboard = reader.read();
+                    EditSession editSession = WorldEdit.getInstance().newEditSessionBuilder()
+                            .world(BukkitAdapter.adapt(player.getWorld()))
+                            .build();
+                    Operation operation = new ClipboardHolder(clipboard)
+                            .createPaste(editSession)
+                            .to(BlockVector3.at(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ()))
+                            .ignoreAirBlocks(false)
+                            .build();
+                    Operations.complete(operation);
+                    editSession.close();
+                }
+            } catch (IOException | WorldEditException e) {
+                player.sendMessage(plugin.getMessageManager().getMessage("guild.failed-to-paste-schematic"));
+                e.printStackTrace();
+            }
+        });
     }
 }

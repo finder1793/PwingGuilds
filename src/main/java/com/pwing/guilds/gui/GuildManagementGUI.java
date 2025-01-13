@@ -14,27 +14,16 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Chunk;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.ChatColor;
 import java.util.*;
 
-/**
- * Handles all guild-related GUI menus.
- * Provides interfaces for guild management, member management, buffs, and territory claims.
- */
 public class GuildManagementGUI {
     private final PwingGuilds plugin;
 
-    /**
-     * Creates a new GUI manager
-     * @param plugin The plugin instance
-     */
     public GuildManagementGUI(PwingGuilds plugin) {
         this.plugin = plugin;
     }
 
-    /**
-     * Opens the main guild management menu for a player
-     * @param player The player to show the menu to
-     */
     public void openMainMenu(Player player) {
         Optional<Guild> playerGuild = plugin.getGuildManager().getPlayerGuild(player.getUniqueId());
         if (playerGuild.isEmpty()) {
@@ -73,16 +62,10 @@ public class GuildManagementGUI {
         player.openInventory(inv);
     }
 
-    /**
-     * Opens the guild territory claims map
-     * @param player The player viewing the map
-     * @param guild The guild whose claims to show
-     */
     public void openClaimsMap(Player player, Guild guild) {
         Inventory inv = Bukkit.createInventory(null, 54, "Guild Claims Map");
         Chunk centerChunk = player.getLocation().getChunk();
 
-        // Using full 9x6 chest dimensions
         for (int x = -4; x <= 4; x++) {
             for (int z = -3; z <= 2; z++) {
                 Chunk chunk = player.getWorld().getChunkAt(centerChunk.getX() + x, centerChunk.getZ() + z);
@@ -112,7 +95,6 @@ public class GuildManagementGUI {
                     item.setItemMeta(meta);
                 }
 
-                // Calculate inventory slot for 9x6 layout
                 int slot = (z + 3) * 9 + (x + 4);
                 inv.setItem(slot, item);
             }
@@ -121,11 +103,6 @@ public class GuildManagementGUI {
         player.openInventory(inv);
     }
 
-    /**
-     * Opens the guild buffs management menu
-     * @param player The player viewing the menu
-     * @param guild The guild whose buffs to show
-     */
     public void openBuffsMenu(Player player, Guild guild) {
         Inventory inv = Bukkit.createInventory(null, 54, "Guild Buffs");
 
@@ -156,21 +133,15 @@ public class GuildManagementGUI {
     private ItemStack createItem(Material material, String name, String... lore) {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(name);
+        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
         meta.setLore(Arrays.asList(lore));
         item.setItemMeta(meta);
         return item;
     }
 
-    /**
-     * Opens the guild member management interface
-     * @param player The player viewing the menu
-     * @param guild The guild to manage members for
-     */
     public void openMemberManagement(Player player, Guild guild) {
         Inventory inv = Bukkit.createInventory(null, 54, "Guild Members");
 
-        // Header items
         ItemStack info = new ItemStack(Material.BOOK);
         ItemMeta infoMeta = info.getItemMeta();
         infoMeta.setDisplayName("§6Guild Information");
@@ -181,7 +152,6 @@ public class GuildManagementGUI {
         info.setItemMeta(infoMeta);
         inv.setItem(4, info);
 
-        // Member list
         int slot = 9;
         for (UUID memberId : guild.getMembers()) {
             OfflinePlayer member = Bukkit.getOfflinePlayer(memberId);
@@ -197,7 +167,6 @@ public class GuildManagementGUI {
             inv.setItem(slot++, memberHead);
         }
 
-        // Navigation
         ItemStack back = new ItemStack(Material.ARROW);
         ItemMeta backMeta = back.getItemMeta();
         backMeta.setDisplayName("§cBack to Main Menu");
@@ -207,9 +176,6 @@ public class GuildManagementGUI {
         player.openInventory(inv);
     }
 
-    /**
-     * Custom inventory holder for guild GUIs
-     */
     public class GuildInventoryHolder implements InventoryHolder {
         private final Guild guild;
 

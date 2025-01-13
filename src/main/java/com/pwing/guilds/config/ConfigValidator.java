@@ -31,14 +31,19 @@ public class ConfigValidator {
      * @return true if configuration is valid, false otherwise
      */
     public boolean validate() {
+        if (!plugin.getConfig().getBoolean("validate-config", true)) {
+            plugin.getLogger().info("Config validation is disabled.");
+            return true;
+        }
+
         boolean isValid = true;
 
-        // Validate each config file
         if (!validateMainConfig()) isValid = false;
         if (!validateEventsConfig()) isValid = false;
         if (!validateBuffsConfig()) isValid = false;
         if (!validateMessagesConfig()) isValid = false;
-        if (!validateGuiConfig()) isValid = false; // Add GUI config validation
+        if (!validateGuiConfig()) isValid = false;
+        if (!validateStructuresConfig()) isValid = false;
 
         if (!errors.isEmpty()) {
             plugin.getLogger().warning("=== Configuration Warnings ===");
@@ -118,7 +123,6 @@ public class ConfigValidator {
             return false;
         }
 
-        // Validate each buff
         ConfigurationSection buffsSection = buffs.getConfigurationSection("buffs");
         for (String buffName : buffsSection.getKeys(false)) {
             validateBuff(buffName, buffsSection.getConfigurationSection(buffName));
@@ -153,7 +157,32 @@ public class ConfigValidator {
         return true;
     }
 
-    // Helper methods for main config validation
+    private boolean validateStructuresConfig() {
+        FileConfiguration structures = plugin.getConfigManager().getConfig("structures.yml");
+        if (structures == null) {
+            plugin.saveResource("structures.yml", false);
+            return false;
+        }
+
+        if (!structures.isConfigurationSection("structures")) {
+            errors.add("Missing structures section in structures.yml");
+            return false;
+        }
+
+        ConfigurationSection structuresSection = structures.getConfigurationSection("structures");
+        for (String structureName : structuresSection.getKeys(false)) {
+            ConfigurationSection structure = structuresSection.getConfigurationSection(structureName);
+            if (!structure.contains("schematic")) {
+                errors.add("Missing schematic for structure: " + structureName);
+            }
+            if (!structure.contains("cost")) {
+                errors.add("Missing cost for structure: " + structureName);
+            }
+        }
+
+        return true;
+    }
+
     private boolean validateStorageSection(FileConfiguration config) {
         ConfigurationSection storage = config.getConfigurationSection("storage");
         if (storage == null) {

@@ -12,6 +12,7 @@ import com.pwing.guilds.guild.Guild;
 import com.pwing.guilds.guild.GuildHome;
 import com.pwing.guilds.visualization.ChunkVisualizer;
 import com.pwing.guilds.gui.GuildManagementGUI;
+import com.pwing.guilds.gui.StructureManagementGUI;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -264,6 +265,54 @@ public class GuildCommand implements CommandExecutor {
                                 }
                         );
             }
+            case "paste" -> {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage("Only players can use this command.");
+                    return true;
+                }
+
+                if (args.length < 2) {
+                    player.sendMessage("Usage: /guild paste <schematic>");
+                    return true;
+                }
+
+                String schematicName = args[1];
+                Guild guild = plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).orElse(null);
+                if (guild == null) {
+                    player.sendMessage("You are not in a guild.");
+                    return true;
+                }
+
+                if (!plugin.getGuildManager().canPasteSchematic(guild, player, schematicName)) {
+                    player.sendMessage("You do not have the required materials to paste this schematic.");
+                    return true;
+                }
+
+                plugin.getGuildManager().pasteSchematic(guild, player, schematicName);
+                player.sendMessage("Schematic pasted successfully.");
+                return true;
+            }
+            case "structures" -> {
+                if (!plugin.isAllowStructures()) {
+                    player.sendMessage("The structure system is currently disabled.");
+                    return true;
+                }
+
+                plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresentOrElse(
+                    guild -> {
+                        if (!guild.getLeader().equals(player.getUniqueId())) {
+                            player.sendMessage("Only the guild leader can manage structures.");
+                            return;
+                        }
+                        new StructureManagementGUI(plugin).openStructureMenu(player, guild);
+                        player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0f, 1.0f);
+                    },
+                    () -> {
+                        player.sendMessage("§cYou're not in a guild!");
+                        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                    }
+                );
+            }
             default -> sendHelpMessage(player);
         }
         return true;
@@ -295,7 +344,6 @@ public class GuildCommand implements CommandExecutor {
         }
     }
 
-    // Continue updating other command handlers similarly...
 }
 
 

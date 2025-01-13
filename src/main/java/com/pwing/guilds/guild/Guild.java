@@ -41,6 +41,7 @@ public class Guild implements ConfigurationSerializable {
     private long lastUpdate;
     private final Set<UUID> onlineMembers = new HashSet<>();
     private boolean pvpEnabled = false;  // Default PvP off in guild territories
+    private final Set<String> builtStructures = new HashSet<>();
 
     /**
      * Creates a new guild with the specified parameters
@@ -112,13 +113,25 @@ public class Guild implements ConfigurationSerializable {
      * @return true if claim was successful, false if already claimed or at claim limit
      */
     public boolean claimChunk(ChunkLocation chunk) {
-        if (canClaim()) {
+        if (canClaim() && isAdjacentToExistingClaim(chunk)) {
             boolean claimed = claimedChunks.add(chunk);
-            // Don't save during deserialization
             if (claimed && plugin.getGuildManager() != null) {
                 plugin.getGuildManager().getStorage().saveGuild(this);
             }
             return claimed;
+        }
+        return false;
+    }
+
+    private boolean isAdjacentToExistingClaim(ChunkLocation chunk) {
+        if (claimedChunks.isEmpty()) {
+            return true;
+        }
+
+        for (ChunkLocation claimedChunk : claimedChunks) {
+            if (claimedChunk.isAdjacent(chunk)) {
+                return true;
+            }
         }
         return false;
     }
@@ -310,7 +323,8 @@ public class Guild implements ConfigurationSerializable {
     }
     @Override
     public Map<String, Object> serialize() {
-        return Map.of(
+        Map<String, Object> data = new HashMap<>();
+        data.putAll(Map.of(
             "name", Objects.requireNonNull(name, "Guild name cannot be null"),
             "leader", Objects.requireNonNull(leader, "Guild leader cannot be null"),
             "members", members.stream()
@@ -331,7 +345,9 @@ public class Guild implements ConfigurationSerializable {
             "level", level,
             "alliance", alliance != null ? alliance.getName() : null,
             "pvp-enabled", pvpEnabled
-        );
+        ));
+        data.put("builtStructures", new ArrayList<>(builtStructures));
+        return data;
     }
 
     private Map<String, Object> serializeLocation(Location loc) {
@@ -436,6 +452,7 @@ public class Guild implements ConfigurationSerializable {
         }
 
         guild.setPvPEnabled((Boolean) data.getOrDefault("pvp-enabled", false));
+        guild.builtStructures.addAll((List<String>) data.get("builtStructures"));
 
         return guild;
     }
@@ -558,6 +575,13 @@ public class Guild implements ConfigurationSerializable {
      */
     public void setAlliance(Alliance alliance) { this.alliance = alliance; }
 
+    public boolean hasBuiltStructure(String structureName) {
+        return builtStructures.contains(structureName);
+    }
+
+    public void addBuiltStructure(String structureName) {
+        builtStructures.add(structureName);
+    }
 
     /**
      * Gets all items stored in guild storage

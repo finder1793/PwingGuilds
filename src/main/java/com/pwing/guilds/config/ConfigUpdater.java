@@ -5,9 +5,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import com.pwing.guilds.PwingGuilds;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Set;
+
 
 /**
  * Handles updates to the plugin's configuration files.
@@ -66,6 +64,21 @@ public class ConfigUpdater {
                 if (!guiItems.contains(item + "." + field)) {
                     guiItems.set(item + "." + field, getDefaultGuiItemValue(item, field));
                 }
+            }
+        }
+
+        // Ensure structures section exists
+        if (!currentConfig.isConfigurationSection("structures")) {
+            currentConfig.createSection("structures");
+        }
+
+        ConfigurationSection structures = currentConfig.getConfigurationSection("structures");
+        for (String structure : structures.getKeys(false)) {
+            if (!structures.contains(structure + ".schematic")) {
+                structures.set(structure + ".schematic", structure + ".schem");
+            }
+            if (!structures.contains(structure + ".cost")) {
+                structures.createSection(structure + ".cost");
             }
         }
 

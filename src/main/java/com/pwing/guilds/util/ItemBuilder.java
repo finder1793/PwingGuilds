@@ -1,5 +1,6 @@
 package com.pwing.guilds.util;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -11,6 +12,7 @@ import com.pwing.guilds.PwingGuilds;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ItemBuilder {
     private final ItemStack item;
@@ -25,17 +27,24 @@ public class ItemBuilder {
     }
 
     public ItemBuilder name(String name) {
-        meta.setDisplayName(name);
+        // Translate color codes
+        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
         return this;
     }
 
     public ItemBuilder lore(String... lore) {
-        meta.setLore(Arrays.asList(lore));
+        // Translate color codes
+        meta.setLore(Arrays.stream(lore)
+                .map(line -> ChatColor.translateAlternateColorCodes('&', line))
+                .collect(Collectors.toList()));
         return this;
     }
 
     public ItemBuilder lore(List<String> lore) {
-        meta.setLore(lore);
+        // Translate color codes
+        meta.setLore(lore.stream()
+                .map(line -> ChatColor.translateAlternateColorCodes('&', line))
+                .collect(Collectors.toList()));
         return this;
     }
 

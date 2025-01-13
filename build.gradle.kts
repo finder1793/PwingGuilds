@@ -53,15 +53,17 @@ dependencies {
     compileOnly(libs.adventure.text.minimessage)
     compileOnly(libs.adventure.text.serializer.legacy)
     compileOnly(libs.worldguard)
-    compileOnly(libs.worldedit)
-    implementation("com.zaxxer:HikariCP:5.1.0") {
-        exclude(group = "org.slf4j", module = "slf4j-api")
-    }
     compileOnly(libs.skript) {
         exclude(group = "com.sk89q.worldguard", module = "worldguard-bukkit")
         exclude(group = "net.milkbowl.vault", module = "Vault")
     }
     compileOnly(libs.viaversion)
+    implementation("com.sk89q.worldedit:worldedit-bukkit:7.2.9") {
+        exclude(group = "org.slf4j", module = "slf4j-api")
+    }
+    implementation("com.zaxxer:HikariCP:5.1.0") {
+        exclude(group = "org.slf4j", module = "slf4j-api")
+    }
 }
 
 java {

@@ -139,6 +139,7 @@ messages:
       claims: "&8Territory Claims"
       buffs: "&8Guild Buffs"
       storage: "&8Guild Storage"
+      structures: "&8Guild Structures"
     items:
       members:
         name: "&6Members"
@@ -164,3 +165,7 @@ messages:
         lore:
           - "&7Members: &f%count%/%max%"
           - "&7Leader: &f%leader%"
+      structures:
+        name: "&6Guild Structures"
+        lore:
+          - "&7View and manage guild structures"

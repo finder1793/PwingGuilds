@@ -1,0 +1,16 @@
+structures:
+  castle:
+    schematic: "castle.schem"
+    cost:
+      DIAMOND: 10
+      GOLD_INGOT: 20
+  tower:
+    schematic: "tower.schem"
+    cost:
+      IRON_INGOT: 30
+      STONE: 50
+  farm:
+    schematic: "farm.schem"
+    cost:
+      WHEAT: 100
+      WOOD: 50

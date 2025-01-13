@@ -89,7 +89,9 @@ exp-sources:
         DEFAULT: 10
 
 guild-settings:
+  allow-structures: true
   allow-friendly-fire: false  # Whether guild members can PvP each other in guild territory
+  validate-config: true  # Toggle for config validation
 
 # Backup Settings
 backup:

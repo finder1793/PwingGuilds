@@ -80,6 +80,12 @@ public class ChunkLocation {
         return new Location(world, x * 16, 64, z * 16);
     }
 
+    public boolean isAdjacent(ChunkLocation other) {
+        return this.worldName.equals(other.worldName) &&
+                (Math.abs(this.x - other.x) == 1 && this.z == other.z ||
+                Math.abs(this.z - other.z) == 1 && this.x == other.x);
+    }
+
     private int calculateHash() {
         return 31 * (31 * worldName.hashCode() + x) + z;
     }

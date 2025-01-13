@@ -42,6 +42,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.Bukkit;
 import java.util.Set;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import java.io.File;
+import org.bukkit.ChatColor;
 
 /**
  * Main plugin class for PwingGuilds
@@ -70,6 +73,8 @@ public class PwingGuilds extends JavaPlugin {
     private MessageManager messageManager;
     private ItemCompatibilityHandler itemCompatHandler;
     private static PwingGuilds instance;
+    private boolean allowStructures;
+    private FileConfiguration structuresConfig;
 
     /**
      * Checks if WorldGuard is available
@@ -86,7 +91,12 @@ public class PwingGuilds extends JavaPlugin {
         instance = this;
         // Save default config first
         saveDefaultConfig();
-        
+        saveResource("structures.yml", false);
+        structuresConfig = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "structures.yml"));
+
+        // Load the toggle for the structure system
+        allowStructures = getConfig().getBoolean("guild-settings.allow-structures", true);
+
         // Register commands first before any other initialization
         try {
             registerCommands();
@@ -171,6 +181,9 @@ public class PwingGuilds extends JavaPlugin {
 
         // Register PvP listener
         getServer().getPluginManager().registerEvents(new GuildPvPListener(this), this);
+
+        // Register inventory click listener
+        getServer().getPluginManager().registerEvents(new InventoryClickListener(this), this);
 
         // Add default config values if they don't exist
         FileConfiguration config = getConfig();
@@ -282,6 +295,15 @@ public class PwingGuilds extends JavaPlugin {
     public static PwingGuilds getInstance() {
         return instance;
     }
+    public boolean isAllowStructures() {
+        return allowStructures;
+    }
+    public FileConfiguration getStructuresConfig() {
+        return structuresConfig;
+    }
+    public String getMessage(String path) {
+        return ChatColor.translateAlternateColorCodes('&', getConfig().getString(path, ""));
+    }
     @Override
     public void onDisable() {
         getLogger().info("Starting final guild data save...");
@@ -315,6 +337,11 @@ public class PwingGuilds extends JavaPlugin {
         getLogger().info("Guild data save completed!");
     }
 }
+
+
+
+
+
 
 
 
