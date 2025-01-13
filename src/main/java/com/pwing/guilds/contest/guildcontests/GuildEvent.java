@@ -31,7 +31,12 @@ public abstract class GuildEvent implements Listener {
     /** Whether the event is currently running */
     protected boolean isActive = false;
 
+    /** Tracks statistics for participating guilds */
     private final Map<Guild, Map<String, Integer>> eventStats = new HashMap<>();
+
+    /**
+     * List of messages related to the event.
+     */
     protected final List<String> eventMessages = new ArrayList<>();
 
     /**
@@ -56,14 +61,26 @@ public abstract class GuildEvent implements Listener {
      */
     public abstract void updateScores();
 
+    /**
+     * Gets the name of the event.
+     * @return The event name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Gets the description of the event.
+     * @return The event description
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Gets the duration of the event.
+     * @return The event duration
+     */
     public Duration getDuration() {
         return duration;
     }
@@ -85,6 +102,10 @@ public abstract class GuildEvent implements Listener {
         scores.merge(guild, points, Integer::sum);
     }
 
+    /**
+     * Checks if the event is currently active.
+     * @return true if the event is active, false otherwise
+     */
     public boolean isActive() {
         return isActive;
     }

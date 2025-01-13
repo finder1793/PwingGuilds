@@ -9,8 +9,18 @@ import com.pwing.guilds.api.GuildMemberLeaveEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 
+/**
+ * Effect to leave a guild.
+ */
 public class EffLeaveGuild extends Effect {
     private Expression<Player> player;
+
+    /**
+     * Default constructor for EffLeaveGuild.
+     */
+    public EffLeaveGuild() {
+        // ...existing code...
+    }
 
     @Override
     protected void execute(Event event) {

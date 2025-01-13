@@ -33,6 +33,10 @@ public class GuildCreateEvent extends Event {
         return handlers;
     }
 
+    /**
+     * Gets the handler list for this event.
+     * @return The handler list
+     */
     public static HandlerList getHandlerList() {
         return handlers;
     }

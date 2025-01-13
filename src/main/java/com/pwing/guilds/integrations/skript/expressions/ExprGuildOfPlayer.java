@@ -9,8 +9,18 @@ import com.pwing.guilds.guild.Guild;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 
+/**
+ * Expression to get the guild of a player.
+ */
 public class ExprGuildOfPlayer extends SimpleExpression<Guild> {
     private Expression<Player> player;
+
+    /**
+     * Default constructor for ExprGuildOfPlayer.
+     */
+    public ExprGuildOfPlayer() {
+        // ...existing code...
+    }
 
     @Override
     protected Guild[] get(Event event) {

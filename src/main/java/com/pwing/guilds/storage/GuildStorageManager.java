@@ -24,12 +24,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Manages guild storage operations and listeners.
+ */
 public class GuildStorageManager implements Listener {
     private final PwingGuilds plugin;
     private final GuildManager guildManager;
     private final Map<UUID, Inventory> openStorages = new HashMap<>();
     private final Map<String, ItemStack[]> guildStorages = new HashMap<>();
 
+    /**
+     * Constructs a new GuildStorageManager.
+     * @param plugin The PwingGuilds plugin instance.
+     */
     public GuildStorageManager(PwingGuilds plugin) {
         this.plugin = plugin;
         this.guildManager = plugin.getGuildManager();
@@ -41,6 +48,11 @@ public class GuildStorageManager implements Listener {
             (listener, event) -> closeAllStorages(), plugin);
     }
 
+    /**
+     * Opens the storage for a guild.
+     * @param player The player opening the storage.
+     * @param guild The guild whose storage is being opened.
+     */
     public void openStorage(Player player, Guild guild) {
         if (!guild.getPerks().activatePerk("guild-storage")) {
             return;
@@ -58,6 +70,10 @@ public class GuildStorageManager implements Listener {
         openStorages.put(player.getUniqueId(), inv);
     }
 
+    /**
+     * Handles inventory click events.
+     * @param event The InventoryClickEvent.
+     */
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) {
@@ -70,6 +86,10 @@ public class GuildStorageManager implements Listener {
         }
     }
 
+    /**
+     * Handles inventory close events.
+     * @param event The InventoryCloseEvent.
+     */
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (!(event.getPlayer() instanceof Player player)) {
@@ -103,6 +123,9 @@ public class GuildStorageManager implements Listener {
         });
     }
 
+    /**
+     * Saves all guild storages.
+     */
     public void saveAllStorages() {
         guildStorages.forEach((guildName, contents) -> 
             guildManager.getStorage().saveStorageData(guildName, contents));
@@ -110,6 +133,11 @@ public class GuildStorageManager implements Listener {
 
     private final Map<String, Set<UUID>> activeViewers = new HashMap<>();
 
+    /**
+     * Gets the active viewers of a guild's storage.
+     * @param guildName The name of the guild.
+     * @return A set of UUIDs of active viewers.
+     */
     public Set<UUID> getActiveViewers(String guildName) {
         return activeViewers.computeIfAbsent(guildName, k -> new HashSet<>());
     }
@@ -147,11 +175,19 @@ public class GuildStorageManager implements Listener {
         }
     }
 
-
+    /**
+     * Gets the storage contents of a guild.
+     * @param guildName The name of the guild.
+     * @return The storage contents.
+     */
     public ItemStack[] getGuildStorage(String guildName) {
         return guildStorages.get(guildName);
     }
 
+    /**
+     * Saves an inventory to storage.
+     * @param inventory The inventory to save.
+     */
     public void saveInventory(Inventory inventory) {
         if (inventory == null || !inventory.getViewers().get(0).getOpenInventory().getTitle().contains("Guild Storage")) {
             return;

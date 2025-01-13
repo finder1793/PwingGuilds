@@ -80,6 +80,12 @@ public class ChunkLocation {
         return new Location(world, x * 16, 64, z * 16);
     }
 
+    /**
+     * Checks if the given ChunkLocation is adjacent to this ChunkLocation.
+     *
+     * @param other the ChunkLocation to check adjacency with
+     * @return true if the given ChunkLocation is adjacent, false otherwise
+     */
     public boolean isAdjacent(ChunkLocation other) {
         return this.worldName.equals(other.worldName) &&
                 (Math.abs(this.x - other.x) == 1 && this.z == other.z ||

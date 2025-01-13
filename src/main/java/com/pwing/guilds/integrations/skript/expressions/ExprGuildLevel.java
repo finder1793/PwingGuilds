@@ -7,8 +7,18 @@ import ch.njol.util.Kleenean;
 import com.pwing.guilds.PwingGuilds;
 import org.bukkit.event.Event;
 
+/**
+ * Expression to get the level of a guild.
+ */
 public class ExprGuildLevel extends SimpleExpression<Number> {
     private Expression<String> guildName;
+
+    /**
+     * Default constructor for ExprGuildLevel.
+     */
+    public ExprGuildLevel() {
+        // ...existing code...
+    }
 
     @Override
     protected Number[] get(Event event) {

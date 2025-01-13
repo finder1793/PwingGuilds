@@ -22,6 +22,9 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * Represents a guild raid defense event.
+ */
 public class GuildRaidDefenseEvent extends GuildEvent implements Listener {
     private final Map<Guild, Integer> wavesDefended = new HashMap<>();
     private final Map<Guild, Integer> mobKills = new HashMap<>();
@@ -30,6 +33,12 @@ public class GuildRaidDefenseEvent extends GuildEvent implements Listener {
     private final Random random = new Random();
     private BukkitTask waveTask;
 
+    /**
+     * Constructs a new GuildRaidDefenseEvent.
+     * @param plugin The PwingGuilds plugin instance.
+     * @param name The name of the event.
+     * @param duration The duration of the event in seconds.
+     */
     public GuildRaidDefenseEvent(PwingGuilds plugin, String name, int duration) {
         super(plugin, name, duration);
         this.description = "Defend against waves of mobs attacking guild territories!";
@@ -96,6 +105,10 @@ public class GuildRaidDefenseEvent extends GuildEvent implements Listener {
         };
     }
 
+    /**
+     * Handles mob death events during the raid defense.
+     * @param event The EntityDeathEvent.
+     */
     @EventHandler
     public void onMobDeath(EntityDeathEvent event) {
         if (!isActive || !spawnedMobs.containsKey(event.getEntity().getUniqueId())) return;

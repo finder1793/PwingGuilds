@@ -7,10 +7,17 @@ import org.bukkit.configuration.file.FileConfiguration;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Manages messages and localization for the PwingGuilds plugin.
+ */
 public class MessageManager {
     private final PwingGuilds plugin;
     private final Map<String, String> messages;
 
+    /**
+     * Creates a new MessageManager.
+     * @param plugin Plugin instance.
+     */
     public MessageManager(PwingGuilds plugin) {
         this.plugin = plugin;
         this.messages = new HashMap<>();
@@ -29,6 +36,12 @@ public class MessageManager {
         }
     }
 
+    /**
+     * Retrieves a localized message by key.
+     * @param key The message key.
+     * @param args Optional arguments for message formatting.
+     * @return The localized message.
+     */
     public String getMessage(String key, Object... args) {
         String message = messages.getOrDefault(key, "Missing message: " + key);
         if (args.length > 0) {
@@ -39,6 +52,12 @@ public class MessageManager {
         return message;
     }
 
+    /**
+     * Retrieves a localized message by key with replacements.
+     * @param key The message key.
+     * @param replacements Map of replacements for placeholders.
+     * @return The localized message.
+     */
     public String getMessage(String key, Map<String, String> replacements) {
         String message = messages.getOrDefault(key, "Missing message: " + key);
         if (replacements != null) {
@@ -49,6 +68,9 @@ public class MessageManager {
         return message;
     }
 
+    /**
+     * Reloads the message configuration.
+     */
     public void reload() {
         messages.clear();
         loadMessages();

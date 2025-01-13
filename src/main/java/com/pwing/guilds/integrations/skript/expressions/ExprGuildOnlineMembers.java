@@ -8,8 +8,18 @@ import com.pwing.guilds.PwingGuilds;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 
+/**
+ * Expression to get the online members of a guild.
+ */
 public class ExprGuildOnlineMembers extends SimpleExpression<Player> {
     private Expression<String> guildName;
+
+    /**
+     * Default constructor for ExprGuildOnlineMembers.
+     */
+    public ExprGuildOnlineMembers() {
+        // ...existing code...
+    }
 
     @Override
     protected Player[] get(Event event) {

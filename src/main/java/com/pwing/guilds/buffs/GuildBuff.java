@@ -16,8 +16,8 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Represents a temporary buff/bonus that can be activated by guilds
- * Buffs can provide potion effects or stat boosts to guild members
+ * Represents a temporary buff/bonus that can be activated by guilds.
+ * Buffs can provide potion effects or stat boosts to guild members.
  */
 public class GuildBuff implements StatSource {
     private final PwingGuilds plugin;
@@ -47,18 +47,19 @@ public class GuildBuff implements StatSource {
     private final int slot;
 
     /**
-     * Creates a new guild buff
-     * @param plugin Plugin instance
-     * @param name Buff name
-     * @param potionEffect Potion effect type
-     * @param statType Stat type
-     * @param statValue Stat value
-     * @param type Buff type
-     * @param duration Duration in seconds
-     * @param cost Cost to activate
-     * @param material GUI material
-     * @param slot GUI slot
-     * @param permission Permission required
+     * Creates a new guild buff.
+     * @param plugin Plugin instance.
+     * @param name Buff name.
+     * @param potionEffect Potion effect type.
+     * @param statType Stat type.
+     * @param statValue Stat value.
+     * @param level Buff level.
+     * @param cost Cost to activate.
+     * @param duration Duration in seconds.
+     * @param permission Permission required.
+     * @param type Buff type.
+     * @param material GUI material.
+     * @param slot GUI slot.
      */
     public GuildBuff(PwingGuilds plugin, String name, PotionEffectType potionEffect, StatType statType, 
                     double statValue, int level, int cost, int duration, String permission, 
@@ -124,13 +125,22 @@ public class GuildBuff implements StatSource {
     }
 
     // Getters with simple documentation
-    /** @return The buff's name */
+    /**
+     * Gets the name of the buff.
+     * @return The buff's name
+     */
     public String getName() { return name; }
     
-    /** @return The buff's potion effect type */
+    /**
+     * Gets the potion effect type of the buff.
+     * @return The buff's potion effect type
+     */
     public PotionEffectType getPotionEffect() { return potionEffect; }
     
-    /** @return The buff's cost */
+    /**
+     * Gets the cost to activate the buff.
+     * @return The buff's cost
+     */
     public int getCost() { return cost; }
 
     /**
@@ -168,6 +178,16 @@ public class GuildBuff implements StatSource {
      * @return Bukkit Material enum value
      */
     public Material getMaterial() { return material; }
+    
+    /**
+     * Gets the slot in the GUI where the buff is displayed.
+     * @return The buff's slot.
+     */
     public int getSlot() { return slot; }
+    
+    /**
+     * Gets the type of the buff.
+     * @return The buff's type.
+     */
     public BuffType getType() { return type; }
 }

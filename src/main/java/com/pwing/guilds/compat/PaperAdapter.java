@@ -8,8 +8,15 @@ import org.bukkit.Material;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.audience.Audience;
 
+/**
+ * Adapter for Paper server-specific features.
+ */
 public class PaperAdapter extends ServerAdapter {
 
+    /**
+     * Creates a new PaperAdapter.
+     * @param server The server instance.
+     */
     public PaperAdapter(Server server) {
         super(server);
     }

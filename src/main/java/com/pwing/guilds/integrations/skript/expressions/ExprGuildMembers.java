@@ -12,8 +12,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Expression to get the members of a guild.
+ */
 public class ExprGuildMembers extends SimpleExpression<Player> {
     private Expression<String> guildName;
+
+    /**
+     * Default constructor for ExprGuildMembers.
+     */
+    public ExprGuildMembers() {
+        // ...existing code...
+    }
 
     @Override
     protected Player[] get(Event event) {

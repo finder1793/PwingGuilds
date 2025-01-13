@@ -10,9 +10,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Provides tab completion for guild admin commands.
+ */
 public class GuildAdminCommandTabCompleter implements TabCompleter {
     private final PwingGuilds plugin;
 
+    /**
+     * Creates a new GuildAdminCommandTabCompleter instance.
+     * @param plugin The plugin instance.
+     */
     public GuildAdminCommandTabCompleter(PwingGuilds plugin) {
         this.plugin = plugin;
     }

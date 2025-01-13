@@ -25,6 +25,10 @@ import java.util.Map;
 public class GuildCommand implements CommandExecutor {
     private final PwingGuilds plugin;
 
+    /**
+     * Constructs a new GuildCommand instance.
+     * @param plugin The main plugin instance
+     */
     public GuildCommand(PwingGuilds plugin) {
         this.plugin = plugin;
     }

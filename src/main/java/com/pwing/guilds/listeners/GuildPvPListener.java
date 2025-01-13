@@ -8,13 +8,24 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import java.util.Optional;
 
+/**
+ * Listens for PvP events involving guild members.
+ */
 public class GuildPvPListener implements Listener {
     private final PwingGuilds plugin;
 
+    /**
+     * Constructs a new GuildPvPListener.
+     * @param plugin The PwingGuilds plugin instance.
+     */
     public GuildPvPListener(PwingGuilds plugin) {
         this.plugin = plugin;
     }
 
+    /**
+     * Handles player damage events.
+     * @param event The EntityDamageByEntityEvent.
+     */
     @EventHandler
     public void onPlayerDamage(EntityDamageByEntityEvent event) {
         if (!(event.getEntity() instanceof Player) || !(event.getDamager() instanceof Player)) {

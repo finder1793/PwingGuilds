@@ -78,14 +78,17 @@ public class PwingGuilds extends JavaPlugin {
 
     /**
      * Checks if WorldGuard is available
+     * 
      * @return true if WorldGuard is hooked
      */
     public boolean hasWorldGuard() {
         return worldGuardHook != null;
     }
+
     public WorldGuardHook getWorldGuardHook() {
         return worldGuardHook;
     }
+
     @Override
     public void onEnable() {
         instance = this;
@@ -112,7 +115,7 @@ public class PwingGuilds extends JavaPlugin {
 
         // Initialize ConfigManager first
         this.configManager = new ConfigManager(this);
-        
+
         // Now validate configs with the initialized ConfigManager
         ConfigValidator validator = new ConfigValidator(this);
         if (!validator.validate()) {
@@ -125,7 +128,7 @@ public class PwingGuilds extends JavaPlugin {
 
         // Initialize remaining managers
         this.messageManager = new MessageManager(this);
-        
+
         // Only initialize database manager for MySQL
         if (getConfig().getString("storage.type").equalsIgnoreCase("mysql")) {
             this.databaseManager = new DatabaseManager(getConfig());
@@ -246,86 +249,182 @@ public class PwingGuilds extends JavaPlugin {
     }
 
     // Getters
-    public GuildManager getGuildManager() {
-        return guildManager;
-    }
-
-    public GuildExpManager getExpManager() {
-        return expManager;
-    }
-
-    public GuildEventManager getEventManager() {
-        return eventManager;
-    }
-
-    public GuildBuffManager getBuffManager() {
-        return buffManager;
-    }
-
-    public RewardManager getRewardManager() {
-        return rewardManager;
-    }
-
-    public Economy getEconomy() {
-        return economy;
-    }
-
+    /**
+     * Gets the AllianceManager instance.
+     * 
+     * @return The AllianceManager.
+     */
     public AllianceManager getAllianceManager() {
         return allianceManager;
     }
 
+    /**
+     * Gets the AllianceStorage instance.
+     * 
+     * @return The AllianceStorage.
+     */
     public AllianceStorage getAllianceStorage() {
         return allianceStorage;
     }
-    public GuildStorageManager getStorageManager() {
-    return storageManager;
+
+    /**
+     * Gets the GuildBuffManager instance.
+     * 
+     * @return The GuildBuffManager.
+     */
+    public GuildBuffManager getBuffManager() {
+        return buffManager;
     }
-    public ServerAdapter getServerAdapter() {
-        return serverAdapter;
-    }
+
+    /**
+     * Gets the ConfigManager instance.
+     * 
+     * @return The ConfigManager.
+     */
     public ConfigManager getConfigManager() {
         return configManager;
     }
-    public MessageManager getMessageManager() {
-        return messageManager;
+
+    /**
+     * Gets the Economy instance.
+     * 
+     * @return The Economy.
+     */
+    public Economy getEconomy() {
+        return economy;
     }
+
+    /**
+     * Gets the GuildEventManager instance.
+     * 
+     * @return The GuildEventManager.
+     */
+    public GuildEventManager getEventManager() {
+        return eventManager;
+    }
+
+    /**
+     * Gets the GuildExpManager instance.
+     * 
+     * @return The GuildExpManager.
+     */
+    public GuildExpManager getExpManager() {
+        return expManager;
+    }
+
+    /**
+     * Gets the guild manager.
+     * 
+     * @return The guild manager.
+     */
+    public GuildManager getGuildManager() {
+        return guildManager;
+    }
+
+    /**
+     * Gets the item compatibility handler.
+     * 
+     * @return The item compatibility handler.
+     */
     public ItemCompatibilityHandler getItemCompatHandler() {
         return itemCompatHandler;
     }
-    public static PwingGuilds getInstance() {
-        return instance;
+
+    /**
+     * Gets the message manager.
+     * 
+     * @return The message manager.
+     */
+    public MessageManager getMessageManager() {
+        return messageManager;
     }
-    public boolean isAllowStructures() {
-        return allowStructures;
+
+    /**
+     * Gets the reward manager.
+     * 
+     * @return The reward manager.
+     */
+    public RewardManager getRewardManager() {
+        return rewardManager;
     }
+
+    /**
+     * Gets the guild storage manager.
+     * 
+     * @return The guild storage manager.
+     */
+    public GuildStorageManager getStorageManager() {
+        return storageManager;
+    }
+
+    /**
+     * Gets the server adapter.
+     * 
+     * @return The server adapter.
+     */
+    public ServerAdapter getServerAdapter() {
+        return serverAdapter;
+    }
+
+    /**
+     * Gets the structures configuration.
+     * 
+     * @return The structures configuration.
+     */
     public FileConfiguration getStructuresConfig() {
         return structuresConfig;
     }
+
+    /**
+     * Checks if structures are allowed.
+     * 
+     * @return True if structures are allowed, false otherwise.
+     */
+    public boolean isAllowStructures() {
+        return allowStructures;
+    }
+
+    /**
+     * Gets the plugin instance.
+     * 
+     * @return The plugin instance.
+     */
+    public static PwingGuilds getInstance() {
+        return instance;
+    }
+
+    /**
+     * Gets a message from the configuration.
+     * 
+     * @param path The path to the message.
+     * @return The message.
+     */
     public String getMessage(String path) {
         return ChatColor.translateAlternateColorCodes('&', getConfig().getString(path, ""));
     }
+
     @Override
     public void onDisable() {
         getLogger().info("Starting final guild data save...");
-        
+
         if (storage instanceof YamlGuildStorage && guildManager != null) {
             guildManager.getGuilds().forEach(guild -> storage.saveGuild(guild));
         }
-        
+
         if (storage instanceof SQLGuildStorage) {
             SQLGuildStorage sqlStorage = (SQLGuildStorage) storage;
             sqlStorage.processRemainingQueue();
             sqlStorage.getDataSource().close();
         }
-        
+
         if (configManager != null) {
             configManager.saveConfigs();
         }
-        
+
         if (databaseManager != null) {
             databaseManager.shutdown();
         }
-        
+
         if (eventRegistry != null) {
             eventRegistry.unregisterAll();
         }
@@ -337,15 +436,3 @@ public class PwingGuilds extends JavaPlugin {
         getLogger().info("Guild data save completed!");
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-

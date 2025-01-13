@@ -114,6 +114,10 @@ public class GuildManager {
         storage.saveGuild(guild);
     }
 
+    /**
+     * Deletes a guild by its name.
+     * @param name The name of the guild to delete.
+     */
     public void deleteGuild(String name) {
         Guild guild = guilds.remove(name);
         if (guild != null) {
@@ -164,6 +168,12 @@ public class GuildManager {
         return true;
     }
 
+    /**
+     * Unclaims a chunk for a guild.
+     * @param guild The guild unclaiming the chunk.
+     * @param chunk The chunk to unclaim.
+     * @return true if the chunk was unclaimed, false otherwise.
+     */
     public boolean unclaimChunk(Guild guild, Chunk chunk) {
         ChunkLocation location = new ChunkLocation(chunk);
         if (claimedChunks.get(location) == guild) {
@@ -207,6 +217,13 @@ public class GuildManager {
         return Optional.ofNullable(playerGuilds.get(player));
     }
 
+    /**
+     * Invites a player to a guild.
+     * @param guildName The name of the guild.
+     * @param inviter The UUID of the player sending the invite.
+     * @param invited The UUID of the player being invited.
+     * @return true if the invite was successful, false otherwise.
+     */
     public boolean invitePlayer(String guildName, UUID inviter, UUID invited) {
         Guild guild = guilds.get(guildName);
         if (guild != null && guild.isMember(inviter)) {
@@ -235,6 +252,13 @@ public class GuildManager {
         return false;
     }
 
+    /**
+     * Kicks a member from a guild.
+     * @param guildName The name of the guild.
+     * @param kicker The UUID of the player initiating the kick.
+     * @param kicked The UUID of the player being kicked.
+     * @return true if the kick was successful, false otherwise.
+     */
     public boolean kickMember(String guildName, UUID kicker, UUID kicked) {
         Guild guild = guilds.get(guildName);
         if (guild != null && guild.getLeader().equals(kicker)) {
@@ -264,6 +288,11 @@ public class GuildManager {
         return Optional.ofNullable(guilds.get(name));
     }
 
+    /**
+     * Updates the name of a guild.
+     * @param guild The guild to update.
+     * @param newName The new name for the guild.
+     */
     public void updateGuildName(Guild guild, String newName) {
         guilds.remove(guild.getName());
         Guild newGuild = new Guild(plugin, newName, guild.getOwner());
@@ -289,6 +318,12 @@ public class GuildManager {
         return storage;
     }
 
+    /**
+     * Creates an alliance between guilds.
+     * @param allianceName The name of the alliance.
+     * @param guild The guild initiating the alliance.
+     * @return true if the alliance was created, false otherwise.
+     */
     public boolean createAlliance(String allianceName, Guild guild) {
         if (guild == null) {
             return false;
@@ -300,6 +335,13 @@ public class GuildManager {
         return true;
     }
 
+    /**
+     * Invites a guild to an alliance.
+     * @param allianceName The name of the alliance.
+     * @param inviterGuild The guild sending the invite.
+     * @param invitedGuild The guild being invited.
+     * @return true if the invite was successful, false otherwise.
+     */
     public boolean inviteToAlliance(String allianceName, Guild inviterGuild, Guild invitedGuild) {
         Optional<Alliance> allianceOpt = plugin.getAllianceManager().getAlliance(allianceName);
         if (!allianceOpt.isPresent() || !allianceOpt.get().getMembers().contains(inviterGuild)) {
@@ -309,6 +351,13 @@ public class GuildManager {
         return allianceOpt.get().inviteGuild(invitedGuild);
     }
 
+    /**
+     * Checks if a schematic can be pasted for a guild.
+     * @param guild The guild.
+     * @param player The player.
+     * @param structureName The name of the structure.
+     * @return true if the schematic can be pasted, false otherwise.
+     */
     public boolean canPasteSchematic(Guild guild, Player player, String structureName) {
         if (!plugin.isAllowStructures()) {
             player.sendMessage(plugin.getMessageManager().getMessage("guild.structure-system-disabled"));
@@ -347,6 +396,12 @@ public class GuildManager {
         return true;
     }
 
+    /**
+     * Pastes a schematic for a guild.
+     * @param guild The guild.
+     * @param player The player.
+     * @param structureName The name of the structure.
+     */
     public void pasteSchematic(Guild guild, Player player, String structureName) {
         FileConfiguration structuresConfig = plugin.getStructuresConfig();
         ConfigurationSection structureSection = structuresConfig.getConfigurationSection("structures." + structureName);

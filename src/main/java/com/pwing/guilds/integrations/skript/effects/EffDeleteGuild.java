@@ -7,8 +7,18 @@ import ch.njol.util.Kleenean;
 import com.pwing.guilds.PwingGuilds;
 import org.bukkit.event.Event;
 
+/**
+ * Effect to delete a guild.
+ */
 public class EffDeleteGuild extends Effect {
     private Expression<String> guildName;
+
+    /**
+     * Default constructor for EffDeleteGuild.
+     */
+    public EffDeleteGuild() {
+        // ...existing code...
+    }
 
     @Override
     protected void execute(Event event) {

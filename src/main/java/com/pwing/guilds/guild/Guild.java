@@ -20,9 +20,8 @@ import java.util.stream.Collectors;
 
 @SerializableAs("Guild")
 /**
- * Represents a player guild within the plugin.
- * Guilds are player-created organizations that can claim territory, maintain a roster of members,
- * level up, and participate in guild events and alliances.
+ * Represents a guild in the PwingGuilds plugin.
+ * This class is responsible for managing guild data and operations.
  */
 public class Guild implements ConfigurationSerializable {
     private final PwingGuilds plugin;
@@ -575,10 +574,19 @@ public class Guild implements ConfigurationSerializable {
      */
     public void setAlliance(Alliance alliance) { this.alliance = alliance; }
 
+    /**
+     * Checks if the guild has built the specified structure.
+     * @param structureName The name of the structure.
+     * @return true if the structure has been built, false otherwise.
+     */
     public boolean hasBuiltStructure(String structureName) {
         return builtStructures.contains(structureName);
     }
 
+    /**
+     * Adds a built structure to the guild.
+     * @param structureName The name of the structure.
+     */
     public void addBuiltStructure(String structureName) {
         builtStructures.add(structureName);
     }

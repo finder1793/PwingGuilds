@@ -3,6 +3,9 @@ package com.pwing.guilds.rewards.handlers;
 import com.pwing.guilds.rewards.RewardHandler;
 import com.pwing.guilds.guild.Guild;
 
+/**
+ * Handles experience rewards for guild members.
+ */
 public class GuildExpRewardHandler implements RewardHandler {
     @Override
     public boolean handleReward(Guild guild, String reward) {

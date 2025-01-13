@@ -14,10 +14,17 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.*;
 
+/**
+ * Manages rewards for guild members.
+ */
 public class RewardManager {
     private final PwingGuilds plugin;
     private final List<RewardHandler> handlers = new ArrayList<>();
 
+    /**
+     * Creates a new reward manager.
+     * @param plugin The plugin instance.
+     */
     public RewardManager(PwingGuilds plugin) {
         this.plugin = plugin;
         registerHandlers();
@@ -28,6 +35,11 @@ public class RewardManager {
         handlers.add(new GuildExpRewardHandler());
     }
 
+    /**
+     * Gives a reward to a player.
+     * @param player The player.
+     * @param reward The reward.
+     */
     public void giveReward(Player player, String reward) {
         String[] parts = reward.split(" ");
         String type = parts[0].toLowerCase();
@@ -59,6 +71,10 @@ public class RewardManager {
             }        }
     }
 
+    /**
+     * Gives event rewards to guild members.
+     * @param event The guild event.
+     */
     public void giveEventRewards(GuildEvent event) {
         Map<Guild, Integer> scores = event.getScores();
         if (scores.isEmpty()) return;

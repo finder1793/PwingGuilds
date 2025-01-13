@@ -13,10 +13,19 @@ import java.util.Map;
 import java.util.Set;
 import com.pwing.guilds.guild.Guild;
 
+/**
+ * Represents a resource race event for guilds.
+ */
 public class ResourceRaceEvent extends GuildEvent implements Listener {
     private final Set<Material> targetMaterials;
     private final Map<Guild, Map<Material, Integer>> resourceCounts = new HashMap<>();
 
+    /**
+     * Creates a new resource race event.
+     * @param plugin The plugin instance.
+     * @param name The name of the event.
+     * @param duration The duration of the event.
+     */
     public ResourceRaceEvent(PwingGuilds plugin, String name, int duration) {
         super(plugin, name, duration);
         this.description = "Mine the most valuable resources for your guild!";
@@ -51,6 +60,10 @@ public class ResourceRaceEvent extends GuildEvent implements Listener {
         });
     }
 
+    /**
+     * Handles block break events during the resource race.
+     * @param event The block break event.
+     */
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         if (!isActive) return;

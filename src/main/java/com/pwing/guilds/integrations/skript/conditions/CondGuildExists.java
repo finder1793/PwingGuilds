@@ -7,7 +7,17 @@ import ch.njol.util.Kleenean;
 import com.pwing.guilds.PwingGuilds;
 import org.bukkit.event.Event;
 
+/**
+ * Condition to check if a guild exists.
+ */
 public class CondGuildExists extends Condition {
+    /**
+     * Default constructor for CondGuildExists.
+     */
+    public CondGuildExists() {
+        // ...existing code...
+    }
+
     private Expression<String> guildName;
 
     @SuppressWarnings("unchecked")

@@ -8,11 +8,19 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.sql.*;
 import java.util.*;
 
+/**
+ * Handles SQL storage for alliances in the PwingGuilds plugin.
+ */
 public class SQLAllianceStorage implements AllianceStorage {
     private final PwingGuilds plugin;
     private final HikariDataSource dataSource;
     private final Map<String, Alliance> allianceCache = new HashMap<>();
 
+    /**
+     * Creates a new SQLAllianceStorage.
+     * @param plugin The plugin instance.
+     * @param dataSource The data source.
+     */
     public SQLAllianceStorage(PwingGuilds plugin, HikariDataSource dataSource) {
         this.plugin = plugin;
         this.dataSource = dataSource;

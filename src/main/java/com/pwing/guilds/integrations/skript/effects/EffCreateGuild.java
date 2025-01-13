@@ -8,7 +8,17 @@ import com.pwing.guilds.PwingGuilds;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 
+/**
+ * Effect to create a guild.
+ */
 public class EffCreateGuild extends Effect {
+    /**
+     * Default constructor for EffCreateGuild.
+     */
+    public EffCreateGuild() {
+        // ...existing code...
+    }
+
     private Expression<String> name;
     private Expression<Player> leader;
 

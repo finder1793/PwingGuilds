@@ -12,6 +12,10 @@ public class ItemCompatibilityHandler {
     private final boolean enabled;
     private final boolean hasViaVersion;
 
+    /**
+     * Constructs a new ItemCompatibilityHandler.
+     * @param plugin The plugin instance.
+     */
     public ItemCompatibilityHandler(Plugin plugin) {
         this.plugin = plugin;
         // CustomModelData is disabled by default
@@ -25,7 +29,12 @@ public class ItemCompatibilityHandler {
         }
     }
 
-    // Silently fail for all operations if disabled
+    /**
+     * Sets custom model data for an item.
+     * @param meta The item meta.
+     * @param data The custom model data.
+     * @param player The player.
+     */
     public void setCustomModelData(ItemMeta meta, int data, Player player) {
         if (!enabled || data <= 0) return;
 
@@ -56,6 +65,10 @@ public class ItemCompatibilityHandler {
         }
     }
 
+    /**
+     * Checks if the compatibility handler is enabled.
+     * @return true if enabled, false otherwise.
+     */
     public boolean isEnabled() {
         return enabled;
     }

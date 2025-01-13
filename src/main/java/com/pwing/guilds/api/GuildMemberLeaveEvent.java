@@ -29,7 +29,7 @@ public class GuildMemberLeaveEvent extends Event {
         DISBANDED,
         /** Member has Left the Guild */
         LEFT,
-        
+
     }
 
     /**
@@ -82,6 +82,10 @@ public class GuildMemberLeaveEvent extends Event {
         return handlers;
     }
 
+    /**
+     * Gets the handler list for this event.
+     * @return The handler list.
+     */
     public static HandlerList getHandlerList() {
         return handlers;
     }

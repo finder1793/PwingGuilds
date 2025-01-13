@@ -8,9 +8,19 @@ import com.pwing.guilds.PwingGuilds;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 
+/**
+ * Condition to check if a player is in a guild.
+ */
 public class CondPlayerInGuild extends Condition {
 
     private Expression<Player> player;
+
+    /**
+     * Default constructor for CondPlayerInGuild.
+     */
+    public CondPlayerInGuild() {
+        // ...existing code...
+    }
 
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {

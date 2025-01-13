@@ -11,10 +11,18 @@ import java.util.HashMap;
 import java.util.Map;
 import com.pwing.guilds.guild.Guild;
 
-
+/**
+ * Represents the PvP Tournament event in the guild contest.
+ */
 public class PvPTournamentEvent extends GuildEvent implements Listener {
     private final Map<Guild, Integer> kills = new HashMap<>();
 
+    /**
+     * Creates a new PvPTournamentEvent.
+     * @param plugin Plugin instance.
+     * @param name Event name.
+     * @param duration Event duration in seconds.
+     */
     public PvPTournamentEvent(PwingGuilds plugin, String name, int duration) {
         super(plugin, name, duration);
         this.description = "Guild vs Guild combat tournament! Most kills wins!";
@@ -40,6 +48,10 @@ public class PvPTournamentEvent extends GuildEvent implements Listener {
         scores = new HashMap<>(kills);
     }
 
+    /**
+     * Handles the player kill event during the PvP Tournament.
+     * @param event The PlayerDeathEvent.
+     */
     @EventHandler
     public void onPlayerKill(PlayerDeathEvent event) {
         if (!isActive) return;

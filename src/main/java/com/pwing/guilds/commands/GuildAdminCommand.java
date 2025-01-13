@@ -14,9 +14,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Handles admin commands for managing guilds.
+ */
 public class GuildAdminCommand implements CommandExecutor {
     private final PwingGuilds plugin;
 
+    /**
+     * Creates a new GuildAdminCommand instance.
+     * @param plugin The plugin instance.
+     */
     public GuildAdminCommand(PwingGuilds plugin) {
         this.plugin = plugin;
     }

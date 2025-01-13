@@ -8,8 +8,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
+/**
+ * Adapts Spigot-specific functionality for the PwingGuilds plugin.
+ */
 public class SpigotAdapter extends ServerAdapter {
 
+    /**
+     * Creates a new Spigot adapter.
+     * @param server The server instance.
+     */
     public SpigotAdapter(Server server) {
         super(server);
     }

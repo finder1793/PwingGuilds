@@ -12,13 +12,24 @@ import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 
+/**
+ * Listener for guild protection-related events.
+ */
 public class GuildProtectionListener implements Listener {
     private final PwingGuilds plugin;
 
+    /**
+     * Constructs a new GuildProtectionListener.
+     * @param plugin The plugin instance.
+     */
     public GuildProtectionListener(PwingGuilds plugin) {
         this.plugin = plugin;
     }
 
+    /**
+     * Handles block break events.
+     * @param event The block break event.
+     */
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         plugin.getGuildManager().getGuildByChunk(event.getBlock().getChunk())
@@ -30,6 +41,10 @@ public class GuildProtectionListener implements Listener {
                 });
     }
 
+    /**
+     * Handles block place events.
+     * @param event The block place event.
+     */
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
         plugin.getGuildManager().getGuildByChunk(event.getBlock().getChunk())
@@ -41,6 +56,10 @@ public class GuildProtectionListener implements Listener {
                 });
     }
 
+    /**
+     * Handles player interact events.
+     * @param event The player interact event.
+     */
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getClickedBlock() == null) return;
@@ -54,6 +73,10 @@ public class GuildProtectionListener implements Listener {
                 });
     }
 
+    /**
+     * Handles bucket empty events.
+     * @param event The bucket empty event.
+     */
     @EventHandler
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
         plugin.getGuildManager().getGuildByChunk(event.getBlock().getChunk())
@@ -65,6 +88,10 @@ public class GuildProtectionListener implements Listener {
                 });
     }
 
+    /**
+     * Handles bucket fill events.
+     * @param event The bucket fill event.
+     */
     @EventHandler
     public void onBucketFill(PlayerBucketFillEvent event) {
         plugin.getGuildManager().getGuildByChunk(event.getBlock().getChunk())
@@ -76,6 +103,10 @@ public class GuildProtectionListener implements Listener {
                 });
     }
 
+    /**
+     * Handles entity damage events.
+     * @param event The entity damage event.
+     */
     @EventHandler
     public void onEntityDamage(EntityDamageByEntityEvent event) {
         if (!(event.getDamager() instanceof Player player)) return;
@@ -89,6 +120,10 @@ public class GuildProtectionListener implements Listener {
                 });
     }
 
+    /**
+     * Handles hanging break events.
+     * @param event The hanging break event.
+     */
     @EventHandler
     public void onHangingBreak(HangingBreakByEntityEvent event) {
         if (!(event.getRemover() instanceof Player player)) return;

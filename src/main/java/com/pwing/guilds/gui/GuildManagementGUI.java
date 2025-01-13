@@ -17,13 +17,24 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.ChatColor;
 import java.util.*;
 
+/**
+ * Manages the GUI for guild management.
+ */
 public class GuildManagementGUI {
     private final PwingGuilds plugin;
 
+    /**
+     * Constructs a new GuildManagementGUI instance.
+     * @param plugin The main plugin instance
+     */
     public GuildManagementGUI(PwingGuilds plugin) {
         this.plugin = plugin;
     }
 
+    /**
+     * Opens the main menu for the player.
+     * @param player The player to open the menu for
+     */
     public void openMainMenu(Player player) {
         Optional<Guild> playerGuild = plugin.getGuildManager().getPlayerGuild(player.getUniqueId());
         if (playerGuild.isEmpty()) {
@@ -62,6 +73,11 @@ public class GuildManagementGUI {
         player.openInventory(inv);
     }
 
+    /**
+     * Opens the claims map for the player.
+     * @param player The player to open the map for
+     * @param guild The guild to show claims for
+     */
     public void openClaimsMap(Player player, Guild guild) {
         Inventory inv = Bukkit.createInventory(null, 54, "Guild Claims Map");
         Chunk centerChunk = player.getLocation().getChunk();
@@ -103,6 +119,11 @@ public class GuildManagementGUI {
         player.openInventory(inv);
     }
 
+    /**
+     * Opens the buffs menu for the player.
+     * @param player The player to open the menu for
+     * @param guild The guild to show buffs for
+     */
     public void openBuffsMenu(Player player, Guild guild) {
         Inventory inv = Bukkit.createInventory(null, 54, "Guild Buffs");
 
@@ -139,6 +160,11 @@ public class GuildManagementGUI {
         return item;
     }
 
+    /**
+     * Opens the member management menu for the player.
+     * @param player The player to open the menu for
+     * @param guild The guild to manage members for
+     */
     public void openMemberManagement(Player player, Guild guild) {
         Inventory inv = Bukkit.createInventory(null, 54, "Guild Members");
 
@@ -176,9 +202,16 @@ public class GuildManagementGUI {
         player.openInventory(inv);
     }
 
+    /**
+     * Holds the inventory for the guild management GUI.
+     */
     public class GuildInventoryHolder implements InventoryHolder {
         private final Guild guild;
 
+        /**
+         * Constructs a new GuildInventoryHolder instance.
+         * @param guild The guild associated with the inventory
+         */
         public GuildInventoryHolder(Guild guild) {
             this.guild = guild;
         }
@@ -188,6 +221,10 @@ public class GuildManagementGUI {
             return null;
         }
 
+        /**
+         * Gets the guild associated with the inventory.
+         * @return The guild
+         */
         public Guild getGuild() {
             return guild;
         }

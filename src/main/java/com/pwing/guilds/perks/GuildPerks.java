@@ -6,6 +6,9 @@ import com.pwing.guilds.guild.Guild;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 
+/**
+ * Manages guild perks.
+ */
 public class GuildPerks {
     private final int memberLimit;
     private final int teleportCooldown;
@@ -18,6 +21,12 @@ public class GuildPerks {
     private final int storageRows;
     private final boolean storageAccess;
 
+    /**
+     * Constructs a new GuildPerks instance.
+     * @param plugin The plugin instance.
+     * @param guild The guild.
+     * @param level The level of the guild.
+     */
     public GuildPerks(PwingGuilds plugin, Guild guild, int level) {
         this.plugin = plugin;
         this.guild = guild;
@@ -46,6 +55,11 @@ public class GuildPerks {
         }
     }
 
+    /**
+     * Activates a perk for the guild.
+     * @param perkName The name of the perk to activate.
+     * @return true if the perk was activated, false otherwise.
+     */
     public boolean activatePerk(String perkName) {
         GuildPerkActivateEvent event = new GuildPerkActivateEvent(guild, perkName);
         Bukkit.getPluginManager().callEvent(event);
@@ -67,26 +81,50 @@ public class GuildPerks {
         return false;
     }
 
+    /**
+     * Gets the member limit for the guild.
+     * @return The member limit.
+     */
     public int getMemberLimit() {
         return memberLimit;
     }
 
+    /**
+     * Gets the teleport cooldown for the guild.
+     * @return The teleport cooldown.
+     */
     public int getTeleportCooldown() {
         return teleportCooldown;
     }
 
+    /**
+     * Gets the experience multiplier for the guild.
+     * @return The experience multiplier.
+     */
     public double getExpMultiplier() {
         return expMultiplier;
     }
 
+    /**
+     * Checks if the guild has keep inventory enabled.
+     * @return true if keep inventory is enabled, false otherwise.
+     */
     public boolean hasKeepInventory() {
         return keepInventory;
     }
 
+    /**
+     * Gets the home limit for the guild.
+     * @return The home limit.
+     */
     public int getHomeLimit() {
         return homeLimit;
     }
 
+    /**
+     * Gets the storage rows for the guild.
+     * @return The storage rows.
+     */
     public int getStorageRows() {
         return storageRows;
     }

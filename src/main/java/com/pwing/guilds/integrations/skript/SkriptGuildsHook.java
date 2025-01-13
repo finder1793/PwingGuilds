@@ -19,14 +19,24 @@ import com.pwing.guilds.integrations.skript.expressions.*;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+/**
+ * Integrates Skript with the PwingGuilds plugin.
+ */
 public class SkriptGuildsHook {
     
     private final PwingGuilds plugin;
     
+    /**
+     * Creates a new SkriptGuildsHook.
+     * @param plugin The plugin instance.
+     */
     public SkriptGuildsHook(PwingGuilds plugin) {
         this.plugin = plugin;
     }
 
+    /**
+     * Registers Skript hooks for the PwingGuilds plugin.
+     */
     public void registerSkript() {
         if (!isSkriptInstalled()) {
             return;

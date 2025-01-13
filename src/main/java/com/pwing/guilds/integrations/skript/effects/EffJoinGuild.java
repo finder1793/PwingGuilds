@@ -8,7 +8,17 @@ import com.pwing.guilds.PwingGuilds;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 
+/**
+ * Effect to join a guild.
+ */
 public class EffJoinGuild extends Effect {
+    /**
+     * Default constructor for EffJoinGuild.
+     */
+    public EffJoinGuild() {
+        // ...existing code...
+    }
+
     private Expression<Player> player;
     private Expression<String> guildName;
 

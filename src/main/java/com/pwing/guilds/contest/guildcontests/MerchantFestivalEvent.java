@@ -17,10 +17,19 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Represents the Merchant Festival event in the guild contest.
+ */
 public class MerchantFestivalEvent extends GuildEvent implements Listener {
     private final Map<Guild, Double> tradingProfit = new HashMap<>();
     private final Map<UUID, ItemStack[]> lastTradeItems = new HashMap<>();
 
+    /**
+     * Creates a new MerchantFestivalEvent.
+     * @param plugin Plugin instance.
+     * @param name Event name.
+     * @param duration Event duration in seconds.
+     */
     public MerchantFestivalEvent(PwingGuilds plugin, String name, int duration) {
         super(plugin, name, duration);
         this.description = "Generate the most profit through trading and commerce!";
@@ -39,6 +48,10 @@ public class MerchantFestivalEvent extends GuildEvent implements Listener {
             scores.put(guild, (int)(profit * 100)));
     }
 
+    /**
+     * Handles the villager trade event during the Merchant Festival.
+     * @param event The InventoryClickEvent.
+     */
     @EventHandler
     public void onVillagerTrade(InventoryClickEvent event) {
         if (!isActive || !(event.getInventory() instanceof MerchantInventory)) return;
