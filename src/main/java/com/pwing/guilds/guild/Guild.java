@@ -310,42 +310,33 @@ public class Guild implements ConfigurationSerializable {
     }
     @Override
     public Map<String, Object> serialize() {
-        Map<String, Object> data = new HashMap<>();
-        data.put("name", name);
-        data.put("owner", owner.toString());
-        data.put("level", level);
-        data.put("exp", exp);
-        data.put("bonus-claims", bonusClaims);
-        data.put("members", members.stream().map(UUID::toString).collect(Collectors.toList()));
-        data.put("invites", invites.stream().map(UUID::toString).collect(Collectors.toList()));
-        data.put("claimed-chunks", claimedChunks.stream()
-                .sorted((c1, c2) -> {
-                    int worldCompare = c1.getWorldName().compareTo(c2.getWorldName());
-                    if (worldCompare != 0) return worldCompare;
-                    int xCompare = Integer.compare(c1.getX(), c2.getX());
-                    if (xCompare != 0) return xCompare;
-                    return Integer.compare(c1.getZ(), c2.getZ());
-                })
-                .map(chunk -> Map.of(
-                        "world", chunk.getWorld(),
-                        "x", chunk.getX(),
-                        "z", chunk.getZ()
-                )).collect(Collectors.toList()));
-        data.put("homes", homes.entrySet().stream()
+        return Map.of(
+            "name", Objects.requireNonNull(name, "Guild name cannot be null"),
+            "leader", Objects.requireNonNull(leader, "Guild leader cannot be null"),
+            "members", members.stream()
+                .map(member -> Objects.requireNonNull(member, "Guild member cannot be null"))
+                .sorted()
+                .collect(Collectors.toList()),
+            "claims", claimedChunks.stream()
+                .map(claim -> Objects.requireNonNull(claim, "Guild claim cannot be null"))
+                .sorted()
+                .collect(Collectors.toList()),
+            "homes", homes.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         e -> serializeLocation(e.getValue().getLocation())
-                )));
-        if (alliance != null) {
-            data.put("alliance", alliance.getName());
-        }
-        data.put("pvp-enabled", pvpEnabled);
-        return data;
+                )),
+            "bonus-claims", bonusClaims,
+            "exp", exp,
+            "level", level,
+            "alliance", alliance != null ? alliance.getName() : null,
+            "pvp-enabled", pvpEnabled
+        );
     }
 
     private Map<String, Object> serializeLocation(Location loc) {
         return Map.of(
-                "world", loc.getWorld().getName(),
+                "world", Objects.requireNonNull(loc.getWorld(), "World cannot be null").getName(),
                 "x", loc.getX(),
                 "y", loc.getY(),
                 "z", loc.getZ(),
@@ -402,8 +393,13 @@ public class Guild implements ConfigurationSerializable {
             claimsList.forEach(claimString -> {
                 String[] parts = claimString.split(",");
                 if (parts.length >= 3) {
+                    String worldName = parts[0];
+                    if (worldName == null || Bukkit.getWorld(worldName) == null) {
+                        plugin.getLogger().warning("Invalid world name in claim: " + claimString);
+                        return;
+                    }
                     ChunkLocation claim = new ChunkLocation(
-                        parts[0], // world
+                        worldName, // world
                         Integer.parseInt(parts[1]), // x
                         Integer.parseInt(parts[2])  // z
                     );
@@ -416,8 +412,13 @@ public class Guild implements ConfigurationSerializable {
         Map<String, Map<String, Object>> homes = (Map<String, Map<String, Object>>) data.get("homes");
         if (homes != null) {
             homes.forEach((homeName, locationData) -> {
+                String worldName = (String) locationData.get("world");
+                if (worldName == null || Bukkit.getWorld(worldName) == null) {
+                    plugin.getLogger().warning("Invalid world name in home: " + homeName);
+                    return;
+                }
                 Location loc = new Location(
-                        Bukkit.getWorld((String) locationData.get("world")),
+                        Bukkit.getWorld(worldName),
                         (Double) locationData.get("x"),
                         (Double) locationData.get("y"),
                         (Double) locationData.get("z"),

@@ -207,8 +207,15 @@ public class YamlGuildStorage implements GuildStorage {
         List<String> claimStrings = config.getStringList("claims");
         for (String claimString : claimStrings) {
             String[] parts = claimString.split(",");
-            ChunkLocation claim = new ChunkLocation(parts[0], Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
-            guild.claimChunk(claim);
+            if (parts.length >= 3) {
+                String worldName = parts[0];
+                if (worldName == null || Bukkit.getWorld(worldName) == null) {
+                    plugin.getLogger().warning("Invalid world name in claim: " + claimString);
+                    continue;
+                }
+                ChunkLocation claim = new ChunkLocation(worldName, Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
+                guild.claimChunk(claim);
+            }
         }
 
         // Load homes if they exist
@@ -218,15 +225,22 @@ public class YamlGuildStorage implements GuildStorage {
                 String locationString = homesSection.getString(homeName);
                 if (locationString != null) {
                     String[] parts = locationString.split(",");
-                    Location loc = new Location(
-                            Bukkit.getWorld(parts[0]),
-                            Double.parseDouble(parts[1]),
-                            Double.parseDouble(parts[2]),
-                            Double.parseDouble(parts[3]),
-                            Float.parseFloat(parts[4]),
-                            Float.parseFloat(parts[5])
-                    );
-                    guild.setHome(homeName, loc);
+                    if (parts.length >= 6) {
+                        String worldName = parts[0];
+                        if (worldName == null || Bukkit.getWorld(worldName) == null) {
+                            plugin.getLogger().warning("Invalid world name in home: " + homeName);
+                            continue;
+                        }
+                        Location loc = new Location(
+                                Bukkit.getWorld(worldName),
+                                Double.parseDouble(parts[1]),
+                                Double.parseDouble(parts[2]),
+                                Double.parseDouble(parts[3]),
+                                Float.parseFloat(parts[4]),
+                                Float.parseFloat(parts[5])
+                        );
+                        guild.setHome(homeName, loc);
+                    }
                 }
             }
         }

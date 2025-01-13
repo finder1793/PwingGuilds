@@ -15,6 +15,11 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.Comparator;
+import java.util.zip.ZipOutputStream;
+import java.util.zip.ZipEntry;
+import java.io.OutputStreamWriter;
+import java.io.BufferedWriter;
+import java.util.Set;
 
 /**
  * Manages guild data backups including scheduled backups and restoration.
@@ -31,6 +36,7 @@ public class GuildBackupManager {
 
     /**
      * Creates a new backup manager instance
+     * 
      * @param plugin The plugin instance
      */
     public GuildBackupManager(PwingGuilds plugin) {
@@ -55,7 +61,7 @@ public class GuildBackupManager {
         if (backupTask != null) {
             backupTask.cancel();
         }
-        
+
         backupTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
             plugin.getLogger().info("Starting scheduled guild backup...");
             backupAllGuilds();
@@ -84,6 +90,7 @@ public class GuildBackupManager {
 
     /**
      * Creates a compressed backup file for a guild
+     * 
      * @param guild The guild to backup
      */
     public void createCompressedBackup(Guild guild) {
@@ -105,11 +112,13 @@ public class GuildBackupManager {
 
     /**
      * Restores a guild from a backup file
+     * 
      * @param backupFileName Name of the backup file to restore
      */
     public void restoreFromBackup(String backupFileName) {
         File backupFile = new File(backupFolder, backupFileName);
-        if (!backupFile.exists()) return;
+        if (!backupFile.exists())
+            return;
 
         try (GZIPInputStream gzis = new GZIPInputStream(new FileInputStream(backupFile))) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -139,7 +148,8 @@ public class GuildBackupManager {
 
     private void cleanupOldBackups() {
         File[] backups = backupFolder.listFiles((dir, name) -> name.endsWith(".gz"));
-        if (backups == null || backups.length <= minBackups) return;
+        if (backups == null || backups.length <= minBackups)
+            return;
 
         Arrays.sort(backups, Comparator.comparingLong(File::lastModified).reversed());
         long cutoffTime = System.currentTimeMillis() - (retentionDays * 24 * 60 * 60 * 1000L);
@@ -154,15 +164,16 @@ public class GuildBackupManager {
 
     /**
      * Creates a backup of a guild's data
-     * @param guild The guild to backup
+     * 
+     * @param guild  The guild to backup
      * @param reason The reason for the backup
      */
     public void createBackup(Guild guild, String reason) {
         try {
             // Create backup file with timestamp and reason
             String timestamp = dateFormat.format(new Date());
-            File backupFile = new File(backupFolder, 
-                String.format("%s_%s_%s.yml", guild.getName(), timestamp, reason));
+            File backupFile = new File(backupFolder,
+                    String.format("%s_%s_%s.yml", guild.getName(), timestamp, reason));
 
             // Save guild data to backup file
             YamlConfiguration backup = new YamlConfiguration();
@@ -174,6 +185,26 @@ public class GuildBackupManager {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Creates a compressed backup file for a set of guilds
+     * 
+     * @param guilds         The set of guilds to backup
+     * @param backupFilePath The path to the backup file
+     * @throws IOException If an I/O error occurs
+     */
+    public void createCompressedBackup(Set<Guild> guilds, String backupFilePath) throws IOException {
+        try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(backupFilePath))) {
+            for (Guild guild : guilds) {
+                if (guild == null)
+                    continue;
+                ZipEntry entry = new ZipEntry(guild.getName() + ".json");
+                zos.putNextEntry(entry);
+                try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(zos, StandardCharsets.UTF_8))) {
+                    writer.write(guild.serialize().toString());
+                }
+                zos.closeEntry();
+            }
+        }
+    }
 }
-
-
