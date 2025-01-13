@@ -32,7 +32,6 @@ repositories {
         name = "enginehub"
         url = uri("https://maven.enginehub.org/repo/")
     }
-    // Add Skript repository
     maven {
         name = "skript-releases"
         url = uri("https://repo.skriptlang.org/releases")
@@ -58,75 +57,31 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.1.0") {
         exclude(group = "org.slf4j", module = "slf4j-api")
     }
-    // Add Skript dependency
     compileOnly(libs.skript) {
         exclude(group = "com.sk89q.worldguard", module = "worldguard-bukkit")
         exclude(group = "net.milkbowl.vault", module = "Vault")
     }
-    compileOnly(libs.viaversion)  // Add ViaVersion dependency
+    compileOnly(libs.viaversion)
 }
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21)) 
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
     withSourcesJar()
     withJavadocJar()
 }
 
 tasks {
-    // Temporary jars that won't be kept in final output
-    val paperJar by registering(Jar::class) {
-        archiveClassifier.set("paper-temp")
-        from(sourceSets.main.get().output)
-        from("src/main/resources") {
-            include("paper-plugin.yml")
-            include("plugin.yml")
-            duplicatesStrategy = DuplicatesStrategy.INCLUDE
-        }
-        // Don't copy to build/libs
-        destinationDirectory.set(layout.buildDirectory.dir("tmp"))
-    }
-
-    val spigotJar by registering(Jar::class) {
-        archiveClassifier.set("spigot-temp")
-        from(sourceSets.main.get().output)
-        from("src/main/resources") {
-            include("plugin.yml")
-            duplicatesStrategy = DuplicatesStrategy.INCLUDE
-        }
-        // Don't copy to build/libs
-        destinationDirectory.set(layout.buildDirectory.dir("tmp"))
-    }
-
     shadowJar {
-        dependsOn(paperJar, spigotJar)
-        
-        // Paper variant
-        archiveClassifier.set("paper")
-        from(paperJar.get().outputs)
+        archiveClassifier.set("")
         dependencies {
             include(dependency("com.zaxxer:HikariCP:.*"))
         }
         relocate("com.zaxxer.hikari", "com.pwing.guilds.libs.hikari")
         minimize()
         destinationDirectory.set(layout.buildDirectory.dir("libs"))
-        archiveFileName.set("${project.name}-${project.version}-paper.jar")
-        
-        doLast {
-            // Create Spigot variant
-            copy {
-                from(paperJar.get().outputs)
-                into(layout.buildDirectory.dir("libs"))
-                rename { "${project.name}-${project.version}-spigot.jar" }
-                filter { line ->
-                    if (line.contains("paper-plugin.yml")) "" else line
-                }
-            }
-            
-            // Clean up temporary files
-            delete(layout.buildDirectory.dir("tmp"))
-        }
+        archiveFileName.set("${project.name}-${project.version}.jar")
     }
 
     build {
@@ -149,7 +104,7 @@ tasks {
             "apiVersion" to "1.20"
         )
         
-        filesMatching(listOf("plugin.yml", "paper-plugin.yml")) {
+        filesMatching("plugin.yml") {
             expand(props)
         }
     }
