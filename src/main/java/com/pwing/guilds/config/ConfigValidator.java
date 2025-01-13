@@ -48,7 +48,6 @@ public class ConfigValidator {
         if (!errors.isEmpty()) {
             plugin.getLogger().warning("=== Configuration Warnings ===");
             errors.forEach(error -> plugin.getLogger().warning(error));
-            return false;
         }
 
         return isValid;
@@ -77,7 +76,7 @@ public class ConfigValidator {
         FileConfiguration events = plugin.getConfigManager().getConfig("events.yml");
         if (events == null) {
             plugin.saveResource("events.yml", false);
-            return false;
+            events = plugin.getConfigManager().getConfig("events.yml");
         }
 
         if (!events.isConfigurationSection("events")) {
@@ -110,7 +109,7 @@ public class ConfigValidator {
         FileConfiguration buffs = plugin.getConfigManager().getConfig("buffs.yml");
         if (buffs == null) {
             plugin.saveResource("buffs.yml", false);
-            return false;
+            buffs = plugin.getConfigManager().getConfig("buffs.yml");
         }
 
         if (!buffs.isConfigurationSection("settings")) {
@@ -135,7 +134,7 @@ public class ConfigValidator {
         FileConfiguration messages = plugin.getConfigManager().getConfig("messages.yml");
         if (messages == null) {
             plugin.saveResource("messages.yml", false);
-            return false;
+            messages = plugin.getConfigManager().getConfig("messages.yml");
         }
 
         String[] requiredSections = {
@@ -161,7 +160,7 @@ public class ConfigValidator {
         FileConfiguration structures = plugin.getConfigManager().getConfig("structures.yml");
         if (structures == null) {
             plugin.saveResource("structures.yml", false);
-            return false;
+            structures = plugin.getConfigManager().getConfig("structures.yml");
         }
 
         if (!structures.isConfigurationSection("structures")) {

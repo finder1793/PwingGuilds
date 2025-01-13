@@ -94,8 +94,11 @@ public class PwingGuilds extends JavaPlugin {
         instance = this;
         // Save default config first
         saveDefaultConfig();
-        saveResource("structures.yml", false);
-        structuresConfig = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "structures.yml"));
+        File structuresFile = new File(getDataFolder(), "structures.yml");
+        if (!structuresFile.exists()) {
+            saveResource("structures.yml", false);
+        }
+        structuresConfig = YamlConfiguration.loadConfiguration(structuresFile);
 
         // Load the toggle for the structure system
         allowStructures = getConfig().getBoolean("guild-settings.allow-structures", true);
