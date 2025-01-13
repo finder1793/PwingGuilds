@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @SerializableAs("Guild")
 /**
  * Represents a guild in the PwingGuilds plugin.
- * This class is responsible for managing guild data and operations.
+ * Manages guild members, claims, homes, and other guild-related data.
  */
 public class Guild implements ConfigurationSerializable {
     private final PwingGuilds plugin;
@@ -389,9 +389,11 @@ public class Guild implements ConfigurationSerializable {
 
         @SuppressWarnings("unchecked")
         List<String> membersList = (List<String>) data.get("members");
-        membersList.stream()
+        if (membersList != null) {
+            membersList.stream()
                 .map(UUID::fromString)
                 .forEach(guild::addMember);
+        }
 
         @SuppressWarnings("unchecked")
         List<String> invitesList = (List<String>) data.get("invites");
@@ -451,7 +453,11 @@ public class Guild implements ConfigurationSerializable {
         }
 
         guild.setPvPEnabled((Boolean) data.getOrDefault("pvp-enabled", false));
-        guild.builtStructures.addAll((List<String>) data.get("builtStructures"));
+        @SuppressWarnings("unchecked")
+        List<String> builtStructuresList = (List<String>) data.get("builtStructures");
+        if (builtStructuresList != null) {
+            guild.builtStructures.addAll(builtStructuresList);
+        }
 
         return guild;
     }
@@ -658,5 +664,13 @@ public class Guild implements ConfigurationSerializable {
             amount
         );
         return true;
+    }
+
+    /**
+     * Gets the set of built structures.
+     * @return Set of built structure names.
+     */
+    public Set<String> getBuiltStructures() {
+        return Collections.unmodifiableSet(builtStructures);
     }
 }

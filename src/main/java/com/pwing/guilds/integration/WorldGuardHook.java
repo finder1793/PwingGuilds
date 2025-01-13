@@ -12,15 +12,28 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerLoadEvent;
 
+/**
+ * Hook for integrating with WorldGuard.
+ */
 public class WorldGuardHook implements Listener {
     private static StateFlag ALLOW_GUILD_CLAIMS;
     private final PwingGuilds plugin;
 
+    /**
+     * Constructs a new WorldGuardHook.
+     * 
+     * @param plugin The PwingGuilds plugin instance.
+     */
     public WorldGuardHook(PwingGuilds plugin) {
         this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
+    /**
+     * Handles server load events.
+     * 
+     * @param event The server load event.
+     */
     @EventHandler
     public void onServerLoad(ServerLoadEvent event) {
         FlagRegistry registry = WorldGuard.getInstance().getFlagRegistry();
@@ -33,29 +46,35 @@ public class WorldGuardHook implements Listener {
         }
     }
 
-        public boolean canClaim(Chunk chunk) {
-            Location loc = chunk.getBlock(8, 0, 8).getLocation();
-            try {
-                return WorldGuard.getInstance().getPlatform().getRegionContainer()
-                    .createQuery()
-                    .testState(
-                        BukkitAdapter.adapt(loc),
-                        WorldGuardPlugin.inst().wrapPlayer(chunk.getWorld().getPlayers().get(0)),
-                        ALLOW_GUILD_CLAIMS
-                    );
-            } catch (IllegalStateException e) {
-                plugin.getLogger().warning("WorldGuard state error for chunk at " + chunk.getX() + "," + chunk.getZ() + ": " + e.getMessage());
-                return true;
-            } catch (IllegalArgumentException e) {
-                plugin.getLogger().warning("Invalid arguments for WorldGuard check at " + chunk.getX() + "," + chunk.getZ() + ": " + e.getMessage());
-                return true;
-            } catch (NullPointerException e) {
-                plugin.getLogger().warning("WorldGuard integration unavailable or world has no players: " + e.getMessage());
-                return true;
-            } catch (Exception e) {
-                plugin.getLogger().severe("Unexpected error during WorldGuard claim check: " + e.getMessage());
-                e.printStackTrace();
-                return true;
-            }
+    /**
+     * Checks if a chunk can be claimed.
+     * 
+     * @param chunk The chunk.
+     * @return True if the chunk can be claimed, false otherwise.
+     */
+    public boolean canClaim(Chunk chunk) {
+        Location loc = chunk.getBlock(8, 0, 8).getLocation();
+        try {
+            return WorldGuard.getInstance().getPlatform().getRegionContainer()
+                .createQuery()
+                .testState(
+                    BukkitAdapter.adapt(loc),
+                    WorldGuardPlugin.inst().wrapPlayer(chunk.getWorld().getPlayers().get(0)),
+                    ALLOW_GUILD_CLAIMS
+                );
+        } catch (IllegalStateException e) {
+            plugin.getLogger().warning("WorldGuard state error for chunk at " + chunk.getX() + "," + chunk.getZ() + ": " + e.getMessage());
+            return true;
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().warning("Invalid arguments for WorldGuard check at " + chunk.getX() + "," + chunk.getZ() + ": " + e.getMessage());
+            return true;
+        } catch (NullPointerException e) {
+            plugin.getLogger().warning("WorldGuard integration unavailable or world has no players: " + e.getMessage());
+            return true;
+        } catch (Exception e) {
+            plugin.getLogger().severe("Unexpected error during WorldGuard claim check: " + e.getMessage());
+            e.printStackTrace();
+            return true;
         }
+    }
 }

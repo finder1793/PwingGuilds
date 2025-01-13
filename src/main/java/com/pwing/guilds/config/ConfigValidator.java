@@ -31,11 +31,6 @@ public class ConfigValidator {
      * @return true if configuration is valid, false otherwise
      */
     public boolean validate() {
-        if (!plugin.getConfig().getBoolean("validate-config", true)) {
-            plugin.getLogger().info("Config validation is disabled.");
-            return true;
-        }
-
         boolean isValid = true;
 
         if (!validateMainConfig()) isValid = false;
@@ -169,8 +164,17 @@ public class ConfigValidator {
         }
 
         ConfigurationSection structuresSection = structures.getConfigurationSection("structures");
+        if (structuresSection == null) {
+            errors.add("Structures section is null in structures.yml");
+            return false;
+        }
+
         for (String structureName : structuresSection.getKeys(false)) {
             ConfigurationSection structure = structuresSection.getConfigurationSection(structureName);
+            if (structure == null) {
+                errors.add("Structure section is null for structure: " + structureName);
+                continue;
+            }
             if (!structure.contains("schematic")) {
                 errors.add("Missing schematic for structure: " + structureName);
             }

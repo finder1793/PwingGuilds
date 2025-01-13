@@ -7,10 +7,18 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * YAML storage implementation for alliances.
+ */
 public class YamlAllianceStorage implements AllianceStorage {
     private final PwingGuilds plugin;
     private final File alliancesFolder;
 
+    /**
+     * Constructs a new YamlAllianceStorage.
+     * 
+     * @param plugin The PwingGuilds plugin instance.
+     */
     public YamlAllianceStorage(PwingGuilds plugin) {
         this.plugin = plugin;
         this.alliancesFolder = new File(plugin.getDataFolder(), "alliances");

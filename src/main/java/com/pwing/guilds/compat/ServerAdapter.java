@@ -8,6 +8,9 @@ import org.bukkit.inventory.ItemStack;
  * Adapts server-specific functionality for the PwingGuilds plugin.
  */
 public abstract class ServerAdapter {
+    /**
+     * The server instance.
+     */
     protected final Server server;
     
     /**

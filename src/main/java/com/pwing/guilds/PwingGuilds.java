@@ -47,8 +47,8 @@ import java.io.File;
 import org.bukkit.ChatColor;
 
 /**
- * Main plugin class for PwingGuilds
- * Handles initialization and management of all guild systems
+ * Main class for the PwingGuilds plugin.
+ * Initializes and manages the plugin's components.
  */
 public class PwingGuilds extends JavaPlugin {
     /** Storage implementation for guild data */
@@ -85,6 +85,11 @@ public class PwingGuilds extends JavaPlugin {
         return worldGuardHook != null;
     }
 
+    /**
+     * Gets the WorldGuardHook instance.
+     * 
+     * @return The WorldGuardHook.
+     */
     public WorldGuardHook getWorldGuardHook() {
         return worldGuardHook;
     }
@@ -99,6 +104,12 @@ public class PwingGuilds extends JavaPlugin {
             saveResource("structures.yml", false);
         }
         structuresConfig = YamlConfiguration.loadConfiguration(structuresFile);
+
+        // Ensure structures section is initialized
+        if (!structuresConfig.isConfigurationSection("structures")) {
+            structuresConfig.createSection("structures");
+            saveResource("structures.yml", true);
+        }
 
         // Load the toggle for the structure system
         allowStructures = getConfig().getBoolean("guild-settings.allow-structures", true);
@@ -119,12 +130,15 @@ public class PwingGuilds extends JavaPlugin {
         // Initialize ConfigManager first
         this.configManager = new ConfigManager(this);
 
-        // Now validate configs with the initialized ConfigManager
-        ConfigValidator validator = new ConfigValidator(this);
-        if (!validator.validate()) {
-            getLogger().severe("Configuration validation failed! Please fix the errors above.");
-            getServer().getPluginManager().disablePlugin(this);
-            return;
+        // Check if config validation is enabled
+        if (getConfig().getBoolean("validate-config", false)) {
+            // Now validate configs with the initialized ConfigManager
+            ConfigValidator validator = new ConfigValidator(this);
+            if (!validator.validate()) {
+                getLogger().severe("Configuration validation failed! Please fix the errors above.");
+                getServer().getPluginManager().disablePlugin(this);
+                return;
+            }
         }
 
         setupEconomy();

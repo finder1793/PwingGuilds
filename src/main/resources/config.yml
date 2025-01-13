@@ -91,7 +91,9 @@ exp-sources:
 guild-settings:
   allow-structures: true
   allow-friendly-fire: false  # Whether guild members can PvP each other in guild territory
-  validate-config: true  # Toggle for config validation
+
+# Enable or disable configuration validation
+validate-config: false
 
 # Backup Settings
 backup:

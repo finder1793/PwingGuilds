@@ -14,13 +14,27 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
 
+/**
+ * GUI for managing structures in guilds.
+ */
 public class StructureManagementGUI {
     private final PwingGuilds plugin;
 
+    /**
+     * Constructs a new StructureManagementGUI.
+     * 
+     * @param plugin The PwingGuilds plugin instance.
+     */
     public StructureManagementGUI(PwingGuilds plugin) {
         this.plugin = plugin;
     }
 
+    /**
+     * Opens the structure menu for a player.
+     * 
+     * @param player The player.
+     * @param guild The guild.
+     */
     public void openStructureMenu(Player player, Guild guild) {
         String title = plugin.getMessageManager().getMessage("gui.titles.structures");
         int size = 27;
@@ -47,6 +61,12 @@ public class StructureManagementGUI {
         player.openInventory(inv);
     }
 
+    /**
+     * Handles inventory click events.
+     * 
+     * @param event The inventory click event.
+     * @param guild The guild.
+     */
     public void handleInventoryClick(InventoryClickEvent event, Guild guild) {
         String title = plugin.getMessageManager().getMessage("gui.titles.structures");
 

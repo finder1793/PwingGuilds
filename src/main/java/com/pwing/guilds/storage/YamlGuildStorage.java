@@ -19,7 +19,12 @@ import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.logging.Level;
 
+/**
+ * YAML storage implementation for guilds.
+ * Handles saving and loading guild data to and from YAML files.
+ */
 public class YamlGuildStorage implements GuildStorage {
     private final PwingGuilds plugin;
     private final File guildsFolder;
@@ -27,6 +32,11 @@ public class YamlGuildStorage implements GuildStorage {
     private static final long AUTO_SAVE_INTERVAL = 6000L;
     private final GuildManager guildManager;
 
+    /**
+     * Constructs a new YamlGuildStorage.
+     * 
+     * @param plugin The PwingGuilds plugin instance.
+     */
     public YamlGuildStorage(PwingGuilds plugin) {
         this.plugin = plugin;
         this.guildManager = plugin.getGuildManager();
@@ -86,6 +96,10 @@ public class YamlGuildStorage implements GuildStorage {
                         Map.Entry::getKey,
                         e -> serializeLocation(e.getValue().getLocation())
                 )));
+
+        // New sections
+        config.set("pvp-enabled", guild.isPvPEnabled());
+        config.set("builtStructures", new HashSet<>(guild.getBuiltStructures()));
 
         try {
             config.save(guildFile);
@@ -245,6 +259,9 @@ public class YamlGuildStorage implements GuildStorage {
             }
         }
 
+        // Check for and add missing sections
+        updateGuildConfig(config, guild);
+
         guildCache.put(name, guild);
         return guild;
     }
@@ -312,6 +329,11 @@ public class YamlGuildStorage implements GuildStorage {
         }
     }
 
+    /**
+     * Cleans up old backups that are older than the specified number of days.
+     * 
+     * @param daysToKeep The number of days to keep backups.
+     */
     public void cleanupOldBackups(int daysToKeep) {
         File backupFolder = new File(guildsFolder, "backups");
         if (!backupFolder.exists()) return;
@@ -410,5 +432,32 @@ public class YamlGuildStorage implements GuildStorage {
             }
         // Check every hour (60 minutes * 60 seconds * 20 ticks)
         }, 72000L, 72000L);
+    }
+
+    private void updateGuildConfig(YamlConfiguration config, Guild guild) {
+        boolean updated = false;
+
+        if (!config.contains("bonus-claims")) {
+            config.set("bonus-claims", guild.getBonusClaims());
+            updated = true;
+        }
+
+        if (!config.contains("pvp-enabled")) {
+            config.set("pvp-enabled", guild.isPvPEnabled());
+            updated = true;
+        }
+
+        if (!config.contains("builtStructures")) {
+            config.set("builtStructures", new HashSet<>(guild.getBuiltStructures()));
+            updated = true;
+        }
+
+        if (updated) {
+            try {
+                config.save(new File(guildsFolder, guild.getName() + ".yml"));
+            } catch (IOException e) {
+                plugin.getLogger().log(Level.SEVERE, "Error saving updated guild config for: " + guild.getName(), e);
+            }
+        }
     }
 }

@@ -4,7 +4,7 @@ import com.pwing.guilds.rewards.RewardHandler;
 import com.pwing.guilds.guild.Guild;
 
 /**
- * Handles experience rewards for guild members.
+ * Handles the reward of experience points for guilds.
  */
 public class GuildExpRewardHandler implements RewardHandler {
     @Override

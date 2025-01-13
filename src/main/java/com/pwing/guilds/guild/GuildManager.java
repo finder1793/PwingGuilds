@@ -75,7 +75,13 @@ public class GuildManager {
         loadedGuilds.forEach(guild -> {
             guilds.put(guild.getName(), guild);
             guild.getMembers().forEach(member -> playerGuilds.put(member, guild));
-            guild.getClaimedChunks().forEach(chunk -> claimedChunks.put(chunk, guild));
+            guild.getClaimedChunks().forEach(chunk -> {
+                if (Bukkit.getWorld(chunk.getWorld().getName()) == null) {
+                    plugin.getLogger().warning("Invalid world name in claim: " + chunk.getWorld().getName() + "," + chunk.getX() + "," + chunk.getZ());
+                } else {
+                    claimedChunks.put(chunk, guild);
+                }
+            });
         });
         plugin.getLogger().info("Loaded " + guilds.size() + " guilds with " + playerGuilds.size() + " members");
     }

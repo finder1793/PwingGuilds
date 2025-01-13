@@ -414,6 +414,11 @@ public class SQLGuildStorage implements GuildStorage {
         return guildManager;
     }
 
+    /**
+     * Gets the HikariDataSource instance.
+     * 
+     * @return The HikariDataSource.
+     */
     public HikariDataSource getDataSource() {
         return dataSource;
     }
@@ -439,10 +444,16 @@ public class SQLGuildStorage implements GuildStorage {
     }
     
     /**
-     * Functional interface for database transactions
+     * Functional interface for database transactions.
      */
     @FunctionalInterface
     protected interface SQLTransaction {
+        /**
+         * Executes a SQL operation.
+         * 
+         * @param conn The database connection.
+         * @throws SQLException if a database access error occurs.
+         */
         void execute(Connection conn) throws SQLException;
     }
 }
