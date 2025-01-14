@@ -158,7 +158,7 @@ public class GuildManager {
         }
     
         // Validate WorldGuard rules if applicable
-        if (plugin.hasWorldGuard() && !plugin.getWorldGuardHook().canClaim(chunk)) {
+        if (plugin.hasWorldGuard() && !plugin.getWorldGuardHook().canClaimChunk(null, location)) {
             return false;
         }
     

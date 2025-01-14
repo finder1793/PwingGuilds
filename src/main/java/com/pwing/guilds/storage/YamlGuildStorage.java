@@ -82,13 +82,17 @@ public class YamlGuildStorage implements GuildStorage {
         // Members
         config.set("members", guild.getMembers().stream()
                 .map(UUID::toString)
-                .toList());
+                .collect(Collectors.toList()));
 
         // Claims
-        List<String> claimStrings = guild.getClaimedChunks().stream()
-                .map(claim -> claim.getWorld() + "," + claim.getX() + "," + claim.getZ())
+        List<Map<String, Object>> claimMaps = guild.getClaimedChunks().stream()
+                .map(claim -> Map.<String, Object>of(
+                        "world", claim.getWorld().getName(),
+                        "x", claim.getX(),
+                        "z", claim.getZ()
+                ))
                 .collect(Collectors.toList());
-        config.set("claims", claimStrings);
+        config.set("claims", claimMaps);
 
         // Homes
         config.set("homes", guild.getHomes().entrySet().stream()
@@ -99,7 +103,7 @@ public class YamlGuildStorage implements GuildStorage {
 
         // New sections
         config.set("pvp-enabled", guild.isPvPEnabled());
-        config.set("builtStructures", new HashSet<>(guild.getBuiltStructures()));
+        config.set("builtStructures", new ArrayList<>(guild.getBuiltStructures()));
 
         try {
             config.save(guildFile);
@@ -218,18 +222,15 @@ public class YamlGuildStorage implements GuildStorage {
         }
 
         // Load claims
-        List<String> claimStrings = config.getStringList("claims");
-        for (String claimString : claimStrings) {
-            String[] parts = claimString.split(",");
-            if (parts.length >= 3) {
-                String worldName = parts[0];
-                if (worldName == null || Bukkit.getWorld(worldName) == null) {
-                    plugin.getLogger().warning("Invalid world name in claim: " + claimString);
-                    continue;
-                }
-                ChunkLocation claim = new ChunkLocation(worldName, Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
-                guild.claimChunk(claim);
+        List<Map<String, Object>> claimMaps = (List<Map<String, Object>>) config.getList("claims");
+        for (Map<String, Object> claimMap : claimMaps) {
+            String worldName = (String) claimMap.get("world");
+            if (Bukkit.getWorld(worldName) == null) {
+                plugin.getLogger().warning("Invalid world name in claim: " + claimMap);
+                continue;
             }
+            ChunkLocation claim = new ChunkLocation(worldName, (Integer) claimMap.get("x"), (Integer) claimMap.get("z"));
+            guild.claimChunk(claim);
         }
 
         // Load homes if they exist
@@ -241,7 +242,7 @@ public class YamlGuildStorage implements GuildStorage {
                     String[] parts = locationString.split(",");
                     if (parts.length >= 6) {
                         String worldName = parts[0];
-                        if (worldName == null || Bukkit.getWorld(worldName) == null) {
+                        if (Bukkit.getWorld(worldName) == null) {
                             plugin.getLogger().warning("Invalid world name in home: " + homeName);
                             continue;
                         }

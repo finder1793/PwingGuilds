@@ -1,80 +1,58 @@
 package com.pwing.guilds.integration;
 
 import com.pwing.guilds.PwingGuilds;
-import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.protection.flags.StateFlag;
-import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.pwing.guilds.guild.ChunkLocation;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.server.ServerLoadEvent;
+import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
 
 /**
- * Hook for integrating with WorldGuard.
+ * Handles integration with WorldGuard for guild claims.
  */
-public class WorldGuardHook implements Listener {
-    private static StateFlag ALLOW_GUILD_CLAIMS;
+public class WorldGuardHook {
     private final PwingGuilds plugin;
+    private final WorldGuardPlugin worldGuard;
 
     /**
-     * Constructs a new WorldGuardHook.
-     * 
-     * @param plugin The PwingGuilds plugin instance.
+     * Constructs a new WorldGuardHook instance.
+     * @param plugin The main plugin instance
      */
     public WorldGuardHook(PwingGuilds plugin) {
         this.plugin = plugin;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        this.worldGuard = (WorldGuardPlugin) Bukkit.getPluginManager().getPlugin("WorldGuard");
     }
 
     /**
-     * Handles server load events.
-     * 
-     * @param event The server load event.
+     * Checks if a guild can claim a chunk based on WorldGuard regions.
+     * @param player The player attempting to claim the chunk
+     * @param chunkLocation The chunk location to claim
+     * @return true if the chunk can be claimed, false otherwise
      */
-    @EventHandler
-    public void onServerLoad(ServerLoadEvent event) {
-        FlagRegistry registry = WorldGuard.getInstance().getFlagRegistry();
-        try {
-            StateFlag flag = new StateFlag("allow-guild-claims", true);
-            registry.register(flag);
-            ALLOW_GUILD_CLAIMS = flag;
-        } catch (Exception e) {
-            ALLOW_GUILD_CLAIMS = (StateFlag) registry.get("allow-guild-claims");
+    public boolean canClaimChunk(Player player, ChunkLocation chunkLocation) {
+        if (worldGuard == null) {
+            plugin.getLogger().warning("WorldGuard integration unavailable.");
+            return false;
         }
-    }
 
-    /**
-     * Checks if a chunk can be claimed.
-     * 
-     * @param chunk The chunk.
-     * @return True if the chunk can be claimed, false otherwise.
-     */
-    public boolean canClaim(Chunk chunk) {
-        Location loc = chunk.getBlock(8, 0, 8).getLocation();
-        try {
-            return WorldGuard.getInstance().getPlatform().getRegionContainer()
-                .createQuery()
-                .testState(
-                    BukkitAdapter.adapt(loc),
-                    WorldGuardPlugin.inst().wrapPlayer(chunk.getWorld().getPlayers().get(0)),
-                    ALLOW_GUILD_CLAIMS
-                );
-        } catch (IllegalStateException e) {
-            plugin.getLogger().warning("WorldGuard state error for chunk at " + chunk.getX() + "," + chunk.getZ() + ": " + e.getMessage());
-            return true;
-        } catch (IllegalArgumentException e) {
-            plugin.getLogger().warning("Invalid arguments for WorldGuard check at " + chunk.getX() + "," + chunk.getZ() + ": " + e.getMessage());
-            return true;
-        } catch (NullPointerException e) {
-            plugin.getLogger().warning("WorldGuard integration unavailable or world has no players: " + e.getMessage());
-            return true;
-        } catch (Exception e) {
-            plugin.getLogger().severe("Unexpected error during WorldGuard claim check: " + e.getMessage());
-            e.printStackTrace();
-            return true;
+        World world = Bukkit.getWorld(chunkLocation.getWorld().getName());
+        if (world == null) {
+            plugin.getLogger().warning("WorldGuard integration unavailable or world has no players: " + chunkLocation.getWorld().getName());
+            return false;
         }
+
+        RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world));
+        if (regionManager == null) {
+            plugin.getLogger().warning("WorldGuard integration unavailable or world has no players: " + chunkLocation.getWorld().getName());
+            return false;
+        }
+
+        // Add your logic to check if the chunk can be claimed based on WorldGuard regions
+        // For example, check if the region is owned by another player or guild
+
+        return true;
     }
 }

@@ -52,6 +52,7 @@ public class Guild implements ConfigurationSerializable {
         this.plugin = plugin;
         this.name = name;
         this.owner = owner;
+        this.leader = owner; // Initialize leader as the owner
         this.members.add(owner);
         this.level = 1;
         this.exp = 0;
@@ -331,9 +332,18 @@ public class Guild implements ConfigurationSerializable {
                 .sorted()
                 .collect(Collectors.toList()),
             "claims", claimedChunks.stream()
-                .map(claim -> Objects.requireNonNull(claim, "Guild claim cannot be null"))
-                .sorted()
-                .collect(Collectors.toList()),
+                .sorted((c1, c2) -> {
+                    int worldCompare = c1.getWorld().getName().compareTo(c2.getWorld().getName());
+                    if (worldCompare != 0) return worldCompare;
+                    int xCompare = Integer.compare(c1.getX(), c2.getX());
+                    if (xCompare != 0) return xCompare;
+                    return Integer.compare(c1.getZ(), c2.getZ());
+                })
+                .map(chunk -> Map.of(
+                        "world", chunk.getWorld().getName(),
+                        "x", chunk.getX(),
+                        "z", chunk.getZ()
+                )).collect(Collectors.toList()),
             "homes", homes.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
@@ -404,58 +414,66 @@ public class Guild implements ConfigurationSerializable {
         }
 
         // Fix the claims loading
-        @SuppressWarnings("unchecked")
-        List<String> claimsList = (List<String>) data.get("claims");
-        if (claimsList != null) {
-            claimsList.forEach(claimString -> {
-                String[] parts = claimString.split(",");
-                if (parts.length >= 3) {
-                    String worldName = parts[0];
-                    if (worldName == null || Bukkit.getWorld(worldName) == null) {
-                        plugin.getLogger().warning("Invalid world name in claim: " + claimString);
-                        return;
-                    }
-                    ChunkLocation claim = new ChunkLocation(
-                        worldName, // world
-                        Integer.parseInt(parts[1]), // x
-                        Integer.parseInt(parts[2])  // z
-                    );
-                    guild.claimChunk(claim);
-                }
-            });
-        }
-
-        @SuppressWarnings("unchecked")
-        Map<String, Map<String, Object>> homes = (Map<String, Map<String, Object>>) data.get("homes");
-        if (homes != null) {
-            homes.forEach((homeName, locationData) -> {
-                String worldName = (String) locationData.get("world");
-                if (worldName == null || Bukkit.getWorld(worldName) == null) {
-                    plugin.getLogger().warning("Invalid world name in home: " + homeName);
+        Object claimsObj = data.get("claims");
+        if (claimsObj instanceof List) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> claimsList = (List<Map<String, Object>>) claimsObj;
+            claimsList.forEach(claimMap -> {
+                String worldName = (String) claimMap.get("world");
+                if (Bukkit.getWorld(worldName) == null) {
+                    plugin.getLogger().warning("Invalid world name in claim: " + claimMap);
                     return;
                 }
-                Location loc = new Location(
-                        Bukkit.getWorld(worldName),
-                        (Double) locationData.get("x"),
-                        (Double) locationData.get("y"),
-                        (Double) locationData.get("z"),
-                        ((Number) locationData.get("yaw")).floatValue(),
-                        ((Number) locationData.get("pitch")).floatValue()
+                ChunkLocation claim = new ChunkLocation(
+                    worldName, // world
+                    (Integer) claimMap.get("x"), // x
+                    (Integer) claimMap.get("z")  // z
                 );
-                guild.setHome(homeName, loc);
+                guild.claimChunk(claim);
             });
         }
 
-        if (data.containsKey("alliance")) {
-            String allianceName = (String) data.get("alliance");
+        // Fix the homes loading
+        Object homesObj = data.get("homes");
+        if (homesObj instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<String, String> homes = (Map<String, String>) homesObj;
+            homes.forEach((homeName, locationString) -> {
+                String[] parts = locationString.split(",");
+                if (parts.length >= 6) {
+                    String worldName = parts[0];
+                    if (Bukkit.getWorld(worldName) == null) {
+                        plugin.getLogger().warning("Invalid world name in home: " + homeName);
+                        return;
+                    }
+                    Location loc = new Location(
+                            Bukkit.getWorld(worldName),
+                            Double.parseDouble(parts[1]),
+                            Double.parseDouble(parts[2]),
+                            Double.parseDouble(parts[3]),
+                            Float.parseFloat(parts[4]),
+                            Float.parseFloat(parts[5])
+                    );
+                    guild.setHome(homeName, loc);
+                }
+            });
+        }
+
+        // Fix the alliance loading
+        Object allianceObj = data.get("alliance");
+        if (allianceObj instanceof String) {
+            String allianceName = (String) allianceObj;
             plugin.getAllianceManager().getAlliance(allianceName)
                     .ifPresent(guild::setAlliance);
         }
 
         guild.setPvPEnabled((Boolean) data.getOrDefault("pvp-enabled", false));
-        @SuppressWarnings("unchecked")
-        List<String> builtStructuresList = (List<String>) data.get("builtStructures");
-        if (builtStructuresList != null) {
+
+        // Fix the builtStructures loading
+        Object builtStructuresObj = data.get("builtStructures");
+        if (builtStructuresObj instanceof List) {
+            @SuppressWarnings("unchecked")
+            List<String> builtStructuresList = (List<String>) builtStructuresObj;
             guild.builtStructures.addAll(builtStructuresList);
         }
 

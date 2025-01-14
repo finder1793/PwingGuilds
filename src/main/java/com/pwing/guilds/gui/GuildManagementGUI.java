@@ -16,11 +16,14 @@ import org.bukkit.Chunk;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.ChatColor;
 import java.util.*;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 
 /**
  * Manages the GUI for guild management.
  */
-public class GuildManagementGUI {
+public class GuildManagementGUI implements Listener {
     private final PwingGuilds plugin;
 
     /**
@@ -29,6 +32,8 @@ public class GuildManagementGUI {
      */
     public GuildManagementGUI(PwingGuilds plugin) {
         this.plugin = plugin;
+        // Register this class as an event listener
+        Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
     /**
@@ -227,6 +232,42 @@ public class GuildManagementGUI {
          */
         public Guild getGuild() {
             return guild;
+        }
+    }
+
+    /**
+     * Handles inventory click events for the guild management GUI.
+     * @param event The inventory click event
+     */
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!(event.getInventory().getHolder() instanceof GuildInventoryHolder)) {
+            return;
+        }
+
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
+        GuildInventoryHolder holder = (GuildInventoryHolder) event.getInventory().getHolder();
+        Guild guild = holder.getGuild();
+
+        switch (event.getSlot()) {
+            case 11:
+                openMemberManagement(player, guild);
+                break;
+            case 13:
+                openClaimsMap(player, guild);
+                break;
+            case 15:
+                // Open guild settings (implement this method)
+                break;
+            case 17:
+                // Open guild storage (implement this method)
+                break;
+            case 49:
+                openMainMenu(player);
+                break;
+            default:
+                break;
         }
     }
 }
