@@ -7,6 +7,8 @@ import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.api.GuildCreateEvent;
 import com.pwing.guilds.api.GuildDeleteEvent;
 import com.pwing.guilds.storage.GuildBackupManager;
+import org.bukkit.configuration.file.YamlConfiguration;
+import java.io.File;
 
 /**
  * Listens for guild-related events to create backups.
@@ -31,7 +33,10 @@ public class GuildBackupListener implements Listener {
      */
     @EventHandler
     public void onGuildCreate(GuildCreateEvent event) {
-        if (plugin.getConfig().getBoolean("backup.auto-backup.on-guild-create")) {
+        File backupSettingsFile = new File(plugin.getDataFolder(), "backup-settings.yml");
+        YamlConfiguration backupConfig = YamlConfiguration.loadConfiguration(backupSettingsFile);
+
+        if (backupConfig.getBoolean("backup.auto-backup.on-guild-create")) {
             backupManager.createCompressedBackup(event.getGuild());
         }
     }
@@ -42,7 +47,10 @@ public class GuildBackupListener implements Listener {
      */
     @EventHandler
     public void onGuildDelete(GuildDeleteEvent event) {
-        if (plugin.getConfig().getBoolean("backup.auto-backup.on-guild-delete")) {
+        File backupSettingsFile = new File(plugin.getDataFolder(), "backup-settings.yml");
+        YamlConfiguration backupConfig = YamlConfiguration.loadConfiguration(backupSettingsFile);
+
+        if (backupConfig.getBoolean("backup.auto-backup.on-guild-delete")) {
             backupManager.createCompressedBackup(event.getGuild());
         }
     }
@@ -53,7 +61,10 @@ public class GuildBackupListener implements Listener {
      */
     @EventHandler
     public void onServerShutdown(PluginDisableEvent event) {
-        if (event.getPlugin().equals(plugin) && plugin.getConfig().getBoolean("backup.auto-backup.on-server-shutdown")) {
+        File backupSettingsFile = new File(plugin.getDataFolder(), "backup-settings.yml");
+        YamlConfiguration backupConfig = YamlConfiguration.loadConfiguration(backupSettingsFile);
+
+        if (event.getPlugin().equals(plugin) && backupConfig.getBoolean("backup.auto-backup.on-server-shutdown")) {
             backupManager.backupAllGuilds();
         }
     }

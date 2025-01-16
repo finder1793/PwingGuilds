@@ -96,17 +96,17 @@ guild-settings:
 validate-config: false
 
 # Backup Settings
-backup:
-  enabled: true
-  interval: 60
-  compression-level: 9
-  retention:
-    days: 7
-    keep-minimum: 5
-  auto-backup:
-    on-guild-create: true
-    on-guild-delete: true
-    on-server-shutdown: true
+# backup:
+#   enabled: true
+#   interval: 60
+#   compression-level: 9
+#   retention:
+#     days: 7
+#     keep-minimum: 5
+#   auto-backup:
+#     on-guild-create: true
+#     on-guild-delete: true
+#     on-server-shutdown: true
 
 advanced:
   custom-model-data:
