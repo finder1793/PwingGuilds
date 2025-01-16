@@ -48,31 +48,23 @@ public class GuildManagementGUI implements Listener {
         }
 
         GuildInventoryHolder holder = new GuildInventoryHolder(playerGuild.get());
-        String title = plugin.getMessageManager().getMessage("gui.titles.main");
+        String title = plugin.getConfig().getString("gui.titles.main");
         Inventory inv = Bukkit.createInventory(holder, 27, title);
 
         // Members Management
-        ItemBuilder members = ItemBuilder.fromConfig("members", plugin, player)
-            .name(plugin.getMessageManager().getMessage("gui.items.members.name"))
-            .lore(plugin.getMessageManager().getMessage("gui.items.members.lore"));
+        ItemBuilder members = ItemBuilder.fromConfig("members", plugin, player);
         inv.setItem(11, members.build());
 
         // Claims Management
-        ItemBuilder claims = ItemBuilder.fromConfig("claims", plugin, player)
-            .name(plugin.getMessageManager().getMessage("gui.items.claims.name"))
-            .lore(plugin.getMessageManager().getMessage("gui.items.claims.lore"));
+        ItemBuilder claims = ItemBuilder.fromConfig("claims", plugin, player);
         inv.setItem(13, claims.build());
 
         // Guild Settings
-        ItemBuilder settings = ItemBuilder.fromConfig("settings", plugin, player)
-            .name(plugin.getMessageManager().getMessage("gui.items.settings.name"))
-            .lore(plugin.getMessageManager().getMessage("gui.items.settings.lore"));
+        ItemBuilder settings = ItemBuilder.fromConfig("settings", plugin, player);
         inv.setItem(15, settings.build());
 
         // Storage
-        ItemBuilder storage = ItemBuilder.fromConfig("storage", plugin, player)
-            .name(plugin.getMessageManager().getMessage("gui.items.storage.name"))
-            .lore(plugin.getMessageManager().getMessage("gui.items.storage.lore"));
+        ItemBuilder storage = ItemBuilder.fromConfig("storage", plugin, player);
         inv.setItem(17, storage.build());
 
         player.openInventory(inv);
@@ -261,7 +253,7 @@ public class GuildManagementGUI implements Listener {
                 // Open guild settings (implement this method)
                 break;
             case 17:
-                // Open guild storage (implement this method)
+                plugin.getStorageManager().openStorage(player, guild);
                 break;
             case 49:
                 openMainMenu(player);

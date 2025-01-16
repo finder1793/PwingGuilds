@@ -145,6 +145,11 @@ public class ItemBuilder {
             }
         }
         
+        // Set name and lore from gui.yml
+        String name = plugin.getConfig().getString("gui.items." + path + ".name");
+        List<String> lore = plugin.getConfig().getStringList("gui.items." + path + ".lore");
+        builder.name(name).lore(lore);
+        
         return builder;
     }
 

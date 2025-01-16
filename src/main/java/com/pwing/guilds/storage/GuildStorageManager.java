@@ -55,6 +55,7 @@ public class GuildStorageManager implements Listener {
      */
     public void openStorage(Player player, Guild guild) {
         if (!guild.getPerks().activatePerk("guild-storage")) {
+            player.sendMessage("§cYour guild doesn't have storage access yet!");
             return;
         }
 
