@@ -102,11 +102,15 @@ public class GuildBackupManager {
                 def.setLevel(compressionLevel);
             }
         }) {
+            plugin.getLogger().info("Creating backup for guild: " + guild.getName());
             YamlConfiguration config = new YamlConfiguration();
             config.set("guild", guild.serialize());
             gzos.write(config.saveToString().getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             plugin.getLogger().warning("Failed to create compressed backup for guild: " + guild.getName());
+        } catch (NullPointerException e) {
+            plugin.getLogger().severe("Error creating backup for guild: " + guild.getName());
+            throw e;
         }
     }
 
