@@ -379,6 +379,7 @@ public class YamlGuildStorage implements GuildStorage {
         }
         return null;
     }
+
     private File backupSettingsFile;
     private YamlConfiguration backupSettings;
 
@@ -413,7 +414,6 @@ public class YamlGuildStorage implements GuildStorage {
             }
             plugin.getLogger().info("Backup cleanup completed!");
         }
-
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
             long now = System.currentTimeMillis();

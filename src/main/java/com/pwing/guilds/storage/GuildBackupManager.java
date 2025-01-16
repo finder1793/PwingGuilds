@@ -1,55 +1,4 @@
 package com.pwing.guilds.storage;
-package com.pwing.guilds.storage;
-
-import com.pwing.guilds.PwingGuilds;
-import org.bukkit.configuration.file.YamlConfiguration;
-
-import java.io.File;
-import java.text.SimpleDateFormat;
-
-public class GuildBackupManager {
-    private final PwingGuilds plugin;
-    private final File backupFolder;
-    private final int compressionLevel;
-    private final long backupInterval;
-    private final int retentionDays;
-    private final int minBackups;
-    private final SimpleDateFormat dateFormat;
-
-    public GuildBackupManager(PwingGuilds plugin) {
-        this.plugin = plugin;
-        this.backupFolder = new File(plugin.getDataFolder(), "backups");
-
-        File backupSettingsFile = new File(plugin.getDataFolder(), "backup-settings.yml");
-        YamlConfiguration backupConfig = YamlConfiguration.loadConfiguration(backupSettingsFile);
-
-        this.compressionLevel = backupConfig.getInt("backup.compression-level", 9);
-        this.backupInterval = backupConfig.getLong("backup.interval", 60) * 1200L; // Convert to ticks
-        this.retentionDays = backupConfig.getInt("backup.retention.days", 7);
-        this.minBackups = backupConfig.getInt("backup.retention.keep-minimum", 5);
-        this.dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-
-        if (!backupFolder.exists()) {
-            backupFolder.mkdirs();
-        }
-
-        if (backupConfig.getBoolean("backup.enabled", true)) {
-            startScheduledBackups();
-        }
-    }
-
-    private void startScheduledBackups() {
-        // Implementation for scheduled backups
-    }
-
-    public void createCompressedBackup(Guild guild) {
-        // Implementation for creating compressed backup
-    }
-
-    public void backupAllGuilds() {
-        // Implementation for backing up all guilds
-    }
-}
 
 import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.guild.Guild;
@@ -93,17 +42,21 @@ public class GuildBackupManager {
     public GuildBackupManager(PwingGuilds plugin) {
         this.plugin = plugin;
         this.backupFolder = new File(plugin.getDataFolder(), "backups");
-        this.compressionLevel = plugin.getConfig().getInt("backup.compression-level", 9);
-        this.backupInterval = plugin.getConfig().getLong("backup.interval", 60) * 1200L; // Convert to ticks
-        this.retentionDays = plugin.getConfig().getInt("backup.retention.days", 7);
-        this.minBackups = plugin.getConfig().getInt("backup.retention.keep-minimum", 5);
+
+        File backupSettingsFile = new File(plugin.getDataFolder(), "backup-settings.yml");
+        YamlConfiguration backupConfig = YamlConfiguration.loadConfiguration(backupSettingsFile);
+
+        this.compressionLevel = backupConfig.getInt("backup.compression-level", 9);
+        this.backupInterval = backupConfig.getLong("backup.interval", 60) * 1200L; // Convert to ticks
+        this.retentionDays = backupConfig.getInt("backup.retention.days", 7);
+        this.minBackups = backupConfig.getInt("backup.retention.keep-minimum", 5);
         this.dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
 
         if (!backupFolder.exists()) {
             backupFolder.mkdirs();
         }
 
-        if (plugin.getConfig().getBoolean("backup.enabled", true)) {
+        if (backupConfig.getBoolean("backup.enabled", true)) {
             startScheduledBackups();
         }
     }
@@ -263,3 +216,5 @@ public class GuildBackupManager {
         }
     }
 }
+
+
