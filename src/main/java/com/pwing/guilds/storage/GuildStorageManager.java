@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.List;
 
 /**
  * Manages guild storage operations and listeners.
@@ -110,7 +111,8 @@ public class GuildStorageManager implements Listener {
             for (Guild guild : plugin.getGuildManager().getGuilds()) {
                 ConfigurationSection section = guildManager.getStorage().getStorageData(guild.getName());
                 if (section != null) {
-                    ItemStack[] contents = (ItemStack[]) section.get("contents");
+                    List<ItemStack> contentsList = (List<ItemStack>) section.get("contents");
+                    ItemStack[] contents = contentsList.toArray(new ItemStack[0]);
                     guildStorages.put(guild.getName(), contents);
                 }
             }

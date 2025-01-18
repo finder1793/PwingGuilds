@@ -182,6 +182,11 @@ public class GuildBackupManager {
      * @param reason The reason for the backup
      */
     public void createBackup(Guild guild, String reason) {
+        if (plugin.getConfig().getString("storage.type").equalsIgnoreCase("mysql")) {
+            plugin.getLogger().info("Skipping backup for guild: " + guild.getName() + " as storage type is SQL.");
+            return;
+        }
+
         try {
             // Create backup file with timestamp and reason
             String timestamp = dateFormat.format(new Date());

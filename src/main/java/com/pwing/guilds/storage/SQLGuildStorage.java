@@ -415,9 +415,14 @@ public class SQLGuildStorage implements GuildStorage {
                 ps.setString(1, guildName);
                 ResultSet rs = ps.executeQuery();
                 if (rs.next()) {
-                    config.set("contents", deserializeItems(rs.getBytes("contents")));
+                    byte[] data = rs.getBytes("contents");
+                    if (data != null) {
+                        ItemStack[] items = deserializeItems(data);
+                        config.set("contents", Arrays.asList(items));
+                    }
                 }
             } catch (SQLException e) {
+                plugin.getLogger().severe("Failed to load storage data for guild: " + guildName);
                 e.printStackTrace();
             }
         });

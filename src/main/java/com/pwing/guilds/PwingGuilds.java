@@ -457,7 +457,14 @@ public class PwingGuilds extends JavaPlugin {
         getLogger().info("Starting final guild data save...");
 
         if (storage instanceof YamlGuildStorage && guildManager != null) {
-            guildManager.getGuilds().forEach(guild -> storage.saveGuild(guild));
+            guildManager.getGuilds().forEach(guild -> {
+                try {
+                    storage.saveGuild(guild);
+                } catch (Exception e) {
+                    getLogger().severe("Failed to save guild: " + guild.getName());
+                    e.printStackTrace();
+                }
+            });
         }
 
         if (storage instanceof SQLGuildStorage) {
