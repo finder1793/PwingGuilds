@@ -157,15 +157,14 @@ public class PwingGuilds extends JavaPlugin {
         }
 
         setupEconomy();
-        setupDatabase();
-
-        // Initialize remaining managers
-        this.messageManager = new MessageManager(this);
 
         // Only initialize database manager for MySQL
         if (getConfig().getString("storage.type").equalsIgnoreCase("mysql")) {
+            setupDatabase();
             this.databaseManager = new DatabaseManager(getConfig());
         }
+
+        this.messageManager = new MessageManager(this);
 
         this.eventRegistry = new EventRegistry(this);
 
@@ -291,7 +290,7 @@ public class PwingGuilds extends JavaPlugin {
         return true;
     }
     // Add the setupDatabase method
-    private void setupDatabase() {
+    public void setupDatabase() {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:mysql://" + getConfig().getString("storage.mysql.host") + ":" +
                 getConfig().getInt("storage.mysql.port") + "/" + getConfig().getString("storage.mysql.database"));

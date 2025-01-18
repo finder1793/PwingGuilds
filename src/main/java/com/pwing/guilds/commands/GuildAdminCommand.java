@@ -156,10 +156,16 @@ public class GuildAdminCommand implements CommandExecutor {
         if (targetType.equals("yaml")) {
             newStorage = new YamlGuildStorage(plugin);
         } else {
+            plugin.setupDatabase();
             newStorage = new SQLGuildStorage(plugin, plugin.getDataSource());
         }
 
         migrateData(currentStorage, newStorage);
+
+        // Update the configuration file to reflect the new storage type
+        plugin.getConfig().set("storage.type", targetType);
+        plugin.saveConfig();
+
         sender.sendMessage("Data migration to " + targetType.toUpperCase() + " storage completed.");
     }
 
