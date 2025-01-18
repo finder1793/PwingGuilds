@@ -268,7 +268,7 @@ public class PwingGuilds extends JavaPlugin {
             throw new IllegalStateException("Failed to register alliance command - command not found in plugin.yml");
         }
     }
-
+ // Add the setupEconomy method
     private boolean setupEconomy() {
         if (getServer().getPluginManager().getPlugin("Vault") == null) {
             return false;
@@ -280,7 +280,7 @@ public class PwingGuilds extends JavaPlugin {
         economy = rsp.getProvider();
         return true;
     }
-
+    // Add the setupDatabase method
     private void setupDatabase() {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:mysql://" + getConfig().getString("storage.mysql.host") + ":" +
@@ -440,7 +440,7 @@ public class PwingGuilds extends JavaPlugin {
     public String getMessage(String path) {
         return ChatColor.translateAlternateColorCodes('&', getConfig().getString(path, ""));
     }
-
+    // Add the onDisable method
     @Override
     public void onDisable() {
         getLogger().info("Starting final guild data save...");
@@ -473,11 +473,12 @@ public class PwingGuilds extends JavaPlugin {
 
         getLogger().info("Guild data save completed!");
     }
+    // Add a getter for the GuildStorage instance
 
     public GuildStorage getGuildStorage() {
         return storage;
     }
-
+    // Add a getter for the AllianceStorage instance
     public AllianceStorage getAllianceStorage() {
         return allianceStorage;
     }
