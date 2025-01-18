@@ -45,6 +45,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import org.bukkit.ChatColor;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 /**
  * Main class for the PwingGuilds plugin.
@@ -75,6 +77,7 @@ public class PwingGuilds extends JavaPlugin {
     private static PwingGuilds instance;
     private boolean allowStructures;
     private FileConfiguration structuresConfig;
+    private HikariDataSource dataSource;
 
     /**
      * Checks if WorldGuard is available
@@ -151,6 +154,7 @@ public class PwingGuilds extends JavaPlugin {
         }
 
         setupEconomy();
+        setupDatabase();
 
         // Initialize remaining managers
         this.messageManager = new MessageManager(this);
@@ -164,8 +168,8 @@ public class PwingGuilds extends JavaPlugin {
 
         // Initialize appropriate storage type
         if (getConfig().getString("storage.type").equalsIgnoreCase("mysql")) {
-            this.storage = new SQLGuildStorage(this, databaseManager.getDataSource());
-            this.allianceStorage = new SQLAllianceStorage(this, databaseManager.getDataSource());
+            this.storage = new SQLGuildStorage(this, dataSource);
+            this.allianceStorage = new SQLAllianceStorage(this, dataSource);
         } else {
             this.storage = new YamlGuildStorage(this);
             this.allianceStorage = new YamlAllianceStorage(this);
@@ -228,6 +232,9 @@ public class PwingGuilds extends JavaPlugin {
             getLogger().info("Skript not found - Skript integration will not be enabled");
         }
 
+        // Register the guildadmin command
+        getCommand("guildadmin").setExecutor(new GuildAdminCommand(this));
+
         getLogger().info("PwingGuilds has been enabled!");
     }
 
@@ -274,6 +281,15 @@ public class PwingGuilds extends JavaPlugin {
         return true;
     }
 
+    private void setupDatabase() {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:mysql://" + getConfig().getString("storage.mysql.host") + ":" +
+                getConfig().getInt("storage.mysql.port") + "/" + getConfig().getString("storage.mysql.database"));
+        config.setUsername(getConfig().getString("storage.mysql.username"));
+        config.setPassword(getConfig().getString("storage.mysql.password"));
+        dataSource = new HikariDataSource(config);
+    }
+
     // Getters
     /**
      * Gets the AllianceManager instance.
@@ -284,14 +300,6 @@ public class PwingGuilds extends JavaPlugin {
         return allianceManager;
     }
 
-    /**
-     * Gets the AllianceStorage instance.
-     * 
-     * @return The AllianceStorage.
-     */
-    public AllianceStorage getAllianceStorage() {
-        return allianceStorage;
-    }
 
     /**
      * Gets the GuildBuffManager instance.
@@ -460,5 +468,13 @@ public class PwingGuilds extends JavaPlugin {
         }
 
         getLogger().info("Guild data save completed!");
+    }
+
+    public GuildStorage getGuildStorage() {
+        return storage;
+    }
+
+    public AllianceStorage getAllianceStorage() {
+        return allianceStorage;
     }
 }

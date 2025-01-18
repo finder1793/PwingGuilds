@@ -4,6 +4,9 @@ import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.guild.Guild;
 import com.pwing.guilds.guild.GuildManager;
 import com.pwing.guilds.message.MessageManager;
+import com.pwing.guilds.storage.GuildStorage;
+import com.pwing.guilds.storage.SQLGuildStorage;
+import com.pwing.guilds.storage.YamlGuildStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -13,6 +16,7 @@ import org.bukkit.entity.Player;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Handles admin commands for managing guilds.
@@ -101,6 +105,7 @@ public class GuildAdminCommand implements CommandExecutor {
                 sender.sendMessage("§aDeleted guild " + guildName);
             }
             case "info" -> handleInfo(sender, args);
+            case "migrate" -> handleMigrateCommand(sender, args);
             default -> sendAdminHelp(sender);
         }
         return true;
@@ -109,7 +114,7 @@ public class GuildAdminCommand implements CommandExecutor {
     private void sendAdminHelp(CommandSender sender) {
         MessageManager mm = plugin.getMessageManager();
         sender.sendMessage(mm.getMessage("commands.admin.help.header"));
-        for (String key : Arrays.asList("storage", "addclaims", "setlevel", "delete", "info")) {
+        for (String key : Arrays.asList("storage", "addclaims", "setlevel", "delete", "info", "migrate")) {
             sender.sendMessage(mm.getMessage("commands.admin.help." + key));
         }
     }
@@ -136,5 +141,32 @@ public class GuildAdminCommand implements CommandExecutor {
             sender.sendMessage(mm.getMessage("commands.admin.info.claims", replacements));
             sender.sendMessage(mm.getMessage("commands.admin.info.bonus-claims", replacements));
         });
+    }
+
+    private void handleMigrateCommand(CommandSender sender, String[] args) {
+        if (args.length != 2 || (!args[1].equalsIgnoreCase("yaml") && !args[1].equalsIgnoreCase("sql"))) {
+            sender.sendMessage("Usage: /guildadmin migrate <yaml|sql>");
+            return;
+        }
+
+        String targetType = args[1].toLowerCase();
+        GuildStorage currentStorage = plugin.getGuildStorage();
+        GuildStorage newStorage;
+
+        if (targetType.equals("yaml")) {
+            newStorage = new YamlGuildStorage(plugin);
+        } else {
+            newStorage = new SQLGuildStorage(plugin, plugin.getDataSource());
+        }
+
+        migrateData(currentStorage, newStorage);
+        sender.sendMessage("Data migration to " + targetType.toUpperCase() + " storage completed.");
+    }
+
+    private void migrateData(GuildStorage from, GuildStorage to) {
+        Set<Guild> guilds = from.loadAllGuilds();
+        for (Guild guild : guilds) {
+            to.saveGuild(guild);
+        }
     }
 }

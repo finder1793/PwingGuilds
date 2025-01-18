@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -32,7 +33,8 @@ import java.util.stream.Collectors;
 public class SQLGuildStorage implements GuildStorage {
     private final PwingGuilds plugin;
     private final HikariDataSource dataSource;
-    private final Map<String, Guild> guildCache = new HashMap<>();
+    private final Map<String, Guild> guildCache = new ConcurrentHashMap<>();
+    private final Map<UUID, Guild> playerGuildCache = new ConcurrentHashMap<>();
     private final Queue<Guild> saveQueue = new ConcurrentLinkedQueue<>();
     private static final long SAVE_INTERVAL = 100L;
     private final GuildManager guildManager;
@@ -262,6 +264,8 @@ public class SQLGuildStorage implements GuildStorage {
 
     @Override
     public void saveGuild(Guild guild) {
+        guildCache.put(guild.getName(), guild);
+        guild.getMembers().forEach(member -> playerGuildCache.put(member, guild));
         saveQueue.offer(guild);
     }
 
@@ -344,6 +348,8 @@ public class SQLGuildStorage implements GuildStorage {
                 Guild guild = loadGuild(rs.getString("name"));
                 if (guild != null) {
                     guilds.add(guild);
+                    guildCache.put(guild.getName(), guild);
+                    guild.getMembers().forEach(member -> playerGuildCache.put(member, guild));
                 }
             }
         } catch (SQLException e) {

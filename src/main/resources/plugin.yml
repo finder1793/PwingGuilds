@@ -38,3 +38,6 @@ permissions:
   guild.alliance:
     default: true  # This makes basic alliance commands available to everyone
     description: Access to alliance commands
+  pwingguilds.migrate:
+    description: Allows the user to migrate data storage
+    default: op
