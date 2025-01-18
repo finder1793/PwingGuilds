@@ -48,7 +48,7 @@ public class GuildManagementGUI implements Listener {
         }
 
         GuildInventoryHolder holder = new GuildInventoryHolder(playerGuild.get());
-        String title = plugin.getConfig().getString("gui.titles.main");
+        String title = plugin.getConfigManager().getConfig("gui.yml").getString("gui.titles.main", "Guild Management");
         Inventory inv = Bukkit.createInventory(holder, 27, title);
 
         // Members Management
@@ -76,7 +76,8 @@ public class GuildManagementGUI implements Listener {
      * @param guild The guild to show claims for
      */
     public void openClaimsMap(Player player, Guild guild) {
-        Inventory inv = Bukkit.createInventory(null, 54, "Guild Claims Map");
+        String title = plugin.getConfigManager().getConfig("gui.yml").getString("gui.titles.claims", "Guild Claims Map");
+        Inventory inv = Bukkit.createInventory(null, 54, title);
         Chunk centerChunk = player.getLocation().getChunk();
 
         for (int x = -4; x <= 4; x++) {
@@ -122,7 +123,8 @@ public class GuildManagementGUI implements Listener {
      * @param guild The guild to show buffs for
      */
     public void openBuffsMenu(Player player, Guild guild) {
-        Inventory inv = Bukkit.createInventory(null, 54, "Guild Buffs");
+        String title = plugin.getConfigManager().getConfig("gui.yml").getString("gui.titles.buffs", "Guild Buffs");
+        Inventory inv = Bukkit.createInventory(null, 54, title);
 
         Map<String, GuildBuff> buffs = plugin.getBuffManager().getAvailableBuffs();
         for (Map.Entry<String, GuildBuff> entry : buffs.entrySet()) {
@@ -163,7 +165,8 @@ public class GuildManagementGUI implements Listener {
      * @param guild The guild to manage members for
      */
     public void openMemberManagement(Player player, Guild guild) {
-        Inventory inv = Bukkit.createInventory(null, 54, "Guild Members");
+        String title = plugin.getConfigManager().getConfig("gui.yml").getString("gui.titles.members", "Guild Members");
+        Inventory inv = Bukkit.createInventory(null, 54, title);
 
         ItemStack info = new ItemStack(Material.BOOK);
         ItemMeta infoMeta = info.getItemMeta();

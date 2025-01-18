@@ -8,6 +8,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import com.pwing.guilds.PwingGuilds;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -124,31 +125,20 @@ public class ItemBuilder {
      * @return The ItemBuilder instance.
      */
     public static ItemBuilder fromConfig(String path, PwingGuilds plugin, Player player) {
-        boolean useModelData = plugin.getItemCompatHandler().isEnabled();
-        
-        // Get appropriate material
-        String material;
-        if (useModelData) {
-            material = plugin.getConfig().getString("gui.items." + path + ".material");
-        } else {
-            material = plugin.getConfig().getString("advanced.custom-model-data.fallback-materials." + path);
-        }
-        
-        ItemBuilder builder = new ItemBuilder(Material.valueOf(material), plugin)
+        FileConfiguration config = plugin.getConfigManager().getConfig("gui.yml");
+        Material material = Material.valueOf(config.getString("gui.items." + path + ".material", "BARRIER"));
+        int modelData = config.getInt("gui.items." + path + ".model-data", 0);
+        String name = config.getString("gui.items." + path + ".name", "Item");
+        List<String> lore = config.getStringList("gui.items." + path + ".lore");
+
+        ItemBuilder builder = new ItemBuilder(material, plugin)
             .forPlayer(player);
         
-        // Only set model data if feature is enabled
-        if (useModelData) {
-            int modelData = plugin.getConfig().getInt("gui.items." + path + ".model-data", 0);
-            if (modelData > 0) {
-                builder.modelData(modelData);
-            }
-        }
-        
-        // Set name and lore from gui.yml
-        String name = plugin.getConfig().getString("gui.items." + path + ".name");
-        List<String> lore = plugin.getConfig().getStringList("gui.items." + path + ".lore");
         builder.name(name).lore(lore);
+        
+        if (modelData > 0) {
+            builder.modelData(modelData);
+        }
         
         return builder;
     }
