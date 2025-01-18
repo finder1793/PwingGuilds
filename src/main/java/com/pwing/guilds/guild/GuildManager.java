@@ -394,6 +394,22 @@ public class GuildManager {
             }
         }
 
+        // Check for multiple currencies using PwingEco
+        if (plugin.getPwingEcoAPI() != null) {
+            ConfigurationSection currencySection = structureSection.getConfigurationSection("currencies");
+            if (currencySection != null) {
+                for (String currency : currencySection.getKeys(false)) {
+                    double amount = currencySection.getDouble(currency);
+                    if (!plugin.getPwingEcoAPI().hasCurrency(player, currency, amount)) {
+                        player.sendMessage(plugin.getMessageManager().getMessage("guild.structure-need-currency")
+                                .replace("{amount}", String.valueOf(amount))
+                                .replace("{currency}", currency));
+                        return false;
+                    }
+                }
+            }
+        }
+
         if (guild.hasBuiltStructure(structureName)) {
             player.sendMessage(plugin.getMessageManager().getMessage("guild.structure-already-built"));
             return false;

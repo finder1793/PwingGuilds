@@ -34,6 +34,7 @@ import com.pwing.guilds.integration.WorldGuardHook;
 import com.pwing.guilds.database.DatabaseManager;
 import com.pwing.guilds.integrations.skript.SkriptGuildsHook;
 import com.pwing.guilds.compat.ItemCompatibilityHandler;
+import com.pwing.pwingeco.api.ShopIntegrationAPI;
 
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -74,6 +75,7 @@ public class PwingGuilds extends JavaPlugin {
     private GuildBackupManager guildBackupManager;
     private MessageManager messageManager;
     private ItemCompatibilityHandler itemCompatHandler;
+    private ShopIntegrationAPI pwingEcoAPI;
     private static PwingGuilds instance;
     private boolean allowStructures;
     private FileConfiguration structuresConfig;
@@ -185,6 +187,12 @@ public class PwingGuilds extends JavaPlugin {
         // Initialize WorldGuard hook if the plugin is present
         if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
             worldGuardHook = new WorldGuardHook(this);
+        }
+
+        // Setup PwingEco if available
+        if (getServer().getPluginManager().getPlugin("PwingEco") != null) {
+            pwingEcoAPI = ShopIntegrationAPI.getInstance();
+            getLogger().info("PwingEco found and hooked!");
         }
 
         this.rewardManager = new RewardManager(this);
@@ -481,5 +489,10 @@ public class PwingGuilds extends JavaPlugin {
     // Add a getter for the AllianceStorage instance
     public AllianceStorage getAllianceStorage() {
         return allianceStorage;
+    }
+
+    // Add a getter for the PwingEco API
+    public ShopIntegrationAPI getPwingEcoAPI() {
+        return pwingEcoAPI;
     }
 }
