@@ -98,6 +98,11 @@ public class GuildBackupManager {
      * @param guild The guild to backup
      */
     public void createCompressedBackup(Guild guild) {
+        if (guild == null) {
+            plugin.getLogger().warning("Guild is null, skipping backup.");
+            return;
+        }
+
         String timestamp = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
         File backupFile = new File(backupFolder, guild.getName() + "-" + timestamp + ".gz");
 

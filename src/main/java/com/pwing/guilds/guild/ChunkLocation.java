@@ -4,11 +4,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents a location of a chunk in the world
  */
-public class ChunkLocation {
+public class ChunkLocation implements ConfigurationSerializable {
     private final String worldName;
     private final int x;
     private final int z;
@@ -112,5 +116,21 @@ public class ChunkLocation {
     @Override 
     public String toString() {
         return String.format("%s(%d,%d)", worldName, x, z);
+    }
+
+    @Override
+    public Map<String, Object> serialize() {
+        Map<String, Object> serialized = new HashMap<>();
+        serialized.put("worldName", worldName);
+        serialized.put("x", x);
+        serialized.put("z", z);
+        return serialized;
+    }
+
+    public static ChunkLocation deserialize(Map<String, Object> data) {
+        String worldName = (String) data.get("worldName");
+        int x = (int) data.get("x");
+        int z = (int) data.get("z");
+        return new ChunkLocation(worldName, x, z);
     }
 }

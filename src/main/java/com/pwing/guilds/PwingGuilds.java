@@ -114,6 +114,15 @@ public class PwingGuilds extends JavaPlugin {
         // Load the toggle for the structure system
         allowStructures = getConfig().getBoolean("guild-settings.allow-structures", true);
 
+        // Load configuration files
+        saveDefaultConfig();
+        saveResource("gui.yml", false);
+
+        // Load the GUI configuration
+        File guiFile = new File(getDataFolder(), "gui.yml");
+        YamlConfiguration guiConfig = YamlConfiguration.loadConfiguration(guiFile);
+        getConfig().set("gui", guiConfig.getConfigurationSection("gui"));
+
         // Register commands first before any other initialization
         try {
             registerCommands();

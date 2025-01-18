@@ -321,47 +321,22 @@ public class Guild implements ConfigurationSerializable {
         }
         return false;
     }
+
     @Override
     public Map<String, Object> serialize() {
-        Map<String, Object> data = new HashMap<>();
-        try {
-            data.putAll(Map.of(
-                "name", Objects.requireNonNull(name, "Guild name cannot be null"),
-                "leader", Objects.requireNonNull(leader, "Guild leader cannot be null"),
-                "members", members.stream()
-                    .map(member -> Objects.requireNonNull(member, "Guild member cannot be null"))
-                    .sorted()
-                    .collect(Collectors.toList()),
-                "claims", claimedChunks.stream()
-                    .sorted((c1, c2) -> {
-                        int worldCompare = c1.getWorld().getName().compareTo(c2.getWorld().getName());
-                        if (worldCompare != 0) return worldCompare;
-                        int xCompare = Integer.compare(c1.getX(), c2.getX());
-                        if (xCompare != 0) return xCompare;
-                        return Integer.compare(c1.getZ(), c2.getZ());
-                    })
-                    .map(chunk -> Map.of(
-                            "world", chunk.getWorld().getName(),
-                            "x", chunk.getX(),
-                            "z", chunk.getZ()
-                    )).collect(Collectors.toList()),
-                "homes", homes.entrySet().stream()
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            e -> serializeLocation(e.getValue().getLocation())
-                    )),
-                "bonus-claims", bonusClaims,
-                "exp", exp,
-                "level", level,
-                "alliance", alliance != null ? alliance.getName() : null,
-                "pvp-enabled", pvpEnabled
-            ));
-            data.put("builtStructures", new ArrayList<>(builtStructures));
-        } catch (NullPointerException e) {
-            plugin.getLogger().severe("Error serializing guild: " + name);
-            throw e;
-        }
-        return data;
+        Map<String, Object> serialized = new HashMap<>();
+        serialized.put("name", name);
+        serialized.put("owner", owner.toString());
+        serialized.put("level", level);
+        serialized.put("exp", exp);
+        serialized.put("bonus-claims", bonusClaims);
+        serialized.put("members", members.stream().map(UUID::toString).collect(Collectors.toList()));
+        serialized.put("claims", claimedChunks.stream().map(ChunkLocation::serialize).collect(Collectors.toList()));
+        serialized.put("homes", homes);
+        serialized.put("pvp-enabled", pvpEnabled);
+        serialized.put("builtStructures", builtStructures != null ? builtStructures : new ArrayList<>());
+
+        return serialized;
     }
 
     private Map<String, Object> serializeLocation(Location loc) {
