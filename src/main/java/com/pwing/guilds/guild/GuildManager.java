@@ -33,6 +33,8 @@ import com.sk89q.worldedit.WorldEditException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
+import com.pwing.pwingeco.PwingEco; 
+import com.pwing.pwingeco.api.ShopIntegrationAPI;
 
 /**
  * Manages all guild-related operations and data within the plugin.
@@ -400,7 +402,7 @@ public class GuildManager {
             if (currencySection != null) {
                 for (String currency : currencySection.getKeys(false)) {
                     double amount = currencySection.getDouble(currency);
-                    if (!plugin.getPwingEcoAPI().hasCurrency(player, currency, amount)) {
+                    if (!plugin.getPwingEcoAPI().processSale(player, currency, amount)) {
                         player.sendMessage(plugin.getMessageManager().getMessage("guild.structure-need-currency")
                                 .replace("{amount}", String.valueOf(amount))
                                 .replace("{currency}", currency));

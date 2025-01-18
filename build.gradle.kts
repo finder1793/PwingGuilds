@@ -40,7 +40,6 @@ repositories {
         name = "viaversion"
         url = uri("https://repo.viaversion.com")
     }
-    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
@@ -65,7 +64,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.1.0") {
         exclude(group = "org.slf4j", module = "slf4j-api")
     }
-    implementation("com.github.finder1793:PwingEco:main-SNAPSHOT")
+    implementation(files("libs/PwingEco-1.1.2.jar"))
 }
 
 java {

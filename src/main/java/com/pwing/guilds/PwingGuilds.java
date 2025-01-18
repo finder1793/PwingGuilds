@@ -35,6 +35,7 @@ import com.pwing.guilds.database.DatabaseManager;
 import com.pwing.guilds.integrations.skript.SkriptGuildsHook;
 import com.pwing.guilds.compat.ItemCompatibilityHandler;
 import com.pwing.pwingeco.api.ShopIntegrationAPI;
+import com.pwing.pwingeco.PwingEco;
 
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -191,7 +192,8 @@ public class PwingGuilds extends JavaPlugin {
 
         // Setup PwingEco if available
         if (getServer().getPluginManager().getPlugin("PwingEco") != null) {
-            pwingEcoAPI = ShopIntegrationAPI.getInstance();
+            PwingEco pwingEco = (PwingEco) getServer().getPluginManager().getPlugin("PwingEco");
+            pwingEcoAPI = new ShopIntegrationAPI(pwingEco);
             getLogger().info("PwingEco found and hooked!");
         }
 
