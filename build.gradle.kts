@@ -64,7 +64,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.1.0") {
         exclude(group = "org.slf4j", module = "slf4j-api")
     }
-    implementation(files("libs/PwingEco-1.1.2.jar"))
+    compileOnly(files("libs/PwingEco-1.1.2.jar"))
 }
 
 java {
