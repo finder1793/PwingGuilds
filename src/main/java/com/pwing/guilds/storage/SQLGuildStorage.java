@@ -351,9 +351,11 @@ public class SQLGuildStorage implements GuildStorage {
                         guilds.add(guild);
                         guildCache.put(guild.getName(), guild);
                         guild.getMembers().forEach(member -> playerGuildCache.put(member, guild));
+                        plugin.getLogger().info("Loaded guild: " + guild.getName() + " with " + guild.getMembers().size() + " members and " + guild.getClaimedChunks().size() + " claims.");
                     }
                 }
             } catch (SQLException e) {
+                plugin.getLogger().severe("Failed to load guilds from SQL storage: " + e.getMessage());
                 e.printStackTrace();
             }
         });
