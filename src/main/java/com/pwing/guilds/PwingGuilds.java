@@ -290,6 +290,10 @@ public class PwingGuilds extends JavaPlugin {
         dataSource = new HikariDataSource(config);
     }
 
+    public HikariDataSource getDataSource() {
+        return dataSource;
+    }
+
     // Getters
     /**
      * Gets the AllianceManager instance.
