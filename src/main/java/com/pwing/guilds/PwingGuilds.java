@@ -209,9 +209,11 @@ public class PwingGuilds extends JavaPlugin {
         this.guildManager.initialize();
         this.allianceManager.initialize();
 
-        // Register backup system
-        guildBackupManager = new GuildBackupManager(this);
-        getServer().getPluginManager().registerEvents(new GuildBackupListener(this, guildBackupManager), this);
+        // Register backup system only if using YAML storage
+        if (!(storage instanceof SQLGuildStorage)) {
+            guildBackupManager = new GuildBackupManager(this);
+            getServer().getPluginManager().registerEvents(new GuildBackupListener(this, guildBackupManager), this);
+        }
 
         // Register all listeners
         eventRegistry.registerListeners();

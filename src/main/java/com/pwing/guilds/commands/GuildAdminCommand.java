@@ -160,19 +160,28 @@ public class GuildAdminCommand implements CommandExecutor {
             newStorage = new SQLGuildStorage(plugin, plugin.getDataSource());
         }
 
-        migrateData(currentStorage, newStorage);
-
-        // Update the configuration file to reflect the new storage type
-        plugin.getConfig().set("storage.type", targetType);
-        plugin.saveConfig();
-
-        sender.sendMessage("Data migration to " + targetType.toUpperCase() + " storage completed.");
+        try {
+            migrateData(currentStorage, newStorage);
+            // Update the configuration file to reflect the new storage type
+            plugin.getConfig().set("storage.type", targetType);
+            plugin.saveConfig();
+            sender.sendMessage("Data migration to " + targetType.toUpperCase() + " storage completed.");
+        } catch (Exception e) {
+            sender.sendMessage("Data migration failed: " + e.getMessage());
+            plugin.getLogger().severe("Data migration failed: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
-    private void migrateData(GuildStorage from, GuildStorage to) {
+    private void migrateData(GuildStorage from, GuildStorage to) throws Exception {
         Set<Guild> guilds = from.loadAllGuilds();
         for (Guild guild : guilds) {
-            to.saveGuild(guild);
+            try {
+                to.saveGuild(guild);
+            } catch (Exception e) {
+                plugin.getLogger().severe("Failed to migrate guild: " + guild.getName());
+                throw e;
+            }
         }
     }
 }

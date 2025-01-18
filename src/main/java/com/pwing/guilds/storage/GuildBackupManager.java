@@ -196,6 +196,9 @@ public class GuildBackupManager {
         } catch (IOException e) {
             plugin.getLogger().severe("Failed to create backup for guild: " + guild.getName());
             e.printStackTrace();
+        } catch (Exception e) {
+            plugin.getLogger().severe("Unexpected error during backup for guild: " + guild.getName());
+            e.printStackTrace();
         }
     }
 
