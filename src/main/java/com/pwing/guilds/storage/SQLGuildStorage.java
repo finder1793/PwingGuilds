@@ -266,7 +266,7 @@ public class SQLGuildStorage implements GuildStorage {
     public void saveGuild(Guild guild) {
         guildCache.put(guild.getName(), guild);
         guild.getMembers().forEach(member -> playerGuildCache.put(member, guild));
-        saveQueue.offer(guild);
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> saveQueue.offer(guild));
     }
 
     @Override
@@ -340,79 +340,86 @@ public class SQLGuildStorage implements GuildStorage {
     @Override
     public Set<Guild> loadAllGuilds() {
         Set<Guild> guilds = new HashSet<>();
-        try (Connection conn = dataSource.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT name FROM guilds")) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try (Connection conn = dataSource.getConnection();
+                 Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery("SELECT name FROM guilds")) {
 
-            while (rs.next()) {
-                Guild guild = loadGuild(rs.getString("name"));
-                if (guild != null) {
-                    guilds.add(guild);
-                    guildCache.put(guild.getName(), guild);
-                    guild.getMembers().forEach(member -> playerGuildCache.put(member, guild));
+                while (rs.next()) {
+                    Guild guild = loadGuild(rs.getString("name"));
+                    if (guild != null) {
+                        guilds.add(guild);
+                        guildCache.put(guild.getName(), guild);
+                        guild.getMembers().forEach(member -> playerGuildCache.put(member, guild));
+                    }
                 }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        });
         return guilds;
     }
 
     @Override
     public void deleteGuild(String name) {
         guildCache.remove(name);
-        try (Connection conn = dataSource.getConnection()) {
-            conn.setAutoCommit(false);
-            try {
-                String[] tables = {"guild_homes", "guild_members", "guild_chunks", "guild_storage", "guilds"};
-                for (String table : tables) {
-                    try (PreparedStatement ps = conn.prepareStatement("DELETE FROM " + table + " WHERE guild_name = ?")) {
-                        ps.setString(1, name);
-                        ps.executeUpdate();
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try (Connection conn = dataSource.getConnection()) {
+                conn.setAutoCommit(false);
+                try {
+                    String[] tables = {"guild_homes", "guild_members", "guild_chunks", "guild_storage", "guilds"};
+                    for (String table : tables) {
+                        try (PreparedStatement ps = conn.prepareStatement("DELETE FROM " + table + " WHERE guild_name = ?")) {
+                            ps.setString(1, name);
+                            ps.executeUpdate();
+                        }
                     }
+                    conn.commit();
+                } catch (SQLException e) {
+                    conn.rollback();
+                    throw e;
+                } finally {
+                    conn.setAutoCommit(true);
                 }
-                conn.commit();
             } catch (SQLException e) {
-                conn.rollback();
-                throw e;
-            } finally {
-                conn.setAutoCommit(true);
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     @Override
     public void saveStorageData(String guildName, ItemStack[] contents) {
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(
-                 "REPLACE INTO guild_storage (guild_name, contents) VALUES (?, ?)")) {
-            ps.setString(1, guildName);
-            ps.setBytes(2, serializeItems(contents));
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            plugin.getLogger().severe("Failed to save storage for guild: " + guildName);
-            e.printStackTrace();
-        }
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try (Connection conn = dataSource.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(
+                     "REPLACE INTO guild_storage (guild_name, contents) VALUES (?, ?)")) {
+                ps.setString(1, guildName);
+                ps.setBytes(2, serializeItems(contents));
+                ps.executeUpdate();
+            } catch (SQLException e) {
+                plugin.getLogger().severe("Failed to save storage for guild: " + guildName);
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
     public ConfigurationSection getStorageData(String guildName) {
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(
-                 "SELECT contents FROM guild_storage WHERE guild_name = ?")) {
-            ps.setString(1, guildName);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                YamlConfiguration config = new YamlConfiguration();
-                config.set("contents", deserializeItems(rs.getBytes("contents")));
-                return config;
+        final YamlConfiguration config = new YamlConfiguration();
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try (Connection conn = dataSource.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(
+                     "SELECT contents FROM guild_storage WHERE guild_name = ?")) {
+                ps.setString(1, guildName);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    config.set("contents", deserializeItems(rs.getBytes("contents")));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
+        });
+        return config;
     }
 
     @Override

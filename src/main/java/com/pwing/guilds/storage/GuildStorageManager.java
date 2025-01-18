@@ -106,13 +106,15 @@ public class GuildStorageManager implements Listener {
     }
 
     private void loadAllStorages() {
-        for (Guild guild : plugin.getGuildManager().getGuilds()) {
-            ConfigurationSection section = guildManager.getStorage().getStorageData(guild.getName());
-            if (section != null) {
-                ItemStack[] contents = (ItemStack[]) section.get("contents");
-                guildStorages.put(guild.getName(), contents);
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            for (Guild guild : plugin.getGuildManager().getGuilds()) {
+                ConfigurationSection section = guildManager.getStorage().getStorageData(guild.getName());
+                if (section != null) {
+                    ItemStack[] contents = (ItemStack[]) section.get("contents");
+                    guildStorages.put(guild.getName(), contents);
+                }
             }
-        }
+        });
     }
 
     private void saveStorageAsync(String guildName) {
