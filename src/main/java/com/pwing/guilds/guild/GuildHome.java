@@ -1,12 +1,16 @@
 package com.pwing.guilds.guild;
 
 import org.bukkit.Location;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents a guild home location that members can teleport to.
  * Each guild can have multiple named home locations.
  */
-public class GuildHome {
+public class GuildHome implements ConfigurationSerializable {
     private final String name;
     private final Location location;
 
@@ -31,4 +35,18 @@ public class GuildHome {
      * @return The home's location
      */
     public Location getLocation() { return location; }
+
+    @Override
+    public Map<String, Object> serialize() {
+        Map<String, Object> serialized = new HashMap<>();
+        serialized.put("name", name);
+        serialized.put("location", location.serialize());
+        return serialized;
+    }
+
+    public static GuildHome deserialize(Map<String, Object> data) {
+        String name = (String) data.get("name");
+        Location location = Location.deserialize((Map<String, Object>) data.get("location"));
+        return new GuildHome(name, location);
+    }
 }

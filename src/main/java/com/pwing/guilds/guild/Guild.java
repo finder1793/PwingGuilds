@@ -417,24 +417,30 @@ public class Guild implements ConfigurationSerializable {
         Object homesObj = data.get("homes");
         if (homesObj instanceof Map) {
             @SuppressWarnings("unchecked")
-            Map<String, String> homes = (Map<String, String>) homesObj;
-            homes.forEach((homeName, locationString) -> {
-                String[] parts = locationString.split(",");
-                if (parts.length >= 6) {
-                    String worldName = parts[0];
-                    if (Bukkit.getWorld(worldName) == null) {
-                        plugin.getLogger().warning("Invalid world name in home: " + homeName);
-                        return;
+            Map<String, Object> homes = (Map<String, Object>) homesObj;
+            homes.forEach((homeName, homeData) -> {
+                if (homeData instanceof Map) {
+                    GuildHome home = GuildHome.deserialize((Map<String, Object>) homeData);
+                    guild.homes.put(homeName.toLowerCase(), home);
+                } else if (homeData instanceof String) {
+                    // Handle old format
+                    String[] parts = ((String) homeData).split(",");
+                    if (parts.length >= 6) {
+                        String worldName = parts[0];
+                        if (Bukkit.getWorld(worldName) == null) {
+                            plugin.getLogger().warning("Invalid world name in home: " + homeName);
+                            return;
+                        }
+                        Location loc = new Location(
+                                Bukkit.getWorld(worldName),
+                                Double.parseDouble(parts[1]),
+                                Double.parseDouble(parts[2]),
+                                Double.parseDouble(parts[3]),
+                                Float.parseFloat(parts[4]),
+                                Float.parseFloat(parts[5])
+                        );
+                        guild.setHome(homeName, loc);
                     }
-                    Location loc = new Location(
-                            Bukkit.getWorld(worldName),
-                            Double.parseDouble(parts[1]),
-                            Double.parseDouble(parts[2]),
-                            Double.parseDouble(parts[3]),
-                            Float.parseFloat(parts[4]),
-                            Float.parseFloat(parts[5])
-                    );
-                    guild.setHome(homeName, loc);
                 }
             });
         }
