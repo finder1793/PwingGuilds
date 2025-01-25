@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 @SerializableAs("Guild")
 /**
  * Represents a guild in the PwingGuilds plugin.
- * Manages guild members, claims, homes, and other guild-related data.
  */
 public class Guild implements ConfigurationSerializable {
     private final PwingGuilds plugin;
@@ -679,10 +678,18 @@ public class Guild implements ConfigurationSerializable {
         return Collections.unmodifiableSet(builtStructures);
     }
 
+    /**
+     * Gets the tag of the guild.
+     * @return the guild tag
+     */
     public String getTag() {
         return tag;
     }
 
+    /**
+     * Sets the tag of the guild.
+     * @param tag the new guild tag
+     */
     public void setTag(String tag) {
         this.tag = tag;
     }

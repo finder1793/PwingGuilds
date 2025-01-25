@@ -127,6 +127,11 @@ public class ChunkLocation implements ConfigurationSerializable {
         return serialized;
     }
 
+    /**
+     * Deserializes a ChunkLocation from a map of data.
+     * @param data the map of data
+     * @return the deserialized ChunkLocation
+     */
     public static ChunkLocation deserialize(Map<String, Object> data) {
         String worldName = (String) data.get("worldName");
         int x = (int) data.get("x");

@@ -44,6 +44,11 @@ public class GuildHome implements ConfigurationSerializable {
         return serialized;
     }
 
+    /**
+     * Deserializes a GuildHome from a map of data.
+     * @param data the map of data
+     * @return the deserialized GuildHome
+     */
     public static GuildHome deserialize(Map<String, Object> data) {
         String name = (String) data.get("name");
         Location location = Location.deserialize((Map<String, Object>) data.get("location"));

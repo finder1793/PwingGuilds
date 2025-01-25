@@ -27,6 +27,10 @@ public class ChunkVisualizer {
 
     private static Map<UUID, Boolean> playerVisualizationStatus = new HashMap<>();
 
+    /**
+     * Toggles the chunk visualization for the player.
+     * @param player the player to toggle the chunk visualization for
+     */
     public static void toggleChunkVisualization(Player player) {
         UUID playerId = player.getUniqueId();
         if (playerVisualizationStatus.containsKey(playerId) && playerVisualizationStatus.get(playerId)) {

@@ -27,6 +27,10 @@ public class ChatManager implements Listener {
     private final Map<UUID, Boolean> pendingTagChanges = new HashMap<>();
     private final PwingGuilds plugin;
 
+    /**
+     * Constructor for ChatManager.
+     * @param plugin the PwingGuilds plugin instance
+     */
     public ChatManager(PwingGuilds plugin) {
         this.plugin = plugin;
     }
@@ -40,10 +44,18 @@ public class ChatManager implements Listener {
         responseHandlers.put(player, handler);
     }
 
+    /**
+     * Adds a pending tag change for the player.
+     * @param player the player to add the pending tag change for
+     */
     public void addPendingTagChange(Player player) {
         pendingTagChanges.put(player.getUniqueId(), true);
     }
 
+    /**
+     * Handles the player chat event.
+     * @param event the AsyncPlayerChatEvent
+     */
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
@@ -170,9 +182,21 @@ public class ChatManager implements Listener {
         }
     }
 
+    /**
+     * Enum representing different chat modes.
+     */
     public enum ChatMode {
+        /**
+         * General chat mode.
+         */
         GENERAL,
+        /**
+         * Guild chat mode.
+         */
         GUILD,
+        /**
+         * Alliance chat mode.
+         */
         ALLIANCE
     }
 }

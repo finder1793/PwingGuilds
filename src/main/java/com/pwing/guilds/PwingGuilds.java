@@ -304,7 +304,9 @@ public class PwingGuilds extends JavaPlugin {
         economy = rsp.getProvider();
         return true;
     }
-    // Add the setupDatabase method
+    /**
+     * Sets up the database for the plugin.
+     */
     public void setupDatabase() {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:mysql://" + getConfig().getString("storage.mysql.host") + ":" +
@@ -314,6 +316,10 @@ public class PwingGuilds extends JavaPlugin {
         dataSource = new HikariDataSource(config);
     }
 
+    /**
+     * Gets the data source for the plugin.
+     * @return the HikariDataSource
+     */
     public HikariDataSource getDataSource() {
         return dataSource;
     }
@@ -506,24 +512,54 @@ public class PwingGuilds extends JavaPlugin {
     }
     // Add a getter for the GuildStorage instance
 
+    /**
+     * Gets the guild storage.
+     * @return the GuildStorage
+     */
     public GuildStorage getGuildStorage() {
         return storage;
     }
     // Add a getter for the AllianceStorage instance
+    /**
+     * Gets the alliance storage.
+     * @return the AllianceStorage
+     */
     public AllianceStorage getAllianceStorage() {
         return allianceStorage;
     }
 
     // Add a getter for the PwingEco API
+    /**
+     * Gets the PwingEco API.
+     * @return the ShopIntegrationAPI
+     */
     public ShopIntegrationAPI getPwingEcoAPI() {
         return pwingEcoAPI;
     }
 
+    /**
+     * Gets the chat manager.
+     * @return the ChatManager
+     */
     public ChatManager getChatManager() {
         return chatManager;
     }
 
+    /**
+     * Checks if Citizens is enabled.
+     * @return true if Citizens is enabled, false otherwise
+     */
     public boolean isCitizensEnabled() {
         return citizensEnabled;
+    }
+
+    /**
+     * Retrieves a guild by its name.
+     * 
+     * @param name The name of the guild.
+     * @return The guild if found, null otherwise.
+     */
+    public Guild getGuildByName(String name) {
+        return guildManager.getGuild(name).orElse(null);
     }
 }

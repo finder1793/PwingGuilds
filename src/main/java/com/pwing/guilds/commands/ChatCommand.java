@@ -15,6 +15,10 @@ import java.util.Arrays;
 public class ChatCommand implements CommandExecutor {
     private final PwingGuilds plugin;
 
+    /**
+     * Constructor for ChatCommand.
+     * @param plugin the PwingGuilds plugin instance
+     */
     public ChatCommand(PwingGuilds plugin) {
         this.plugin = plugin;
     }
