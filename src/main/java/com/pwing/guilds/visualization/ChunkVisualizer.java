@@ -53,7 +53,8 @@ public class ChunkVisualizer {
 
     /**
      * Displays particle effects around chunk borders for a player
-     * Creates a visual outline using END_ROD particles at chunk edges
+     * Creates a visual outline using END_ROD particles at chunk edges in unclaimed areas
+     * and VILLAGER_HAPPY particles in claimed areas
      * 
      * @param player Player to show particles to
      * @param chunk Chunk to visualize borders for
