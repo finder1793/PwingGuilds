@@ -320,6 +320,22 @@ public class GuildCommand implements CommandExecutor {
                     }
                 );
             }
+            case "settag" -> {
+                if (args.length < 2) {
+                    player.sendMessage("§cUsage: /guild settag <tag>");
+                    return true;
+                }
+                String tag = args[1];
+                plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresentOrElse(guild -> {
+                    if (guild.getLeader().equals(player.getUniqueId())) {
+                        guild.setTag(tag);
+                        plugin.getGuildManager().getStorage().saveGuild(guild);
+                        player.sendMessage("§aGuild tag set to: " + tag);
+                    } else {
+                        player.sendMessage("§cOnly the guild leader can set the tag.");
+                    }
+                }, () -> player.sendMessage("§cYou are not in a guild."));
+            }
             default -> sendHelpMessage(player);
         }
         return true;

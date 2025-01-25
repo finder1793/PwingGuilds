@@ -115,6 +115,19 @@ public class GuildManagementGUI implements Listener {
         }
 
         player.openInventory(inv);
+
+        // Add event handler to prevent items from being taken out of the claims map GUI
+        Bukkit.getPluginManager().registerEvents(new Listener() {
+            @EventHandler
+            public void onClaimsMapClick(InventoryClickEvent event) {
+                if (!event.getView().getTitle().equals(title)) {
+                    return;
+                }
+
+                event.setCancelled(true); // Prevent items from being taken out of the claims map GUI
+                // Handle claims map specific logic here if needed
+            }
+        }, plugin);
     }
 
     /**
@@ -148,6 +161,19 @@ public class GuildManagementGUI implements Listener {
         }
 
         player.openInventory(inv);
+
+        // Add event handler to prevent items from being taken out of the buffs menu GUI
+        Bukkit.getPluginManager().registerEvents(new Listener() {
+            @EventHandler
+            public void onBuffsMenuClick(InventoryClickEvent event) {
+                if (!event.getView().getTitle().equals(title)) {
+                    return;
+                }
+
+                event.setCancelled(true); // Prevent items from being taken out of the buffs menu GUI
+                // Handle buffs menu specific logic here if needed
+            }
+        }, plugin);
     }
 
     private ItemStack createItem(Material material, String name, String... lore) {
@@ -200,6 +226,161 @@ public class GuildManagementGUI implements Listener {
         inv.setItem(49, back);
 
         player.openInventory(inv);
+
+        // Add event handler to prevent items from being taken out of the member management GUI
+        Bukkit.getPluginManager().registerEvents(new Listener() {
+            @EventHandler
+            public void onMemberManagementClick(InventoryClickEvent event) {
+                if (!event.getView().getTitle().equals(title)) {
+                    return;
+                }
+
+                event.setCancelled(true); // Prevent items from being taken out of the member management GUI
+                // Handle member management specific logic here if needed
+            }
+        }, plugin);
+    }
+
+    /**
+     * Opens the guild settings menu for the player.
+     * @param player The player to open the menu for
+     * @param guild The guild to manage settings for
+     */
+    public void openGuildSettings(Player player, Guild guild) {
+        String title = plugin.getConfigManager().getConfig("gui.yml").getString("gui.titles.settings", "Guild Settings");
+        Inventory inv = Bukkit.createInventory(null, 27, title);
+
+        // Change Guild Name
+        ItemStack changeName = createItem(Material.NAME_TAG, "§6Change Guild Name", "§7Click to change the guild name");
+        inv.setItem(11, changeName);
+
+        // Set Guild Description
+        ItemStack setDescription = createItem(Material.BOOK, "§6Set Guild Description", "§7Click to set the guild description");
+        inv.setItem(13, setDescription);
+
+        // Toggle PvP
+        ItemStack togglePvP = createItem(Material.IRON_SWORD, "§6Toggle PvP", "§7Click to toggle PvP within the guild");
+        inv.setItem(15, togglePvP);
+
+        // Back to Main Menu
+        ItemStack back = createItem(Material.ARROW, "§cBack to Main Menu");
+        inv.setItem(26, back);
+
+        player.openInventory(inv);
+
+        // Add event handler to prevent items from being taken out of the guild settings GUI
+        Bukkit.getPluginManager().registerEvents(new Listener() {
+            @EventHandler
+            public void onGuildSettingsClick(InventoryClickEvent event) {
+                if (!event.getView().getTitle().equals(title)) {
+                    return;
+                }
+
+                event.setCancelled(true); // Prevent items from being taken out of the guild settings GUI
+                Player player = (Player) event.getWhoClicked();
+                switch (event.getSlot()) {
+                    case 11:
+                        // Implement change guild name logic
+                        player.sendMessage("Change guild name clicked");
+                        break;
+                    case 13:
+                        // Implement set guild description logic
+                        player.sendMessage("Set guild description clicked");
+                        break;
+                    case 15:
+                        // Implement toggle PvP logic
+                        player.sendMessage("Toggle PvP clicked");
+                        break;
+                    case 26:
+                        openMainMenu(player);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }, plugin);
+    }
+
+    /**
+     * Opens the alliance management menu for the player.
+     * @param player The player to open the menu for
+     * @param guild The guild to manage alliances for
+     */
+    public void openAllianceManagement(Player player, Guild guild) {
+        String title = plugin.getConfigManager().getConfig("gui.yml").getString("gui.titles.alliances", "Guild Alliances");
+        Inventory inv = Bukkit.createInventory(null, 27, title);
+
+        // Create Alliance
+        ItemStack createAlliance = createItem(Material.PAPER, "§6Create Alliance", "§7Click to create a new alliance");
+        inv.setItem(11, createAlliance);
+
+        // Join Alliance
+        ItemStack joinAlliance = createItem(Material.BOOK, "§6Join Alliance", "§7Click to join an existing alliance");
+        inv.setItem(13, joinAlliance);
+
+        // Leave Alliance
+        ItemStack leaveAlliance = createItem(Material.BARRIER, "§6Leave Alliance", "§7Click to leave the current alliance");
+        inv.setItem(15, leaveAlliance);
+
+        // Back to Main Menu
+        ItemStack back = createItem(Material.ARROW, "§cBack to Main Menu");
+        inv.setItem(26, back);
+
+        player.openInventory(inv);
+
+        // Add event handler to prevent items from being taken out of the alliance management GUI
+        Bukkit.getPluginManager().registerEvents(new Listener() {
+            @EventHandler
+            public void onAllianceManagementClick(InventoryClickEvent event) {
+                if (!event.getView().getTitle().equals(title)) {
+                    return;
+                }
+
+                event.setCancelled(true); // Prevent items from being taken out of the alliance management GUI
+                Player player = (Player) event.getWhoClicked();
+                switch (event.getSlot()) {
+                    case 11:
+                        // Implement create alliance logic
+                        player.sendMessage("Enter the name of the new alliance:");
+                        plugin.getChatManager().expectResponse(player, response -> {
+                            String allianceName = response.getMessage();
+                            if (plugin.getAllianceManager().getAlliance(allianceName).isPresent()) {
+                                player.sendMessage("An alliance with that name already exists.");
+                            } else {
+                                plugin.getAllianceManager().createAlliance(allianceName, guild);
+                                player.sendMessage("Alliance created successfully.");
+                            }
+                        });
+                        break;
+                    case 13:
+                        // Implement join alliance logic
+                        player.sendMessage("Enter the name of the alliance to join:");
+                        plugin.getChatManager().expectResponse(player, response -> {
+                            String allianceName = response.getMessage();
+                            if (plugin.getAllianceManager().addGuildToAlliance(allianceName, guild)) {
+                                player.sendMessage("Joined alliance successfully.");
+                            } else {
+                                player.sendMessage("Failed to join alliance. Make sure the alliance exists and you are not already a member.");
+                            }
+                        });
+                        break;
+                    case 15:
+                        // Implement leave alliance logic
+                        if (guild.getAlliance() != null) {
+                            plugin.getAllianceManager().removeGuildFromAlliance(guild.getAlliance().getName(), guild);
+                            player.sendMessage("Left alliance successfully.");
+                        } else {
+                            player.sendMessage("You are not part of any alliance.");
+                        }
+                        break;
+                    case 26:
+                        openMainMenu(player);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }, plugin);
     }
 
     /**
@@ -240,7 +421,7 @@ public class GuildManagementGUI implements Listener {
             return;
         }
 
-        event.setCancelled(true);
+        event.setCancelled(true); // Prevent items from being taken out of the GUI
         Player player = (Player) event.getWhoClicked();
         GuildInventoryHolder holder = (GuildInventoryHolder) event.getInventory().getHolder();
         Guild guild = holder.getGuild();
@@ -253,10 +434,13 @@ public class GuildManagementGUI implements Listener {
                 openClaimsMap(player, guild);
                 break;
             case 15:
-                // Open guild settings (implement this method)
+                openGuildSettings(player, guild);
                 break;
             case 17:
                 plugin.getStorageManager().openStorage(player, guild);
+                break;
+            case 19:
+                openAllianceManagement(player, guild);
                 break;
             case 49:
                 openMainMenu(player);

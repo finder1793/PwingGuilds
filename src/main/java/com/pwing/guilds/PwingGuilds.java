@@ -36,6 +36,8 @@ import com.pwing.guilds.integrations.skript.SkriptGuildsHook;
 import com.pwing.guilds.compat.ItemCompatibilityHandler;
 import com.pwing.pwingeco.api.ShopIntegrationAPI;
 import com.pwing.pwingeco.PwingEco;
+import com.pwing.guilds.chat.ChatManager;
+import com.pwing.guilds.commands.ChatCommand;
 
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -81,6 +83,7 @@ public class PwingGuilds extends JavaPlugin {
     private boolean allowStructures;
     private FileConfiguration structuresConfig;
     private HikariDataSource dataSource;
+    private ChatManager chatManager;
 
     /**
      * Checks if WorldGuard is available
@@ -245,6 +248,13 @@ public class PwingGuilds extends JavaPlugin {
 
         // Register the guildadmin command
         getCommand("guildadmin").setExecutor(new GuildAdminCommand(this));
+
+        // Initialize and register ChatManager
+        chatManager = new ChatManager(this);
+        getServer().getPluginManager().registerEvents(chatManager, this);
+
+        // Register chat command
+        getCommand("guildchat").setExecutor(new ChatCommand(this));
 
         getLogger().info("PwingGuilds has been enabled!");
     }
@@ -504,5 +514,9 @@ public class PwingGuilds extends JavaPlugin {
     // Add a getter for the PwingEco API
     public ShopIntegrationAPI getPwingEcoAPI() {
         return pwingEcoAPI;
+    }
+
+    public ChatManager getChatManager() {
+        return chatManager;
     }
 }

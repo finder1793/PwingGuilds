@@ -80,6 +80,10 @@ private final PwingGuilds plugin;
                     .map(guild -> guild.getAlliance() != null ? guild.getAlliance().getName() : "No Alliance")
                     .orElse("No Guild");
 
+            case "tag" -> plugin.getGuildManager().getPlayerGuild(player.getUniqueId())
+                    .map(guild -> guild.getTag())
+                    .orElse("No Tag");
+
             default -> null;
         };
     }

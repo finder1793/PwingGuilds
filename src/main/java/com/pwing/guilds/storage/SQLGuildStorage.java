@@ -96,7 +96,10 @@ public class SQLGuildStorage implements GuildStorage {
                     "owner VARCHAR(36)," +
                     "level INT," +
                     "exp BIGINT," +
-                    "bonus_claims INT DEFAULT 0" +
+                    "bonus_claims INT DEFAULT 0," +
+                    "pvp_enabled BOOLEAN DEFAULT FALSE," +
+                    "built_structures TEXT," +
+                    "tag VARCHAR(32)" + // Add tag column
                     ")");
 
             stmt.execute("CREATE TABLE IF NOT EXISTS guild_members (" +
@@ -183,12 +186,15 @@ public class SQLGuildStorage implements GuildStorage {
         executeTransaction(connection -> {
             // Save main guild data
             try (PreparedStatement ps = connection.prepareStatement(
-                    "REPLACE INTO guilds (name, owner, level, exp, bonus_claims) VALUES (?, ?, ?, ?, ?)")) {
+                    "REPLACE INTO guilds (name, owner, level, exp, bonus_claims, pvp_enabled, built_structures, tag) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
                 ps.setString(1, guild.getName());
                 ps.setString(2, guild.getOwner().toString());
                 ps.setInt(3, guild.getLevel());
                 ps.setLong(4, guild.getExp());
                 ps.setInt(5, guild.getBonusClaims());
+                ps.setBoolean(6, guild.isPvPEnabled());
+                ps.setString(7, String.join(",", guild.getBuiltStructures()));
+                ps.setString(8, guild.getTag()); // Save the tag
                 ps.executeUpdate();
             }
 
@@ -333,6 +339,36 @@ public class SQLGuildStorage implements GuildStorage {
                         rs.getFloat("pitch")
                 );
                 guild.setHome(rs.getString("home_name"), loc);
+            }
+        }
+
+        // Load PvP setting
+        try (PreparedStatement ps = conn.prepareStatement("SELECT pvp_enabled FROM guilds WHERE name = ?")) {
+            ps.setString(1, guild.getName());
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                guild.setPvPEnabled(rs.getBoolean("pvp_enabled"));
+            }
+        }
+
+        // Load built structures
+        try (PreparedStatement ps = conn.prepareStatement("SELECT built_structures FROM guilds WHERE name = ?")) {
+            ps.setString(1, guild.getName());
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                String builtStructures = rs.getString("built_structures");
+                if (builtStructures != null && !builtStructures.isEmpty()) {
+                    guild.getBuiltStructures().addAll(Arrays.asList(builtStructures.split(",")));
+                }
+            }
+        }
+
+        // Load tag
+        try (PreparedStatement ps = conn.prepareStatement("SELECT tag FROM guilds WHERE name = ?")) {
+            ps.setString(1, guild.getName());
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                guild.setTag(rs.getString("tag"));
             }
         }
     }

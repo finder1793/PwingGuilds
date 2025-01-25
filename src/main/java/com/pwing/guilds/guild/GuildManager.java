@@ -479,4 +479,14 @@ public class GuildManager {
             }
         });
     }
+
+    /**
+     * Sets the tag for a guild.
+     * @param guild The guild to set the tag for.
+     * @param tag The new tag for the guild.
+     */
+    public void setGuildTag(Guild guild, String tag) {
+        guild.setTag(tag);
+        storage.saveGuild(guild);
+    }
 }

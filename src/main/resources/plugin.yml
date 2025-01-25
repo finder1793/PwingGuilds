@@ -9,14 +9,19 @@ softdepend: [WorldGuard, PlaceholderAPI, MythicMobs, Skript, ViaVersion, PwingEc
 
 commands:
   guild:
-    description: Main guild command
+    description: "Guild management commands"
+    usage: "/guild <subcommand>"
     aliases: [g]
+    permission: "pwingguilds.command.guild"
   guildadmin:
     description: Guild admin commands
     aliases: [ga]
   alliance:
     description: Alliance management commands
     aliases: [ally]
+  guildchat:
+    description: Command for guild and alliance chat
+    usage: /guildchat <guild|alliance|general|spy> [message]
 
 permissions:
   guilds.command.guild:
@@ -40,4 +45,7 @@ permissions:
     description: Access to alliance commands
   pwingguilds.migrate:
     description: Allows the user to migrate data storage
+    default: op
+  guilds.command.guildchat.spy:
+    description: Allows the user to use social spy
     default: op

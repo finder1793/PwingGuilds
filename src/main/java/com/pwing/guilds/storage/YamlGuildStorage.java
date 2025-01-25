@@ -79,6 +79,7 @@ public class YamlGuildStorage implements GuildStorage {
             config.set("level", guild.getLevel());
             config.set("exp", guild.getExp());
             config.set("bonus-claims", guild.getBonusClaims());
+            config.set("tag", guild.getTag()); // Save the tag
 
             // Members
             config.set("members", guild.getMembers().stream()
@@ -142,7 +143,9 @@ public class YamlGuildStorage implements GuildStorage {
             }
 
             Map<String, Object> data = configSectionToMap(config);
-            return Guild.deserialize(plugin, data);
+            Guild guild = Guild.deserialize(plugin, data);
+            guild.setTag(config.getString("tag", "")); // Load the tag
+            return guild;
         } catch (Exception e) {
             plugin.getLogger().severe("Error loading guild from file: " + file.getName());
             e.printStackTrace();

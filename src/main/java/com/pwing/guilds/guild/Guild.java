@@ -41,6 +41,7 @@ public class Guild implements ConfigurationSerializable {
     private final Set<UUID> onlineMembers = new HashSet<>();
     private boolean pvpEnabled = false;  // Default PvP off in guild territories
     private final Set<String> builtStructures = new HashSet<>();
+    private String tag;
 
     /**
      * Creates a new guild with the specified parameters
@@ -676,5 +677,13 @@ public class Guild implements ConfigurationSerializable {
      */
     public Set<String> getBuiltStructures() {
         return Collections.unmodifiableSet(builtStructures);
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
     }
 }
