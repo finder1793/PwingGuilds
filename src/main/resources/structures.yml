@@ -4,13 +4,34 @@ structures:
     cost:
       DIAMOND: 10
       GOLD_INGOT: 20
+    citizens:
+      - id: 1
+        location:
+          world: "world"
+          x: 100
+          y: 65
+          z: 100
   tower:
     schematic: "tower.schem"
     cost:
       IRON_INGOT: 30
       STONE: 50
+    citizens:
+      - id: 2
+        location:
+          world: "world"
+          x: 200
+          y: 70
+          z: 200
   farm:
     schematic: "farm.schem"
     cost:
       WHEAT: 100
       WOOD: 50
+    citizens:
+      - id: 3
+        location:
+          world: "world"
+          x: 300
+          y: 64
+          z: 300

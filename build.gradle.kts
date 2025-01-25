@@ -38,7 +38,11 @@ repositories {
     }
     maven {
         name = "viaversion"
-        url = uri("https://repo.viaversion.com")
+        url = uri("https://repo.viaversion.com")    
+    }
+    maven {
+        name = "citizens"
+        url = uri("https://maven.citizensnpcs.co/repo")
     }
 }
 
@@ -65,6 +69,9 @@ dependencies {
         exclude(group = "org.slf4j", module = "slf4j-api")
     }
     compileOnly(files("libs/PwingEco-1.1.2.jar"))
+    compileOnly("net.citizensnpcs:citizens-main:2.0.35-SNAPSHOT") {
+        exclude(group = "*", module = "*")
+    }
 }
 
 java {

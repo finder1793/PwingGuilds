@@ -84,6 +84,7 @@ public class PwingGuilds extends JavaPlugin {
     private FileConfiguration structuresConfig;
     private HikariDataSource dataSource;
     private ChatManager chatManager;
+    private boolean citizensEnabled;
 
     /**
      * Checks if WorldGuard is available
@@ -255,6 +256,8 @@ public class PwingGuilds extends JavaPlugin {
 
         // Register chat command
         getCommand("guildchat").setExecutor(new ChatCommand(this));
+
+        citizensEnabled = getServer().getPluginManager().isPluginEnabled("Citizens");
 
         getLogger().info("PwingGuilds has been enabled!");
     }
@@ -518,5 +521,9 @@ public class PwingGuilds extends JavaPlugin {
 
     public ChatManager getChatManager() {
         return chatManager;
+    }
+
+    public boolean isCitizensEnabled() {
+        return citizensEnabled;
     }
 }

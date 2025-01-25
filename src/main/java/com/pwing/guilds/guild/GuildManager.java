@@ -4,6 +4,8 @@ import com.pwing.guilds.PwingGuilds;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,6 +37,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import com.pwing.pwingeco.PwingEco; 
 import com.pwing.pwingeco.api.ShopIntegrationAPI;
+import net.citizensnpcs.api.CitizensAPI;
+import net.citizensnpcs.api.npc.NPC;
 
 /**
  * Manages all guild-related operations and data within the plugin.
@@ -478,6 +482,9 @@ public class GuildManager {
                 e.printStackTrace();
             }
         });
+
+        // Spawn citizens after pasting the schematic
+        spawnCitizens(guild, structureName);
     }
 
     /**
@@ -488,5 +495,38 @@ public class GuildManager {
     public void setGuildTag(Guild guild, String tag) {
         guild.setTag(tag);
         storage.saveGuild(guild);
+    }
+
+    /**
+     * Spawns citizens for a guild structure.
+     * @param guild The guild.
+     * @param structureName The name of the structure.
+     */
+    public void spawnCitizens(Guild guild, String structureName) {
+        if (!plugin.isCitizensEnabled()) {
+            return;
+        }
+
+        ConfigurationSection structureSection = plugin.getStructuresConfig().getConfigurationSection("structures." + structureName);
+        if (structureSection == null) return;
+
+        List<Map<?, ?>> citizensList = structureSection.getMapList("citizens");
+        for (Map<?, ?> citizenData : citizensList) {
+            int id = (int) citizenData.get("id");
+            Map<?, ?> locationData = (Map<?, ?>) citizenData.get("location");
+            String worldName = (String) locationData.get("world");
+            double x = (double) locationData.get("x");
+            double y = (double) locationData.get("y");
+            double z = (double) locationData.get("z");
+
+            World world = Bukkit.getWorld(worldName);
+            if (world == null) continue;
+
+            Location location = new Location(world, x, y, z);
+            NPC npc = CitizensAPI.getNPCRegistry().getById(id);
+            if (npc != null) {
+                npc.spawn(location);
+            }
+        }
     }
 }
