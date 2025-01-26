@@ -40,17 +40,20 @@ public class SQLAllianceStorage implements AllianceStorage {
             stmt.execute("CREATE TABLE IF NOT EXISTS alliance_members (" +
                     "alliance_name VARCHAR(32)," +
                     "guild_name VARCHAR(32)," +
-                    "PRIMARY KEY (alliance_name, guild_name)" +
+                    "PRIMARY KEY (alliance_name, guild_name)," +
+                    "FOREIGN KEY (alliance_name) REFERENCES alliances(name) ON DELETE CASCADE" +
                     ")");
 
             stmt.execute("CREATE TABLE IF NOT EXISTS alliance_roles (" +
                     "alliance_name VARCHAR(32)," +
                     "player_uuid VARCHAR(36)," +
                     "role VARCHAR(16)," +
-                    "PRIMARY KEY (alliance_name, player_uuid)" +
+                    "PRIMARY KEY (alliance_name, player_uuid)," +
+                    "FOREIGN KEY (alliance_name) REFERENCES alliances(name) ON DELETE CASCADE" +
                     ")");
 
         } catch (SQLException e) {
+            plugin.getLogger().severe("Failed to initialize alliance tables: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -98,6 +101,7 @@ public class SQLAllianceStorage implements AllianceStorage {
                 throw e;
             }
         } catch (SQLException e) {
+            plugin.getLogger().severe("Failed to save alliance: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -169,6 +173,7 @@ public class SQLAllianceStorage implements AllianceStorage {
                 }
             }
         } catch (SQLException e) {
+            plugin.getLogger().severe("Failed to load alliances: " + e.getMessage());
             e.printStackTrace();
         }
         return alliances;
@@ -194,6 +199,7 @@ public class SQLAllianceStorage implements AllianceStorage {
                 throw e;
             }
         } catch (SQLException e) {
+            plugin.getLogger().severe("Failed to delete alliance: " + e.getMessage());
             e.printStackTrace();
         }
     }
