@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  */
 public class Guild implements ConfigurationSerializable {
     private final PwingGuilds plugin;
-    private final String name;
+    private String name;
     private final UUID owner;
     private UUID leader;
     private final Set<UUID> members = new HashSet<>();
@@ -41,6 +41,7 @@ public class Guild implements ConfigurationSerializable {
     private boolean pvpEnabled = false;  // Default PvP off in guild territories
     private final Set<String> builtStructures = new HashSet<>();
     private String tag;
+    private String description;
 
     /**
      * Creates a new guild with the specified parameters
@@ -317,6 +318,8 @@ public class Guild implements ConfigurationSerializable {
 
         if (!event.isCancelled()) {
             plugin.getGuildManager().updateGuildName(this, event.getNewName());
+            this.name = event.getNewName(); // Update the guild's name
+            plugin.getGuildManager().getStorage().saveGuild(this); // Save changes
             return true;
         }
         return false;
@@ -692,5 +695,22 @@ public class Guild implements ConfigurationSerializable {
      */
     public void setTag(String tag) {
         this.tag = tag;
+    }
+
+    /**
+     * Sets the guild's description
+     * @param description New description for the guild
+     */
+    public void setDescription(String description) {
+        this.description = description;
+        plugin.getGuildManager().getStorage().saveGuild(this);
+    }
+
+    /**
+     * Gets the guild's description
+     * @return The guild's description
+     */
+    public String getDescription() {
+        return description;
     }
 }

@@ -278,18 +278,30 @@ public class GuildManagementGUI implements Listener {
 
                 event.setCancelled(true); // Prevent items from being taken out of the guild settings GUI
                 Player player = (Player) event.getWhoClicked();
+                Guild guild = ((GuildInventoryHolder) event.getInventory().getHolder()).getGuild();
                 switch (event.getSlot()) {
                     case 11:
-                        // Implement change guild name logic
-                        player.sendMessage("Change guild name clicked");
+                        player.sendMessage("Enter the new guild name:");
+                        plugin.getChatManager().expectResponse(player, response -> {
+                            String newName = response.getMessage();
+                            if (guild.setName(newName)) {
+                                player.sendMessage("Guild name changed successfully to " + newName);
+                            } else {
+                                player.sendMessage("Failed to change guild name.");
+                            }
+                        });
                         break;
                     case 13:
-                        // Implement set guild description logic
-                        player.sendMessage("Set guild description clicked");
+                        player.sendMessage("Enter the new guild description:");
+                        plugin.getChatManager().expectResponse(player, response -> {
+                            String newDescription = response.getMessage();
+                            guild.setDescription(newDescription);
+                            player.sendMessage("Guild description set successfully.");
+                        });
                         break;
                     case 15:
-                        // Implement toggle PvP logic
-                        player.sendMessage("Toggle PvP clicked");
+                        guild.setPvPEnabled(!guild.isPvPEnabled());
+                        player.sendMessage("PvP is now " + (guild.isPvPEnabled() ? "enabled" : "disabled") + " in guild territories.");
                         break;
                     case 26:
                         openMainMenu(player);

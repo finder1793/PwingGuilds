@@ -184,6 +184,24 @@ public class SQLGuildStorage implements GuildStorage {
      */
     private void saveGuildData(Guild guild, Connection conn) throws SQLException {
         executeTransaction(connection -> {
+            // Check if the guild name has changed
+            String oldName = guildCache.entrySet().stream()
+                    .filter(entry -> entry.getValue().equals(guild))
+                    .map(Map.Entry::getKey)
+                    .findFirst()
+                    .orElse(guild.getName());
+
+            if (!oldName.equals(guild.getName())) {
+                // Delete old guild data
+                String[] tables = {"guild_homes", "guild_members", "guild_chunks", "guild_storage", "guilds"};
+                for (String table : tables) {
+                    try (PreparedStatement ps = connection.prepareStatement("DELETE FROM " + table + " WHERE guild_name = ?")) {
+                        ps.setString(1, oldName);
+                        ps.executeUpdate();
+                    }
+                }
+            }
+
             // Save main guild data
             try (PreparedStatement ps = connection.prepareStatement(
                     "REPLACE INTO guilds (name, owner, level, exp, bonus_claims, pvp_enabled, built_structures, tag) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {

@@ -70,7 +70,11 @@ public class YamlGuildStorage implements GuildStorage {
 
     public void saveGuild(Guild guild) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            File oldGuildFile = new File(guildsFolder, guild.getName() + ".yml");
             File guildFile = new File(guildsFolder, guild.getName() + ".yml");
+            if (!oldGuildFile.equals(guildFile) && oldGuildFile.exists()) {
+                oldGuildFile.delete();
+            }
             YamlConfiguration config = new YamlConfiguration();
 
             // Core guild data
