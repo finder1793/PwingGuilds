@@ -27,6 +27,69 @@ permissions:
   guilds.command.guild:
     description: Allows use of guild commands
     default: true
+  guilds.command.create:
+    description: Allows creating a guild
+    default: true
+  guilds.command.delete:
+    description: Allows deleting a guild
+    default: true
+  guilds.command.claim:
+    description: Allows claiming chunks for a guild
+    default: true
+  guilds.command.visualize:
+    description: Allows visualizing claimed chunks
+    default: true
+  guilds.command.invite:
+    description: Allows inviting players to a guild
+    default: true
+  guilds.command.accept:
+    description: Allows accepting guild invitations
+    default: true
+  guilds.command.kick:
+    description: Allows kicking players from a guild
+    default: true
+  guilds.command.gui:
+    description: Allows opening the guild management GUI
+    default: true
+  guilds.command.storage:
+    description: Allows accessing guild storage
+    default: true
+  guilds.command.sethome:
+    description: Allows setting a guild home
+    default: true
+  guilds.command.home:
+    description: Allows teleporting to a guild home
+    default: true
+  guilds.command.delhome:
+    description: Allows deleting a guild home
+    default: true
+  guilds.command.buff:
+    description: Allows accessing guild buffs
+    default: true
+  guilds.command.unclaim:
+    description: Allows unclaiming chunks for a guild
+    default: true
+  guilds.command.paste:
+    description: Allows pasting schematics for a guild
+    default: true
+  guilds.command.structures:
+    description: Allows managing guild structures
+    default: true
+  guilds.command.settag:
+    description: Allows setting a guild tag
+    default: true
+  guilds.command.guildchat.guild:
+    description: Allows using guild chat
+    default: true
+  guilds.command.guildchat.alliance:
+    description: Allows using alliance chat
+    default: true
+  guilds.command.guildchat.general:
+    description: Allows using general chat
+    default: true
+  guilds.command.guildchat.spy:
+    description: Allows the user to use social spy
+    default: op
   guilds.admin:
     description: Allows use of guild admin commands
     default: op
@@ -45,7 +108,4 @@ permissions:
     description: Access to alliance commands
   pwingguilds.migrate:
     description: Allows the user to migrate data storage
-    default: op
-  guilds.command.guildchat.spy:
-    description: Allows the user to use social spy
     default: op

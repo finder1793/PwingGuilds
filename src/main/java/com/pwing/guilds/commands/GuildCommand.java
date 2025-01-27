@@ -51,8 +51,18 @@ public class GuildCommand implements CommandExecutor {
         }
 
         switch (args[0].toLowerCase()) {
-            case "create" -> handleCreate(player, args);
+            case "create" -> {
+                if (!player.hasPermission("guilds.command.create")) {
+                    player.sendMessage(plugin.getMessageManager().getMessage("general.no-permission"));
+                    return true;
+                }
+                handleCreate(player, args);
+            }
             case "delete" -> {
+                if (!player.hasPermission("guilds.command.delete")) {
+                    player.sendMessage(plugin.getMessageManager().getMessage("general.no-permission"));
+                    return true;
+                }
                 plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresent(guild -> {
                     if (guild.getLeader().equals(player.getUniqueId())) {
                         plugin.getGuildManager().deleteGuild(guild.getName());
@@ -65,6 +75,10 @@ public class GuildCommand implements CommandExecutor {
                 });
             }
             case "claim" -> {
+                if (!player.hasPermission("guilds.command.claim")) {
+                    player.sendMessage(plugin.getMessageManager().getMessage("general.no-permission"));
+                    return true;
+                }
                 plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresentOrElse(
                     guild -> {
                         if (guild.isChunkClaimed(player.getLocation().getChunk())) {
@@ -88,6 +102,10 @@ public class GuildCommand implements CommandExecutor {
                 );
             }
             case "visualize", "show" -> {
+                if (!player.hasPermission("guilds.command.visualize")) {
+                    player.sendMessage(plugin.getMessageManager().getMessage("general.no-permission"));
+                    return true;
+                }
                 plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresentOrElse(
                     guild -> {
                         ChunkVisualizer.showChunkBorders(player, player.getLocation().getChunk());
@@ -101,6 +119,10 @@ public class GuildCommand implements CommandExecutor {
                 );
             }
             case "invite" -> {
+                if (!player.hasPermission("guilds.command.invite")) {
+                    player.sendMessage(plugin.getMessageManager().getMessage("general.no-permission"));
+                    return true;
+                }
                 if (args.length < 2) {
                     player.sendMessage("§cUsage: /guild invite <player>");
                     return true;
@@ -126,6 +148,10 @@ public class GuildCommand implements CommandExecutor {
                 );
             }
             case "accept" -> {
+                if (!player.hasPermission("guilds.command.accept")) {
+                    player.sendMessage(plugin.getMessageManager().getMessage("general.no-permission"));
+                    return true;
+                }
                 if (args.length < 2) {
                     player.sendMessage("§cUsage: /guild accept <guild>");
                     return true;
@@ -139,6 +165,10 @@ public class GuildCommand implements CommandExecutor {
                 }
             }
             case "kick" -> {
+                if (!player.hasPermission("guilds.command.kick")) {
+                    player.sendMessage(plugin.getMessageManager().getMessage("general.no-permission"));
+                    return true;
+                }
                 if (args.length < 2) {
                     player.sendMessage("§cUsage: /guild kick <player>");
                     return true;
@@ -167,10 +197,18 @@ public class GuildCommand implements CommandExecutor {
                 );
             }
             case "gui", "menu" -> {
+                if (!player.hasPermission("guilds.command.gui")) {
+                    player.sendMessage(plugin.getMessageManager().getMessage("general.no-permission"));
+                    return true;
+                }
                 new GuildManagementGUI(plugin).openMainMenu(player);
                 player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0f, 1.0f);
             }
             case "storage", "chest" -> {
+                if (!player.hasPermission("guilds.command.storage")) {
+                    player.sendMessage(plugin.getMessageManager().getMessage("general.no-permission"));
+                    return true;
+                }
                 plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresentOrElse(
                     guild -> {
                         if (guild.getPerks().activatePerk("guild-storage")) {
@@ -188,6 +226,10 @@ public class GuildCommand implements CommandExecutor {
                 );
             }
             case "sethome" -> {
+                if (!player.hasPermission("guilds.command.sethome")) {
+                    player.sendMessage(plugin.getMessageManager().getMessage("general.no-permission"));
+                    return true;
+                }
                 if (args.length < 2) {
                     player.sendMessage(plugin.getMessageManager().getMessage("commands.guild.usage.sethome"));
                     return true;
@@ -203,6 +245,10 @@ public class GuildCommand implements CommandExecutor {
                 });
             }
             case "home" -> {
+                if (!player.hasPermission("guilds.command.home")) {
+                    player.sendMessage(plugin.getMessageManager().getMessage("general.no-permission"));
+                    return true;
+                }
                 if (args.length < 2) {
                     player.sendMessage(plugin.getMessageManager().getMessage("commands.guild.usage.home"));
                     return true;
@@ -228,6 +274,10 @@ public class GuildCommand implements CommandExecutor {
                 );
             }
             case "delhome" -> {
+                if (!player.hasPermission("guilds.command.delhome")) {
+                    player.sendMessage(plugin.getMessageManager().getMessage("general.no-permission"));
+                    return true;
+                }
                 if (args.length < 2) {
                     player.sendMessage("§cUsage: /guild delhome <name>");
                     return true;
@@ -243,6 +293,10 @@ public class GuildCommand implements CommandExecutor {
                 });
             }
             case "buff" -> {
+                if (!player.hasPermission("guilds.command.buff")) {
+                    player.sendMessage(plugin.getMessageManager().getMessage("general.no-permission"));
+                    return true;
+                }
                 plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresentOrElse(
                     guild -> {
                         new GuildManagementGUI(plugin).openBuffsMenu(player, guild);
@@ -255,6 +309,10 @@ public class GuildCommand implements CommandExecutor {
                 );
             }
             case "unclaim" -> {
+                if (!player.hasPermission("guilds.command.unclaim")) {
+                    player.sendMessage(plugin.getMessageManager().getMessage("general.no-permission"));
+                    return true;
+                }
                 plugin.getGuildManager().getPlayerGuild(player.getUniqueId()).ifPresentOrElse(
                     guild -> {
                         if (plugin.getGuildManager().unclaimChunk(guild, player.getLocation().getChunk())) {
@@ -273,6 +331,10 @@ public class GuildCommand implements CommandExecutor {
                 );
             }
             case "paste" -> {
+                if (!player.hasPermission("guilds.command.paste")) {
+                    player.sendMessage(plugin.getMessageManager().getMessage("general.no-permission"));
+                    return true;
+                }
                 if (!(sender instanceof Player)) {
                     sender.sendMessage("Only players can use this command.");
                     return true;
@@ -300,6 +362,10 @@ public class GuildCommand implements CommandExecutor {
                 return true;
             }
             case "structures" -> {
+                if (!player.hasPermission("guilds.command.structures")) {
+                    player.sendMessage(plugin.getMessageManager().getMessage("general.no-permission"));
+                    return true;
+                }
                 if (!plugin.isAllowStructures()) {
                     player.sendMessage("The structure system is currently disabled.");
                     return true;
@@ -321,6 +387,10 @@ public class GuildCommand implements CommandExecutor {
                 );
             }
             case "settag" -> {
+                if (!player.hasPermission("guilds.command.settag")) {
+                    player.sendMessage(plugin.getMessageManager().getMessage("general.no-permission"));
+                    return true;
+                }
                 if (args.length < 2) {
                     player.sendMessage("§cUsage: /guild settag <tag>");
                     return true;

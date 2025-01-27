@@ -39,40 +39,56 @@ public class ChatCommand implements CommandExecutor {
         String chatType = args[0];
         if (args.length == 1) {
             switch (chatType.toLowerCase()) {
-                case "guild":
-                    plugin.getChatManager().setChatMode(player, ChatMode.GUILD);
-                    break;
-                case "alliance":
-                    plugin.getChatManager().setChatMode(player, ChatMode.ALLIANCE);
-                    break;
-                case "general":
-                    plugin.getChatManager().setChatMode(player, ChatMode.GENERAL);
-                    break;
-                case "spy":
-                    if (player.hasPermission("guilds.command.guildchat.spy")) {
-                        plugin.getChatManager().toggleSocialSpy(player);
-                    } else {
+                case "guild" -> {
+                    if (!player.hasPermission("guilds.command.guildchat.guild")) {
                         player.sendMessage("You do not have permission to use this command.");
+                        return true;
                     }
-                    break;
-                default:
-                    player.sendMessage("Invalid chat type. Use 'guild', 'alliance', 'general', or 'spy'.");
-                    break;
+                    plugin.getChatManager().setChatMode(player, ChatMode.GUILD);
+                }
+                case "alliance" -> {
+                    if (!player.hasPermission("guilds.command.guildchat.alliance")) {
+                        player.sendMessage("You do not have permission to use this command.");
+                        return true;
+                    }
+                    plugin.getChatManager().setChatMode(player, ChatMode.ALLIANCE);
+                }
+                case "general" -> {
+                    if (!player.hasPermission("guilds.command.guildchat.general")) {
+                        player.sendMessage("You do not have permission to use this command.");
+                        return true;
+                    }
+                    plugin.getChatManager().setChatMode(player, ChatMode.GENERAL);
+                }
+                case "spy" -> {
+                    if (!player.hasPermission("guilds.command.guildchat.spy")) {
+                        player.sendMessage("You do not have permission to use this command.");
+                        return true;
+                    }
+                    plugin.getChatManager().toggleSocialSpy(player);
+                }
+                default -> player.sendMessage("Invalid chat type. Use 'guild', 'alliance', 'general', or 'spy'.");
             }
             return true;
         }
 
         String message = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
         switch (chatType.toLowerCase()) {
-            case "guild":
+            case "guild" -> {
+                if (!player.hasPermission("guilds.command.guildchat.guild")) {
+                    player.sendMessage("You do not have permission to use this command.");
+                    return true;
+                }
                 plugin.getChatManager().sendGuildChat(player, message);
-                break;
-            case "alliance":
+            }
+            case "alliance" -> {
+                if (!player.hasPermission("guilds.command.guildchat.alliance")) {
+                    player.sendMessage("You do not have permission to use this command.");
+                    return true;
+                }
                 plugin.getChatManager().sendAllianceChat(player, message);
-                break;
-            default:
-                player.sendMessage("Invalid chat type. Use 'guild' or 'alliance'.");
-                break;
+            }
+            default -> player.sendMessage("Invalid chat type. Use 'guild' or 'alliance'.");
         }
 
         return true;
