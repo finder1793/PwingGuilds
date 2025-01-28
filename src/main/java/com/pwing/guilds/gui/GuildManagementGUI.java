@@ -58,11 +58,13 @@ public class GuildManagementGUI implements Listener {
                         player.sendMessage("Enter the new guild name:");
                         plugin.getChatManager().expectResponse(player, response -> {
                             String newName = response.getMessage();
-                            if (guild.setName(newName)) {
-                                player.sendMessage("Guild name changed successfully to " + newName);
-                            } else {
-                                player.sendMessage("Failed to change guild name.");
-                            }
+                            Bukkit.getScheduler().runTask(plugin, () -> {
+                                if (guild.setName(newName)) {
+                                    player.sendMessage("Guild name changed successfully to " + newName);
+                                } else {
+                                    player.sendMessage("Failed to change guild name.");
+                                }
+                            });
                         });
                         break;
                     case 13:
