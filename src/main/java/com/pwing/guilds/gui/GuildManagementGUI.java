@@ -248,7 +248,8 @@ public class GuildManagementGUI implements Listener {
      */
     public void openGuildSettings(Player player, Guild guild) {
         String title = plugin.getConfigManager().getConfig("gui.yml").getString("gui.titles.settings", "Guild Settings");
-        Inventory inv = Bukkit.createInventory(null, 27, title);
+        GuildInventoryHolder holder = new GuildInventoryHolder(guild);
+        Inventory inv = Bukkit.createInventory(holder, 27, title);
 
         // Change Guild Name
         ItemStack changeName = createItem(Material.NAME_TAG, "§6Change Guild Name", "§7Click to change the guild name");

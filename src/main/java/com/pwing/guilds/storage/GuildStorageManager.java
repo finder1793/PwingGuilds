@@ -84,7 +84,11 @@ public class GuildStorageManager implements Listener {
 
         Inventory openInv = openStorages.get(player.getUniqueId());
         if (openInv != null && event.getInventory().equals(openInv)) {
-            // Additional permission checks could go here
+            // Allow interaction with the guild storage inventory
+            if (!hasStorageAccess(player, guildManager.getPlayerGuild(player.getUniqueId()).orElse(null))) {
+                event.setCancelled(true);
+                player.sendMessage("§cYou do not have permission to access this storage.");
+            }
         }
     }
 
