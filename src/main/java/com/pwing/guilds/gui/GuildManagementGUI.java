@@ -34,6 +34,57 @@ public class GuildManagementGUI implements Listener {
         this.plugin = plugin;
         // Register this class as an event listener
         Bukkit.getPluginManager().registerEvents(this, plugin);
+        
+        // Register event listener for guild settings
+        Bukkit.getPluginManager().registerEvents(new Listener() {
+            @EventHandler
+            public void onGuildSettingsClick(InventoryClickEvent event) {
+                if (!(event.getInventory().getHolder() instanceof GuildInventoryHolder)) {
+                    return;
+                }
+
+                GuildInventoryHolder holder = (GuildInventoryHolder) event.getInventory().getHolder();
+                Guild guild = holder.getGuild();
+                String title = plugin.getConfigManager().getConfig("gui.yml").getString("gui.titles.settings", "Guild Settings");
+
+                if (!event.getView().getTitle().equals(title)) {
+                    return;
+                }
+
+                event.setCancelled(true); // Prevent items from being taken out of the guild settings GUI
+                Player player = (Player) event.getWhoClicked();
+                switch (event.getSlot()) {
+                    case 11:
+                        player.sendMessage("Enter the new guild name:");
+                        plugin.getChatManager().expectResponse(player, response -> {
+                            String newName = response.getMessage();
+                            if (guild.setName(newName)) {
+                                player.sendMessage("Guild name changed successfully to " + newName);
+                            } else {
+                                player.sendMessage("Failed to change guild name.");
+                            }
+                        });
+                        break;
+                    case 13:
+                        player.sendMessage("Enter the new guild description:");
+                        plugin.getChatManager().expectResponse(player, response -> {
+                            String newDescription = response.getMessage();
+                            guild.setDescription(newDescription);
+                            player.sendMessage("Guild description set successfully.");
+                        });
+                        break;
+                    case 15:
+                        guild.setPvPEnabled(!guild.isPvPEnabled());
+                        player.sendMessage("PvP is now " + (guild.isPvPEnabled() ? "enabled" : "disabled") + " in guild territories.");
+                        break;
+                    case 26:
+                        openMainMenu(player);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }, plugin);
     }
 
     /**
@@ -81,7 +132,7 @@ public class GuildManagementGUI implements Listener {
         Chunk centerChunk = player.getLocation().getChunk();
 
         for (int x = -4; x <= 4; x++) {
-            for (int z = -3; z <= 2; z++) {
+            for (int z = -3; x <= 2; z++) {
                 Chunk chunk = player.getWorld().getChunkAt(centerChunk.getX() + x, centerChunk.getZ() + z);
                 ItemStack item;
 
@@ -268,50 +319,6 @@ public class GuildManagementGUI implements Listener {
         inv.setItem(26, back);
 
         player.openInventory(inv);
-
-        // Add event handler to prevent items from being taken out of the guild settings GUI
-        Bukkit.getPluginManager().registerEvents(new Listener() {
-            @EventHandler
-            public void onGuildSettingsClick(InventoryClickEvent event) {
-                if (!event.getView().getTitle().equals(title)) {
-                    return;
-                }
-
-                event.setCancelled(true); // Prevent items from being taken out of the guild settings GUI
-                Player player = (Player) event.getWhoClicked();
-                Guild guild = ((GuildInventoryHolder) event.getInventory().getHolder()).getGuild();
-                switch (event.getSlot()) {
-                    case 11:
-                        player.sendMessage("Enter the new guild name:");
-                        plugin.getChatManager().expectResponse(player, response -> {
-                            String newName = response.getMessage();
-                            if (guild.setName(newName)) {
-                                player.sendMessage("Guild name changed successfully to " + newName);
-                            } else {
-                                player.sendMessage("Failed to change guild name.");
-                            }
-                        });
-                        break;
-                    case 13:
-                        player.sendMessage("Enter the new guild description:");
-                        plugin.getChatManager().expectResponse(player, response -> {
-                            String newDescription = response.getMessage();
-                            guild.setDescription(newDescription);
-                            player.sendMessage("Guild description set successfully.");
-                        });
-                        break;
-                    case 15:
-                        guild.setPvPEnabled(!guild.isPvPEnabled());
-                        player.sendMessage("PvP is now " + (guild.isPvPEnabled() ? "enabled" : "disabled") + " in guild territories.");
-                        break;
-                    case 26:
-                        openMainMenu(player);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }, plugin);
     }
 
     /**
