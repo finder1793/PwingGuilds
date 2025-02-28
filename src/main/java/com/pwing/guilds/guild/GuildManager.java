@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.Collection;
 
 import com.pwing.guilds.storage.GuildStorage;
-import com.pwing.guilds.integration.WorldGuardHook;
+import com.pwing.guilds.integrations.WorldGuardHook;
 import com.pwing.guilds.alliance.Alliance;
 import com.pwing.guilds.api.GuildClaimChunkEvent;
 import com.pwing.guilds.api.GuildCreateEvent;
