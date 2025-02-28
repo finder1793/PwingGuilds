@@ -1,4 +1,4 @@
-package com.pwing.guilds.integration;
+package com.pwing.guilds.integrations;
 
 import com.pwing.guilds.PwingGuilds;
 import com.pwing.guilds.guild.ChunkLocation;

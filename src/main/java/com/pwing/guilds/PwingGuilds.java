@@ -30,7 +30,7 @@ import com.pwing.guilds.rewards.RewardManager;
 import com.pwing.guilds.config.ConfigUpdater;
 import com.pwing.guilds.config.ConfigManager;
 import com.pwing.guilds.config.ConfigMigration;
-import com.pwing.guilds.integration.WorldGuardHook;
+import com.pwing.guilds.integrations.WorldGuardHook;
 import com.pwing.guilds.database.DatabaseManager;
 import com.pwing.guilds.integrations.skript.SkriptGuildsHook;
 import com.pwing.guilds.compat.ItemCompatibilityHandler;
