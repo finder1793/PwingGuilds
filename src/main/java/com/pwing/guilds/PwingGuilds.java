@@ -473,30 +473,21 @@ public class PwingGuilds extends JavaPlugin {
     // Add the onDisable method
     @Override
     public void onDisable() {
-        // Save all guilds synchronously on shutdown
-        getGuildHandler().getGuilds().forEach(guild -> {
-            if (getStorage() instanceof YamlGuildStorage) {
-                ((YamlGuildStorage) getStorage()).saveGuildSync(guild);
-            } else {
-                // Other storage types might need similar handling
-                getStorage().saveGuild(guild);
-            }
-        });
-        
         getLogger().info("Starting final guild data save...");
 
+        // Save guild data based on storage type
         if (storage instanceof YamlGuildStorage && guildManager != null) {
             guildManager.getGuilds().forEach(guild -> {
                 try {
-                    storage.saveGuild(guild);
+                    // Use synchronous saving to avoid IllegalPluginAccessException
+                    ((YamlGuildStorage) storage).saveGuildSync(guild);
                 } catch (Exception e) {
                     getLogger().severe("Failed to save guild: " + guild.getName());
                     e.printStackTrace();
                 }
             });
-        }
-
-        if (storage instanceof SQLGuildStorage) {
+        } else if (storage instanceof SQLGuildStorage && guildManager != null) {
+            // For SQL storage, just process remaining queue
             SQLGuildStorage sqlStorage = (SQLGuildStorage) storage;
             sqlStorage.processRemainingQueue();
             sqlStorage.getDataSource().close();
@@ -520,6 +511,7 @@ public class PwingGuilds extends JavaPlugin {
 
         getLogger().info("Guild data save completed!");
     }
+
     // Add a getter for the GuildStorage instance
 
     /**
