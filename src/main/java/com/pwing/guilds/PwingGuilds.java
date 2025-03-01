@@ -473,6 +473,16 @@ public class PwingGuilds extends JavaPlugin {
     // Add the onDisable method
     @Override
     public void onDisable() {
+        // Save all guilds synchronously on shutdown
+        getGuildHandler().getGuilds().forEach(guild -> {
+            if (getStorage() instanceof YamlGuildStorage) {
+                ((YamlGuildStorage) getStorage()).saveGuildSync(guild);
+            } else {
+                // Other storage types might need similar handling
+                getStorage().saveGuild(guild);
+            }
+        });
+        
         getLogger().info("Starting final guild data save...");
 
         if (storage instanceof YamlGuildStorage && guildManager != null) {

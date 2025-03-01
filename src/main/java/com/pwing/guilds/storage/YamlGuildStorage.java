@@ -69,6 +69,13 @@ public class YamlGuildStorage implements GuildStorage {
     }
 
     public void saveGuild(Guild guild) {
+        // Check if the plugin is still enabled before scheduling async tasks
+        if (!plugin.isEnabled()) {
+            // Use synchronous saving if plugin is being disabled
+            saveGuildSync(guild);
+            return;
+        }
+        
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             File oldGuildFile = new File(guildsFolder, guild.getName() + ".yml");
             File guildFile = new File(guildsFolder, guild.getName() + ".yml");
@@ -120,6 +127,62 @@ public class YamlGuildStorage implements GuildStorage {
                 e.printStackTrace();
             }
         });
+    }
+
+    /**
+     * Save guild data synchronously - used during plugin shutdown
+     * @param guild The guild to save
+     */
+    public void saveGuildSync(Guild guild) {
+        try {
+            File oldGuildFile = new File(guildsFolder, guild.getName() + ".yml");
+            File guildFile = new File(guildsFolder, guild.getName() + ".yml");
+            if (!oldGuildFile.equals(guildFile) && oldGuildFile.exists()) {
+                oldGuildFile.delete();
+            }
+            YamlConfiguration config = new YamlConfiguration();
+
+            // Core guild data
+            config.set("name", guild.getName());
+            config.set("owner", guild.getOwner().toString());
+            config.set("level", guild.getLevel());
+            config.set("exp", guild.getExp());
+            config.set("bonus-claims", guild.getBonusClaims());
+            config.set("tag", guild.getTag()); // Save the tag
+
+            // Members
+            config.set("members", guild.getMembers().stream()
+                    .map(UUID::toString)
+                    .collect(Collectors.toList()));
+
+            // Claims
+            List<Map<String, Object>> claimMaps = guild.getClaimedChunks().stream()
+                    .map(claim -> Map.<String, Object>of(
+                            "world", claim.getWorld().getName(),
+                            "x", claim.getX(),
+                            "z", claim.getZ()
+                    ))
+                    .collect(Collectors.toList());
+            config.set("claims", claimMaps);
+
+            // Homes
+            config.set("homes", guild.getHomes().entrySet().stream()
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            e -> serializeLocation(e.getValue().getLocation())
+                    )));
+
+            // New sections
+            config.set("pvp-enabled", guild.isPvPEnabled());
+            config.set("builtStructures", new ArrayList<>(guild.getBuiltStructures()));
+
+            config.save(guildFile);
+            guildCache.put(guild.getName(), guild);
+            createBackup(guild.getName());
+        } catch (Exception e) {
+            plugin.getLogger().severe("Failed to save guild: " + guild.getName());
+            e.printStackTrace();
+        }
     }
 
     private Map<String, Object> configSectionToMap(ConfigurationSection section) {
